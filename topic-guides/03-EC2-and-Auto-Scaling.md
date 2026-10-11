@@ -47,43 +47,14 @@ It exists so you don’t have to SSH into every new instance. It’s how an Auto
 **EC2 Instance Types**
 **Mental Model**
 **Choose the instance based on the resource your application needs most.**
-<table header-row="true">
-<tr>
-<td>Type</td>
-<td>Best For</td>
-<td>Think</td>
-</tr>
-<tr>
-<td>**General Purpose (M, T)**</td>
-<td>Balanced CPU + RAM</td>
-<td>Everyday workloads</td>
-</tr>
-<tr>
-<td>**Compute Optimized (C)**</td>
-<td>High CPU</td>
-<td>CPU-heavy apps</td>
-</tr>
-<tr>
-<td>**Memory Optimized (R, X, High Memory)**</td>
-<td>Large RAM</td>
-<td>In-memory databases</td>
-</tr>
-<tr>
-<td>**Storage Optimized (I, D, H)**</td>
-<td>Fast local disk I/O</td>
-<td>Databases, analytics</td>
-</tr>
-<tr>
-<td>**Accelerated Computing (P, G, Inf, Trn, F)**</td>
-<td>GPU/FPGA/AI accelerators</td>
-<td>ML, graphics, inference</td>
-</tr>
-<tr>
-<td>**HPC Optimized (Hpc)**</td>
-<td>High-Performance Computing</td>
-<td>Scientific simulations</td>
-</tr>
-</table>
+| Type | Best For | Think |
+| --- | --- | --- |
+| **General Purpose (M, T)** | Balanced CPU + RAM | Everyday workloads |
+| **Compute Optimized (C)** | High CPU | CPU-heavy apps |
+| **Memory Optimized (R, X, High Memory)** | Large RAM | In-memory databases |
+| **Storage Optimized (I, D, H)** | Fast local disk I/O | Databases, analytics |
+| **Accelerated Computing (P, G, Inf, Trn, F)** | GPU/FPGA/AI accelerators | ML, graphics, inference |
+| **HPC Optimized (Hpc)** | High-Performance Computing | Scientific simulations |
 **General Purpose**
 - Balanced CPU, memory, networking.
 - **Examples:** Web servers, application servers, small/medium databases.
@@ -124,68 +95,31 @@ For your question, **`DeleteOnTermination`**** → can be changed while running.
 **Instance store** — physically attached NVMe. Very fast, but **ephemeral** — data is lost when the instance stops. Use for scratch, cache, temporary processing.
 **EC2 purchasing options**
 Not on the in-scope service list — kept because they appear as distractors. The organising idea: you trade *commitment* or *interruption tolerance* for price.
-<table header-row="true">
-<tr>
-<td>Option</td>
-<td>The trade</td>
-<td>Best for</td>
-</tr>
-<tr>
-<td>**On-Demand**</td>
-<td>No commitment, highest price</td>
-<td>Unpredictable workloads, testing</td>
-</tr>
-<tr>
-<td>**Reserved Instance**</td>
-<td>Commit to 1 or 3 years of a specific instance</td>
-<td>Steady production workloads</td>
-</tr>
-<tr>
-<td>**Savings Plans**</td>
-<td>Commit to a \$/hour spend, flexible on instance type</td>
-<td>Long-running with some flexibility</td>
-</tr>
-<tr>
-<td>**Spot**</td>
-<td>Accept interruption, get a large discount</td>
-<td>Batch jobs, data processing, CI/CD, testing</td>
-</tr>
-<tr>
-<td>**Spot Fleet**</td>
-<td>A managed collection of Spot across types and AZs</td>
-<td>Large flexible workloads at lowest cost</td>
-</tr>
-<tr>
-<td>**Dedicated Host**</td>
-<td>An entire physical server, hardware visibility</td>
-<td>Compliance, bring-your-own-licence</td>
-</tr>
-<tr>
-<td>**Dedicated Instance**</td>
-<td>Hardware isolated to your account, less control than a host</td>
-<td>Isolation requirements</td>
-</tr>
-<tr>
-<td>**Capacity Reservation**</td>
-<td>Pay to guarantee capacity exists in an AZ</td>
-<td>Critical availability</td>
-</tr>
-</table>
+| Option | The trade | Best for |
+| --- | --- | --- |
+| **On-Demand** | No commitment, highest price | Unpredictable workloads, testing |
+| **Reserved Instance** | Commit to 1 or 3 years of a specific instance | Steady production workloads |
+| **Savings Plans** | Commit to a \$/hour spend, flexible on instance type | Long-running with some flexibility |
+| **Spot** | Accept interruption, get a large discount | Batch jobs, data processing, CI/CD, testing |
+| **Spot Fleet** | A managed collection of Spot across types and AZs | Large flexible workloads at lowest cost |
+| **Dedicated Host** | An entire physical server, hardware visibility | Compliance, bring-your-own-licence |
+| **Dedicated Instance** | Hardware isolated to your account, less control than a host | Isolation requirements |
+| **Capacity Reservation** | Pay to guarantee capacity exists in an AZ | Critical availability |
 ### EC2 Reserved Instances
 **Topic:** **EC2 pricing & capacity**
-**Reserved Instance (RI):** Get a **discount** for long-running EC2 workloads. 
+**Reserved Instance (RI):** Get a **discount** for long-running EC2 workloads.
 **Regional RI**
 - Discount across the Region
 - **Does NOT reserve capacity**
 **Zonal RI**
 - Discount in a specific AZ
-- **Reserves EC2 capacity in that AZ** ✅ 
+- **Reserves EC2 capacity in that AZ** ✅
 **Exam memory:**
 > **Need capacity reservation + RI → Zonal RI**
 > **Need flexibility across AZs → Regional RI**
-**Don't confuse:** **EC2 Capacity Reservation** is a separate feature specifically designed to reserve capacity; it does not provide an RI-style billing discount. 
+**Don't confuse:** **EC2 Capacity Reservation** is a separate feature specifically designed to reserve capacity; it does not provide an RI-style billing discount.
 ### Reserved Instance billing
-> **1 RI gives up to 3,600 seconds (1 hour) of discounted instance usage per clock-hour.** 
+> **1 RI gives up to 3,600 seconds (1 hour) of discounted instance usage per clock-hour.**
 Example:
 ```plain text
 1 RI
@@ -196,10 +130,10 @@ Example:
 ```
 **Important:** The 3,600 seconds can be shared across multiple instances, but the **total RI-covered usage cannot exceed 1 hour per clock-hour**.
 **Exam memory:**
-> **1 RI = max 1 instance-hour of discounted usage per hour.** 
+> **1 RI = max 1 instance-hour of discounted usage per hour.**
 **EC2 Free Tier (the billing trap)**
 A new AWS account (under 12 months) gets **750 hours/month of ****`t2.micro`** free. When a question asks “how much were you charged for 35 seconds of `t2.micro` on a new account”, the answer is **\$0** — the question is testing Free Tier awareness, not per-second billing granularity. Don’t compute the arithmetic.
-<empty-block/>
+
 ## EC2 Auto Scaling Target Tracking
 **Supported metrics**
 - `ASGAverageCPUUtilization`
@@ -211,28 +145,12 @@ A new AWS account (under 12 months) gets **750 hours/month of ****`t2.micro`** f
 > **Target Tracking → CPU, NetworkOut, ALB requests/target**
 > **SQS messages → not a predefined Target Tracking metric**
 **Recall check — EC2**
-<table header-row="true">
-<tr>
-<td>Purpose</td>
-<td>Command</td>
-</tr>
-<tr>
-<td>Enable detailed monitoring on **existing** instance</td>
-<td>`aws ec2 monitor-instances --instance-ids i-1234567890abcdef0`</td>
-</tr>
-<tr>
-<td>Disable detailed monitoring</td>
-<td>`aws ec2 unmonitor-instances --instance-ids i-1234567890abcdef0`</td>
-</tr>
-<tr>
-<td>Launch new instance with detailed monitoring</td>
-<td>`aws ec2 run-instances --image-id ami-09092360 --monitoring Enabled=true`</td>
-</tr>
-<tr>
-<td>Check instance monitoring state</td>
-<td>`aws ec2 describe-instances --instance-ids i-1234567890abcdef0`</td>
-</tr>
-</table>
+| Purpose | Command |
+| --- | --- |
+| Enable detailed monitoring on **existing** instance | `aws ec2 monitor-instances --instance-ids i-1234567890abcdef0` |
+| Disable detailed monitoring | `aws ec2 unmonitor-instances --instance-ids i-1234567890abcdef0` |
+| Launch new instance with detailed monitoring | `aws ec2 run-instances --image-id ami-09092360 --monitoring Enabled=true` |
+| Check instance monitoring state | `aws ec2 describe-instances --instance-ids i-1234567890abcdef0` |
 - **Need a virtual machine / full OS control** → EC2
 - **Automatically add and remove instances** → Auto Scaling Group
 - **Create identical instances** → Launch Template

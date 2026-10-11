@@ -3,5 +3,5 @@
 **CodeCommit authentication:** It supports:
 - **HTTPS + Git credentials** (username/password **generated from IAM**)
 - **SSH + SSH keys**
-- **HTTPS + AWS CLI credential helper** 
-**Exam memory:** **CodeCommit = AWS-managed private Git repository.** 
+- **HTTPS + AWS CLI credential helper**
+**Exam memory:** **CodeCommit = AWS-managed private Git repository.**

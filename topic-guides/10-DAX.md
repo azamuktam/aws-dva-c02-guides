@@ -7,24 +7,11 @@ DynamoDB is fast (single-digit milliseconds) but not *memory* fast. For read-hea
 - **Write-through**: writes go to DynamoDB and update the cache together, so the cache doesn’t serve stale data it just wrote.
 - Default TTL 5 minutes.
 - **Strongly consistent reads bypass DAX entirely** — they have to, because a cache cannot guarantee it holds the leader’s latest value. So DAX gives you nothing on strongly consistent reads.
-<table header-row="true">
-<tr>
-<td>Cache</td>
-<td>Use it for</td>
-</tr>
-<tr>
-<td>**DAX**</td>
-<td>DynamoDB, microsecond reads, minimal code change</td>
-</tr>
-<tr>
-<td>**ElastiCache Redis**</td>
-<td>Anything else — sessions, leaderboards, arbitrary computed results, pub/sub</td>
-</tr>
-<tr>
-<td>**ElastiCache Memcached**</td>
-<td>Simple, large, throwaway key-value cache</td>
-</tr>
-</table>
+| Cache | Use it for |
+| --- | --- |
+| **DAX** | DynamoDB, microsecond reads, minimal code change |
+| **ElastiCache Redis** | Anything else — sessions, leaderboards, arbitrary computed results, pub/sub |
+| **ElastiCache Memcached** | Simple, large, throwaway key-value cache |
 **Recall check**
 - **Microsecond DynamoDB reads with almost no code change** → DAX
 - **DAX does not help strongly consistent reads**

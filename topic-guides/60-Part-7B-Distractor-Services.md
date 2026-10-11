@@ -22,33 +22,12 @@
 **Use:** business intelligence, reporting, dashboards over structured data loaded from S3, databases, or streams.
 **Why it’s a distractor:** it competes with Athena in “query a lot of data with SQL” questions. The difference: Redshift requires **loading data into the warehouse** and is built for repeated, heavy BI workloads; Athena queries data **in place** in S3 and is built for ad-hoc analysis.
 **The four-way analytics comparison**
-<table header-row="true">
-<tr>
-<td>Service</td>
-<td>Best for</td>
-<td>Data type</td>
-</tr>
-<tr>
-<td>**EMR**</td>
-<td>Processing huge datasets</td>
-<td>Batch big data (Spark/Hadoop)</td>
-</tr>
-<tr>
-<td>**Kinesis Data Streams**</td>
-<td>Processing data as it arrives</td>
-<td>Real-time streaming</td>
-</tr>
-<tr>
-<td>**Redshift**</td>
-<td>SQL analytics and reporting</td>
-<td>Structured analytical data</td>
-</tr>
-<tr>
-<td>**DynamoDB**</td>
-<td>Fast application database</td>
-<td>NoSQL key-value / document</td>
-</tr>
-</table>
+| Service | Best for | Data type |
+| --- | --- | --- |
+| **EMR** | Processing huge datasets | Batch big data (Spark/Hadoop) |
+| **Kinesis Data Streams** | Processing data as it arrives | Real-time streaming |
+| **Redshift** | SQL analytics and reporting | Structured analytical data |
+| **DynamoDB** | Fast application database | NoSQL key-value / document |
 Compressed: **EMR processes. Kinesis streams. Redshift analyses. DynamoDB stores.** And **Athena queries S3 in place** — which is the in-scope member of this family.
 ---
 ### The security-services family
@@ -63,40 +42,15 @@ Four services that overlap in appearance and differ completely in function. The 
 **Amazon GuardDuty** — **threat detection**. Analyses CloudTrail, VPC flow logs, and DNS logs with machine learning to spot malicious or anomalous **activity** — crypto mining, credential exfiltration, communication with known-bad IPs.
 **Amazon Macie** — discovers and classifies **sensitive data** (PII, credentials) in S3.
 **AWS Trusted Advisor** — **best-practice recommendations** across five categories: Cost Optimisation, Performance, Security, Fault Tolerance, and Service Limits. Examples: unused resources, overly open security groups, IAM usage, low-utilisation instances.
-<table header-row="true">
-<tr>
-<td>Service</td>
-<td>The question it answers</td>
-</tr>
-<tr>
-<td>**Security Hub**</td>
-<td>“Show me all my security findings in one place”</td>
-</tr>
-<tr>
-<td>**Inspector**</td>
-<td>“Do my deployed workloads have known vulnerabilities?”</td>
-</tr>
-<tr>
-<td>**GuardDuty**</td>
-<td>“Is something malicious happening right now?”</td>
-</tr>
-<tr>
-<td>**Macie**</td>
-<td>“Is there sensitive data in my S3 buckets?”</td>
-</tr>
-<tr>
-<td>**Trusted Advisor**</td>
-<td>“Am I following AWS best practices? Can I save money?”</td>
-</tr>
-<tr>
-<td>**AWS Config**</td>
-<td>“Are my resource configurations compliant?”</td>
-</tr>
-<tr>
-<td>**Q Developer**</td>
-<td>“Are there security issues in the code I’m writing?”</td>
-</tr>
-</table>
+| Service | The question it answers |
+| --- | --- |
+| **Security Hub** | “Show me all my security findings in one place” |
+| **Inspector** | “Do my deployed workloads have known vulnerabilities?” |
+| **GuardDuty** | “Is something malicious happening right now?” |
+| **Macie** | “Is there sensitive data in my S3 buckets?” |
+| **Trusted Advisor** | “Am I following AWS best practices? Can I save money?” |
+| **AWS Config** | “Are my resource configurations compliant?” |
+| **Q Developer** | “Are there security issues in the code I’m writing?” |
 **Recall check**
 - **One place for all security findings / compliance dashboard** → Security Hub
 - **Vulnerability and CVE scanning of deployed resources** → Inspector
@@ -151,24 +105,11 @@ Publish to it with `sam publish`.
 - **ACM-issued public certificates renew automatically.** That is the primary reason to use ACM over uploading your own.
 - **CloudFront certificates must be in ****`us-east-1`**, regardless of where the rest of your infrastructure lives. This is because CloudFront is a global service whose control plane lives in `us-east-1`.
 **The alternatives:**
-<table header-row="true">
-<tr>
-<td>Service</td>
-<td>Difference</td>
-</tr>
-<tr>
-<td>**ACM**</td>
-<td>Create, manage, and **auto-renew** public SSL/TLS certificates</td>
-</tr>
-<tr>
-<td>**IAM certificate store**</td>
-<td>Store an **uploaded** server certificate (legacy). **No auto-renewal**</td>
-</tr>
-<tr>
-<td>**AWS Private CA**</td>
-<td>Issue **private** certificates for internal applications</td>
-</tr>
-</table>
+| Service | Difference |
+| --- | --- |
+| **ACM** | Create, manage, and **auto-renew** public SSL/TLS certificates |
+| **IAM certificate store** | Store an **uploaded** server certificate (legacy). **No auto-renewal** |
+| **AWS Private CA** | Issue **private** certificates for internal applications |
 **Recall check**
 - **Enable HTTPS** → ACM
 - **Automatically renew a certificate** → ACM
@@ -188,28 +129,12 @@ Supported authentication methods:
 **Not supported:**
 - **IAM console username and password** — these log you into the AWS Console. They are **not** usable for Git operations.
 The trap works because “IAM username and password” sounds correct — it *is* a username and password — but it is a different credential from the Git credentials IAM generates for CodeCommit.
-<table header-row="true">
-<tr>
-<td>Scenario</td>
-<td>Authentication</td>
-</tr>
-<tr>
-<td>Clone over HTTPS</td>
-<td>**Git credentials**</td>
-</tr>
-<tr>
-<td>Clone over SSH</td>
-<td>**SSH key**</td>
-</tr>
-<tr>
-<td>Application using the AWS SDK</td>
-<td>Access keys or an IAM role</td>
-</tr>
-<tr>
-<td>Console login</td>
-<td>IAM password — **not for Git**</td>
-</tr>
-</table>
+| Scenario | Authentication |
+| --- | --- |
+| Clone over HTTPS | **Git credentials** |
+| Clone over SSH | **SSH key** |
+| Application using the AWS SDK | Access keys or an IAM role |
+| Console login | IAM password — **not for Git** |
 **Two secondary features, for completeness**
 - **Triggers and notifications** — a repository could fire an **SNS** notification or invoke a **Lambda** on a push or branch/tag event, and integrate with EventBridge so a commit starts a CodePipeline execution. The modern equivalent for a GitHub source is a webhook through **CodeStar Connections** (now “AWS CodeConnections”), which is what a current pipeline uses.
 - **Approval rule templates** — pull requests could require a minimum number of approvals from specified users before merging. Governance rather than developer skill, and now firmly out of scope.
@@ -271,36 +196,14 @@ Use it when you want to:
 3. Configure build settings in **`amplify.yml`**.
 4. Amplify builds and deploys the application.
 **Important points**
-<table header-row="true">
-<tr>
-<td>Feature</td>
-<td>Meaning</td>
-</tr>
-<tr>
-<td>Git integration</td>
-<td>Connect GitHub/GitLab/Bitbucket</td>
-</tr>
-<tr>
-<td>CI/CD</td>
-<td>Automatically build and deploy</td>
-</tr>
-<tr>
-<td>`amplify.yml`</td>
-<td>Build, test, and deployment configuration</td>
-</tr>
-<tr>
-<td>Preview deployments</td>
-<td>Test branches/changes before production</td>
-</tr>
-<tr>
-<td>Custom domain</td>
-<td>Connect your own domain</td>
-</tr>
-<tr>
-<td>HTTPS</td>
-<td>SSL/TLS provided</td>
-</tr>
-</table>
+| Feature | Meaning |
+| --- | --- |
+| Git integration | Connect GitHub/GitLab/Bitbucket |
+| CI/CD | Automatically build and deploy |
+| `amplify.yml` | Build, test, and deployment configuration |
+| Preview deployments | Test branches/changes before production |
+| Custom domain | Connect your own domain |
+| HTTPS | SSL/TLS provided |
 **Exam memory**
 > **Git repository → Amplify Hosting → build/test/deploy web app**
 **`amplify.yml`**** = tells Amplify what to do during build and testing.**
@@ -323,29 +226,13 @@ Use ADOT when you need:
 - Send telemetry to **different observability backends**
 - Avoid changing/re-instrumenting application code
 ADOT vs X-Ray
-<empty-block/>
-<table header-row="true">
-<tr>
-<td>ADOT</td>
-<td>X-Ray</td>
-</tr>
-<tr>
-<td>OpenTelemetry-based</td>
-<td>AWS X-Ray-specific</td>
-</tr>
-<tr>
-<td>Multiple backends</td>
-<td>Mainly AWS X-Ray</td>
-</tr>
-<tr>
-<td>Vendor-neutral</td>
-<td>AWS-focused</td>
-</tr>
-<tr>
-<td>Collector available</td>
-<td>X-Ray daemon/agent</td>
-</tr>
-</table>
+
+| ADOT | X-Ray |
+| --- | --- |
+| OpenTelemetry-based | AWS X-Ray-specific |
+| Multiple backends | Mainly AWS X-Ray |
+| Vendor-neutral | AWS-focused |
+| Collector available | X-Ray daemon/agent |
 Exam memory
 **Multiple tracing backends → ADOT / OpenTelemetry**
 **AWS X-Ray specifically → X-Ray**

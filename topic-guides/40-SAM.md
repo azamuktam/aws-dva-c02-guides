@@ -15,131 +15,38 @@ Transform:'AWS::Serverless-2016-10-31'
 ```
 Seeing that line means the template is a SAM template. Note that `Transform` is a template section, not a parameter.
 **SAM resource types**
-<table header-row="true">
-<tr>
-<td>SAM type</td>
-<td>Expands into</td>
-</tr>
-<tr>
-<td>**`AWS::Serverless::Function`**</td>
-<td>Lambda function (+ role, permissions, event sources)</td>
-</tr>
-<tr>
-<td>**`AWS::Serverless::Api`**</td>
-<td>API Gateway</td>
-</tr>
-<tr>
-<td>**`AWS::Serverless::SimpleTable`**</td>
-<td>DynamoDB table</td>
-</tr>
-<tr>
-<td>**`AWS::Serverless::StateMachine`**</td>
-<td>Step Functions state machine</td>
-</tr>
-<tr>
-<td>**`AWS::Serverless::HttpApi`**</td>
-<td>API Gateway HTTP API</td>
-</tr>
-<tr>
-<td>**`AWS::Serverless::LayerVersion`**</td>
-<td>Lambda layer</td>
-</tr>
-<tr>
-<td>**`AWS::Serverless::Application`**</td>
-<td>A nested serverless application</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-</tr>
-</table>
+| SAM type | Expands into |
+| --- | --- |
+| **`AWS::Serverless::Function`** | Lambda function (+ role, permissions, event sources) |
+| **`AWS::Serverless::Api`** | API Gateway |
+| **`AWS::Serverless::SimpleTable`** | DynamoDB table |
+| **`AWS::Serverless::StateMachine`** | Step Functions state machine |
+| **`AWS::Serverless::HttpApi`** | API Gateway HTTP API |
+| **`AWS::Serverless::LayerVersion`** | Lambda layer |
+| **`AWS::Serverless::Application`** | A nested serverless application |
+|    |    |
 SAM also has **globals** (shared settings across functions) and built-in support for **gradual deployment** via CodeDeploy, which is how canary Lambda deployments are configured declaratively.
 **The CLI commands**
-<table header-row="true">
-<tr>
-<td>Command</td>
-<td>Does</td>
-<td>When you use it</td>
-</tr>
-<tr>
-<td>**`sam init`**</td>
-<td>Create a new application from a template</td>
-<td>Starting a project</td>
-</tr>
-<tr>
-<td>**`sam validate`**</td>
-<td>Validate the SAM template</td>
-<td>Check the template is well-formed</td>
-</tr>
-<tr>
-<td>**`sam build`**</td>
-<td>Build the application and resolve dependencies</td>
-<td>Before deploying</td>
-</tr>
-<tr>
-<td>**`sam local invoke`**</td>
-<td>Run **one Lambda** locally in Docker</td>
-<td>Test a single function</td>
-</tr>
-<tr>
-<td>**`sam local start-api`**</td>
-<td>Run **API Gateway + Lambda** locally</td>
-<td>Test a REST API end to end</td>
-</tr>
-<tr>
-<td>**`sam local start-lambda`**</td>
-<td>Local Lambda endpoint for SDK calls</td>
-<td>Integration testing</td>
-</tr>
-<tr>
-<td>**`sam package`**</td>
-<td>Upload artifacts to S3 and produce a deployable template</td>
-<td>Packaging step</td>
-</tr>
-<tr>
-<td>**`sam deploy`**</td>
-<td>Create or update the CloudFormation stack</td>
-<td>Deploy</td>
-</tr>
-<tr>
-<td>**`sam publish`**</td>
-<td>Publish a layer or an app to the Serverless Application Repository</td>
-<td>Share something reusable</td>
-</tr>
-<tr>
-<td>**`sam logs`**</td>
-<td>Tail CloudWatch Logs for a function</td>
-<td>Debugging</td>
-</tr>
-<tr>
-<td>**`sam sync`**</td>
-<td>Rapid iterative deploy during development</td>
-<td>Inner development loop</td>
-</tr>
-</table>
+| Command | Does | When you use it |
+| --- | --- | --- |
+| **`sam init`** | Create a new application from a template | Starting a project |
+| **`sam validate`** | Validate the SAM template | Check the template is well-formed |
+| **`sam build`** | Build the application and resolve dependencies | Before deploying |
+| **`sam local invoke`** | Run **one Lambda** locally in Docker | Test a single function |
+| **`sam local start-api`** | Run **API Gateway + Lambda** locally | Test a REST API end to end |
+| **`sam local start-lambda`** | Local Lambda endpoint for SDK calls | Integration testing |
+| **`sam package`** | Upload artifacts to S3 and produce a deployable template | Packaging step |
+| **`sam deploy`** | Create or update the CloudFormation stack | Deploy |
+| **`sam publish`** | Publish a layer or an app to the Serverless Application Repository | Share something reusable |
+| **`sam logs`** | Tail CloudWatch Logs for a function | Debugging |
+| **`sam sync`** | Rapid iterative deploy during development | Inner development loop |
 **SAM vs CloudFormation vs CDK vs Beanstalk**
-<table header-row="true">
-<tr>
-<td></td>
-<td>Difference</td>
-</tr>
-<tr>
-<td>**SAM**</td>
-<td>IaC optimised for **serverless**; still CloudFormation underneath</td>
-</tr>
-<tr>
-<td>**CloudFormation**</td>
-<td>General-purpose IaC in **YAML/JSON**</td>
-</tr>
-<tr>
-<td>**CDK**</td>
-<td>IaC in a **programming language**, synthesises to CloudFormation</td>
-</tr>
-<tr>
-<td>**Elastic Beanstalk**</td>
-<td>Deploys an **application**; AWS assembles the infrastructure</td>
-</tr>
-</table>
+|    | Difference |
+| --- | --- |
+| **SAM** | IaC optimised for **serverless**; still CloudFormation underneath |
+| **CloudFormation** | General-purpose IaC in **YAML/JSON** |
+| **CDK** | IaC in a **programming language**, synthesises to CloudFormation |
+| **Elastic Beanstalk** | Deploys an **application**; AWS assembles the infrastructure |
 ### AWS SAM — Lambda Packaging
 **Mental model**
 SAM lets you describe a Lambda function using local source code. Before CloudFormation can deploy it, the code is packaged and uploaded to **S3**.

@@ -46,20 +46,20 @@ So:
 **Exam memory:**
 > **EC2 terminated but still appears in ECS cluster → deregister the ECS container instance.**
 ### ECS Task Placement
-**Task placement** = **how ECS decides which EC2 instance should run a new task**. You can control it with **placement strategies** and **placement constraints**. 
+**Task placement** = **how ECS decides which EC2 instance should run a new task**. You can control it with **placement strategies** and **placement constraints**.
 - **`binpack`** → pack tasks together → **minimize instances/cost**
-	- `cpu` or `memory`
+  - `cpu` or `memory`
 - **`spread`** → distribute tasks evenly → **high availability**
-	- `instanceId` / AZ
+  - `instanceId` / AZ
 - **`random`** → place tasks **randomly**
-**Constraint** = a **rule** that must be satisfied, e.g. `distinctInstance` = don't put two tasks on the same instance. 
+**Constraint** = a **rule** that must be satisfied, e.g. `distinctInstance` = don't put two tasks on the same instance.
 **Exam memory:**
 **Binpack = together**
 **Spread = apart**
 **Random = random**
 #### ECS Cluster Name in CloudFormation
 **Problem:** New EC2 instances join the old ECS cluster.
-**Cause:** The ECS agent uses `ECS_CLUSTER` to decide which cluster the EC2 instance joins. This is commonly set in EC2 User Data / `/etc/ecs/ecs.config`. 
+**Cause:** The ECS agent uses `ECS_CLUSTER` to decide which cluster the EC2 instance joins. This is commonly set in EC2 User Data / `/etc/ecs/ecs.config`.
 ```plain text
 ECS_CLUSTER=MainCluster
         ↓
@@ -81,7 +81,7 @@ ClusterName = SecondCluster → ECS_CLUSTER=SecondCluster
 ```
 **Exam memory:**
 > **ECS EC2 instance joins cluster based on ****`ECS_CLUSTER`****.**
-> **CloudFormation parameter must be passed to the ECS agent configuration.** 
+> **CloudFormation parameter must be passed to the ECS agent configuration.**
 ### Cluster Query Language (CQL)
 **What it is:** ECS expressions used to **filter/group container instances by attributes**.
 **Examples:**
@@ -89,36 +89,15 @@ ClusterName = SecondCluster → ECS_CLUSTER=SecondCluster
 attribute:ecs.availability-zone == us-east-1a
 attribute:ecs.instance-type == t3.large
 ```
-<table header-row="true">
-<tr>
-<td>ECS feature</td>
-<td>What it does</td>
-<td>Example</td>
-</tr>
-<tr>
-<td>**Cluster Query Language (CQL)**</td>
-<td>Finds **which container instances** match attributes</td>
-<td>`attribute:ecs.availability-zone == us-east-1a`</td>
-</tr>
-<tr>
-<td>**Task Placement Constraints**</td>
-<td>Says **where a task is allowed/not allowed** to run</td>
-<td>`memberOf(attribute:ecs.instance-type == t3.large)`</td>
-</tr>
-<tr>
-<td>**Task Placement Strategies**</td>
-<td>Says **how to distribute tasks** among eligible instances</td>
-<td>`spread` across AZs, or `binpack` by memory</td>
-</tr>
-<tr>
-<td>**Task Groups**</td>
-<td>Groups related ECS tasks logically</td>
-<td>`serviceA` has several related tasks running together</td>
-</tr>
-</table>
+| ECS feature | What it does | Example |
+| --- | --- | --- |
+| **Cluster Query Language (CQL)** | Finds **which container instances** match attributes | `attribute:ecs.availability-zone == us-east-1a` |
+| **Task Placement Constraints** | Says **where a task is allowed/not allowed** to run | `memberOf(attribute:ecs.instance-type == t3.large)` |
+| **Task Placement Strategies** | Says **how to distribute tasks** among eligible instances | `spread` across AZs, or `binpack` by memory |
+| **Task Groups** | Groups related ECS tasks logically | `serviceA` has several related tasks running together |
 ### Dynamic Host Port Mapping
 **What it is:**
-ECS automatically chooses an available **host port** for a container instead of you choosing one manually. This is supported with the **bridge network mode**. 
+ECS automatically chooses an available **host port** for a container instead of you choosing one manually. This is supported with the **bridge network mode**.
 Example:
 ```plain text
 EC2 instance
@@ -127,7 +106,7 @@ Task 1: container port 80 → host port 32768
 Task 2: container port 80 → host port 32769
 Task 3: container port 80 → host port 32770
 ```
-All 3 containers can therefore run on **the same EC2 instance**, even though they all use container port `80`. 
+All 3 containers can therefore run on **the same EC2 instance**, even though they all use container port `80`.
 For example:
 ```plain text
 EC2:80
@@ -170,33 +149,12 @@ Task Definition  (the recipe: image, CPU, memory, ports, roles, secrets, logging
   Launch type:  EC2 (you manage hosts)  |  Fargate (AWS manages hosts)
 ```
 **Fargate vs ECS on EC2**
-<table header-row="true">
-<tr>
-<td></td>
-<td>**Fargate**</td>
-<td>**ECS on EC2**</td>
-</tr>
-<tr>
-<td>Hosts</td>
-<td>AWS manages</td>
-<td>You manage, patch, scale</td>
-</tr>
-<tr>
-<td>Billing</td>
-<td>Per vCPU and GB requested</td>
-<td>Per EC2 instance, whether used or not</td>
-</tr>
-<tr>
-<td>Control</td>
-<td>No host access</td>
-<td>Full host access, GPU, custom AMIs</td>
-</tr>
-<tr>
-<td>Density optimisation</td>
-<td>None available</td>
-<td>You can pack many tasks per instance</td>
-</tr>
-</table>
+|    | **Fargate** | **ECS on EC2** |
+| --- | --- | --- |
+| Hosts | AWS manages | You manage, patch, scale |
+| Billing | Per vCPU and GB requested | Per EC2 instance, whether used or not |
+| Control | No host access | Full host access, GPU, custom AMIs |
+| Density optimisation | None available | You can pack many tasks per instance |
 Fargate is the default answer to “serverless containers” and “no EC2 to manage”. ECS on EC2 wins when you need host-level control or better bin-packing economics.
 **Task role vs task execution role — the most-tested container fact**
 There are two roles because there are two *actors*, operating at two different times.
@@ -214,38 +172,13 @@ Task Definition
 The symptom tells you which one is wrong, and this is derivable rather than memorised:
 - If the **task never starts** — `CannotPullContainerError`, or no logs appear at all — the failure happened *before your code ran*. That is the **execution role**.
 - If the task runs fine and then your code gets **`AccessDenied`** calling S3, the failure happened *inside your code*. That is the **task role**.
-<table header-row="true">
-<tr>
-<td></td>
-<td>Execution role</td>
-<td>Task role</td>
-</tr>
-<tr>
-<td>Actor</td>
-<td>ECS agent / Fargate</td>
-<td>Your application</td>
-</tr>
-<tr>
-<td>Timing</td>
-<td>Task startup</td>
-<td>Task runtime</td>
-</tr>
-<tr>
-<td>Grants</td>
-<td>ECR pull, CloudWatch Logs, secrets injection</td>
-<td>Your app’s AWS API calls</td>
-</tr>
-<tr>
-<td>Managed policy</td>
-<td>`AmazonECSTaskExecutionRolePolicy`</td>
-<td>You write it</td>
-</tr>
-<tr>
-<td>Failure symptom</td>
-<td>Task won’t start, no logs</td>
-<td>`AccessDenied` at runtime</td>
-</tr>
-</table>
+|    | Execution role | Task role |
+| --- | --- | --- |
+| Actor | ECS agent / Fargate | Your application |
+| Timing | Task startup | Task runtime |
+| Grants | ECR pull, CloudWatch Logs, secrets injection | Your app’s AWS API calls |
+| Managed policy | `AmazonECSTaskExecutionRolePolicy` | You write it |
+| Failure symptom | Task won’t start, no logs | `AccessDenied` at runtime |
 On the **EC2 launch type** there is a third role: the **instance profile**, used by the ECS container agent on the host. Fargate has no instance profile.
 An **EC2 instance profile** grants infrastructure-level permissions to the virtual machine itself so the underlying [Amazon ECS](https://aws.amazon.com/ecs) container agent can communicate with AWS. In contrast, an **ECS task role **grants application-level permissions specifically to the containers running inside a single task definition, allowing your code to **access services like S3 or DynamoDB**. \[[1](https://www.youtube.com/watch?v=wpFJekMhYLk&t=654), [2](https://issackpaul95.medium.com/aws-theory-deep-dive-into-amazon-ecs-launch-types-iam-roles-load-balancers-and-data-43088ceaf991), [3](https://www.youtube.com/shorts/VQfRQ9gGYD4)\]
 Credentials reach the container through the **task metadata endpoint** (`169.254.170.2`). The AWS SDKs discover it automatically. This is why access keys never need to appear in a task definition — and why any answer suggesting they should is wrong.
@@ -259,39 +192,18 @@ Ephemeral task storage disappears when the task stops. For anything durable or s
 - **Lifecycle policies** expire old images automatically so the registry doesn’t grow forever.
 - **Image scanning** (basic, or enhanced via Inspector) finds CVEs in images.
 ### ECS Components
-<table header-row="true">
-<tr>
-<td>Component</td>
-<td>What it does</td>
-<td>Think</td>
-</tr>
-<tr>
-<td>**Task definition**</td>
-<td>Defines **how containers run**: image, CPU/memory, ports, volumes/EFS, environment variables, IAM roles</td>
-<td>**Blueprint**</td>
-</tr>
-<tr>
-<td>**Service scheduler**</td>
-<td>Keeps the desired number of tasks running and replaces failed tasks</td>
-<td>**Keeps tasks running**</td>
-</tr>
-<tr>
-<td>**Container instance**</td>
-<td>The **EC2 infrastructure** where ECS tasks run when using EC2 launch type</td>
-<td>**The machine**</td>
-</tr>
-<tr>
-<td>**Container Agent**</td>
-<td>Runs on the container instance and communicates with ECS; starts/stops tasks as instructed</td>
-<td>**Agent on the machine**</td>
-</tr>
-</table>
-AWS describes the task definition as the application blueprint, while the service scheduler maintains the desired tasks. The container agent runs on each container instance and handles instructions from ECS. 
+| Component | What it does | Think |
+| --- | --- | --- |
+| **Task definition** | Defines **how containers run**: image, CPU/memory, ports, volumes/EFS, environment variables, IAM roles | **Blueprint** |
+| **Service scheduler** | Keeps the desired number of tasks running and replaces failed tasks | **Keeps tasks running** |
+| **Container instance** | The **EC2 infrastructure** where ECS tasks run when using EC2 launch type | **The machine** |
+| **Container Agent** | Runs on the container instance and communicates with ECS; starts/stops tasks as instructed | **Agent on the machine** |
+AWS describes the task definition as the application blueprint, while the service scheduler maintains the desired tasks. The container agent runs on each container instance and handles instructions from ECS.
 **Exam shortcut:**
 > **Task Definition** → *What/how should the container run?*
-	**Service Scheduler** → *How many tasks should stay running?*
-	**Container Instance** → *Where does the task run?*
-	**Container Agent** → *Who communicates with ECS from the EC2 instance?*
+  **Service Scheduler** → *How many tasks should stay running?*
+  **Container Instance** → *Where does the task run?*
+  **Container Agent** → *Who communicates with ECS from the EC2 instance?*
 **Recall check — containers**
 - **Serverless containers, no EC2 to manage** → Fargate
 - **Need host access, GPUs, or custom AMIs** → ECS on EC2

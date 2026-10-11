@@ -36,38 +36,13 @@ Why this design: the large data never crosses the network to KMS, throughput is 
 - `GenerateDataKeyWithoutPlaintext` → encrypted key only, for a service that will decrypt later
 - The **AWS Encryption SDK** implements the whole pattern for you
 **Key types**
-<table header-row="true">
-<tr>
-<td>Type</td>
-<td>Managed by</td>
-<td>Rotation</td>
-<td>Key policy</td>
-<td>Cost</td>
-</tr>
-<tr>
-<td>**AWS owned**</td>
-<td>AWS, shared across accounts</td>
-<td>AWS</td>
-<td>Not visible</td>
-<td>Free</td>
-</tr>
-<tr>
-<td>**AWS managed** (`aws/s3`, `aws/lambda`)</td>
-<td>AWS, one per account per service</td>
-<td>Automatic, yearly</td>
-<td>Not editable</td>
-<td>Free</td>
-</tr>
-<tr>
-<td>**Customer managed**</td>
-<td>**You**</td>
-<td>Optional, yearly or on demand</td>
-<td>**You edit it**</td>
-<td>Monthly + per-request</td>
-</tr>
-</table>
+| Type | Managed by | Rotation | Key policy | Cost |
+| --- | --- | --- | --- | --- |
+| **AWS owned** | AWS, shared across accounts | AWS | Not visible | Free |
+| **AWS managed** (`aws/s3`, `aws/lambda`) | AWS, one per account per service | Automatic, yearly | Not editable | Free |
+| **Customer managed** | **You** | Optional, yearly or on demand | **You edit it** | Monthly + per-request |
 Choose a customer managed key when you need to control the policy, audit usage in detail, rotate on your own schedule, or disable/delete the key.
-<empty-block/>
+
 **Key policies — the part that surprises people**
 **Every KMS key has a key policy, and it is required.** Unlike S3, where IAM permissions alone can grant access, a KMS key with a restrictive key policy denies everyone — **IAM permissions alone are not enough**. The default key policy grants the account root full access, which is what allows IAM policies to take effect at all.
 So: *“the user has **`kms:Decrypt`** in their IAM policy and still gets AccessDenied”* → **check the key policy.**
@@ -82,7 +57,7 @@ Multipart uploads with **SSE-KMS** may require:
 Example
 Small file → works ✅
 Large file → multipart → missing `kms:Decrypt` → **Access Denied** ❌
-<empty-block/>
+
 **Other features:**
 - **Aliases** (`alias/my-key`) let you point at a different key without changing application code.
 - **Grants** are temporary, programmatic permission delegations, used by AWS services on your behalf.
@@ -121,38 +96,13 @@ Use CloudHSM when you need:
 - Existing/on-premises HSM integration
 - Compliance requirements requiring customer control
 **CloudHSM vs KMS**
-<table header-row="true">
-<tr>
-<td></td>
-<td>CloudHSM</td>
-<td>KMS</td>
-</tr>
-<tr>
-<td>Hardware</td>
-<td>Dedicated HSM</td>
-<td>AWS-managed HSM infrastructure</td>
-</tr>
-<tr>
-<td>Control</td>
-<td>**High customer control**</td>
-<td>AWS manages infrastructure</td>
-</tr>
-<tr>
-<td>Key management</td>
-<td>Customer controlled</td>
-<td>AWS managed</td>
-</tr>
-<tr>
-<td>Ease of use</td>
-<td>More complex</td>
-<td>Easier</td>
-</tr>
-<tr>
-<td>Typical use</td>
-<td>Strict compliance / custom crypto</td>
-<td>General AWS encryption</td>
-</tr>
-</table>
+|    | CloudHSM | KMS |
+| --- | --- | --- |
+| Hardware | Dedicated HSM | AWS-managed HSM infrastructure |
+| Control | **High customer control** | AWS manages infrastructure |
+| Key management | Customer controlled | AWS managed |
+| Ease of use | More complex | Easier |
+| Typical use | Strict compliance / custom crypto | General AWS encryption |
 **Exam memory**
 **“Dedicated HSM” → CloudHSM**
 **“Exclusive control of HSM/keys” → CloudHSM**

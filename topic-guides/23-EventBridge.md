@@ -57,68 +57,17 @@ This content-based matching on the payload is the core capability that distingui
 - **EventBridge Pipes** — point-to-point wiring: source → *filter* → *enrich* → target, with no Lambda glue code. The answer to “connect a DynamoDB stream to an API with light transformation, without writing a function”.
 - **EventBridge Scheduler** — a dedicated, higher-scale scheduling service supporting one-time and recurring schedules with time zones.
 **EventBridge vs SNS vs SQS**
-<table header-row="true">
-<tr>
-<td></td>
-<td>**EventBridge**</td>
-<td>**SNS**</td>
-<td>**SQS**</td>
-</tr>
-<tr>
-<td>Model</td>
-<td>Event **router**</td>
-<td>Pub/sub **fan-out**</td>
-<td>**Queue**</td>
-</tr>
-<tr>
-<td>Filtering</td>
-<td>On the **event payload**, nested JSON</td>
-<td>Message attributes (and body)</td>
-<td>None</td>
-</tr>
-<tr>
-<td>Consumers</td>
-<td>Rules and targets, many AWS services</td>
-<td>Subscriptions</td>
-<td>Pollers</td>
-</tr>
-<tr>
-<td>Replay / archive</td>
-<td>✅</td>
-<td>❌</td>
-<td>❌</td>
-</tr>
-<tr>
-<td>Schema registry</td>
-<td>✅</td>
-<td>❌</td>
-<td>❌</td>
-</tr>
-<tr>
-<td>Scheduling</td>
-<td>✅</td>
-<td>❌</td>
-<td>Delay only</td>
-</tr>
-<tr>
-<td>Throughput / latency</td>
-<td>Good</td>
-<td>**Highest / lowest latency**</td>
-<td>Very high</td>
-</tr>
-<tr>
-<td>Ordering</td>
-<td>❌</td>
-<td>FIFO topics</td>
-<td>FIFO queues</td>
-</tr>
-<tr>
-<td>AWS service events</td>
-<td>✅ Native</td>
-<td>❌</td>
-<td>❌</td>
-</tr>
-</table>
+|    | **EventBridge** | **SNS** | **SQS** |
+| --- | --- | --- | --- |
+| Model | Event **router** | Pub/sub **fan-out** | **Queue** |
+| Filtering | On the **event payload**, nested JSON | Message attributes (and body) | None |
+| Consumers | Rules and targets, many AWS services | Subscriptions | Pollers |
+| Replay / archive | ✅ | ❌ | ❌ |
+| Schema registry | ✅ | ❌ | ❌ |
+| Scheduling | ✅ | ❌ | Delay only |
+| Throughput / latency | Good | **Highest / lowest latency** | Very high |
+| Ordering | ❌ | FIFO topics | FIFO queues |
+| AWS service events | ✅ Native | ❌ | ❌ |
 **Recall check — EventBridge**
 - **Route events on fields inside the payload** → EventBridge
 - **Add consumers without changing the producer** → EventBridge

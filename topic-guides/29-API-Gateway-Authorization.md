@@ -15,23 +15,10 @@
 - **Exam keyword:** Custom authentication/authorization logic.
 API Gateway sends request information to a Lambda function → Lambda decides **Allow / Deny**.
 **Types**
-<table header-row="true">
-<tr>
-<td>Type</td>
-<td>Input to Lambda</td>
-<td>Use</td>
-</tr>
-<tr>
-<td>**Token-based**</td>
-<td>One token, usually from `Authorization` header</td>
-<td>Simple token authorization</td>
-</tr>
-<tr>
-<td>**Request parameter-based**</td>
-<td>Headers, query strings, stage variables, etc.</td>
-<td>Custom authorization using multiple request parameters</td>
-</tr>
-</table>
+| Type | Input to Lambda | Use |
+| --- | --- | --- |
+| **Token-based** | One token, usually from `Authorization` header | Simple token authorization |
+| **Request parameter-based** | Headers, query strings, stage variables, etc. | Custom authorization using multiple request parameters |
 **Token-based**
 - API Gateway extracts a **single token** from the request.
 - Common example: `Authorization: Bearer <token>`

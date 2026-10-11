@@ -17,86 +17,20 @@ Response mapping template
 Client
 ```
 **The three API types**
-<table header-row="true">
-<tr>
-<td></td>
-<td>**REST API**</td>
-<td>**HTTP API**</td>
-<td>**WebSocket API**</td>
-</tr>
-<tr>
-<td>Direction</td>
-<td>Request/response</td>
-<td>Request/response</td>
-<td>**Bidirectional, persistent**</td>
-</tr>
-<tr>
-<td>Cost</td>
-<td>Highest</td>
-<td>\~70% cheaper</td>
-<td>Per message + connection minute</td>
-</tr>
-<tr>
-<td>Latency</td>
-<td>Higher</td>
-<td>Lower</td>
-<td>—</td>
-</tr>
-<tr>
-<td>**Caching**</td>
-<td>✅</td>
-<td>❌</td>
-<td>❌</td>
-</tr>
-<tr>
-<td>**API keys + usage plans**</td>
-<td>✅</td>
-<td>❌</td>
-<td>❌</td>
-</tr>
-<tr>
-<td>**Request validation**</td>
-<td>✅</td>
-<td>❌</td>
-<td>❌</td>
-</tr>
-<tr>
-<td>**Mapping templates (VTL)**</td>
-<td>✅</td>
-<td>❌</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>**WAF**</td>
-<td>✅</td>
-<td>❌</td>
-<td>❌</td>
-</tr>
-<tr>
-<td>Private APIs (VPC only)</td>
-<td>✅</td>
-<td>❌</td>
-<td>❌</td>
-</tr>
-<tr>
-<td>Authorizers</td>
-<td>IAM, Lambda, Cognito</td>
-<td>IAM, Lambda, **JWT (OIDC/OAuth)**</td>
-<td>IAM, Lambda</td>
-</tr>
-<tr>
-<td>Canary deployments</td>
-<td>✅</td>
-<td>❌</td>
-<td>❌</td>
-</tr>
-<tr>
-<td>Best for</td>
-<td>Full-featured public APIs</td>
-<td>Simple, high-volume Lambda/HTTP proxies</td>
-<td>Chat, live dashboards, notifications</td>
-</tr>
-</table>
+|    | **REST API** | **HTTP API** | **WebSocket API** |
+| --- | --- | --- | --- |
+| Direction | Request/response | Request/response | **Bidirectional, persistent** |
+| Cost | Highest | \~70% cheaper | Per message + connection minute |
+| Latency | Higher | Lower | — |
+| **Caching** | ✅ | ❌ | ❌ |
+| **API keys + usage plans** | ✅ | ❌ | ❌ |
+| **Request validation** | ✅ | ❌ | ❌ |
+| **Mapping templates (VTL)** | ✅ | ❌ | ✅ |
+| **WAF** | ✅ | ❌ | ❌ |
+| Private APIs (VPC only) | ✅ | ❌ | ❌ |
+| Authorizers | IAM, Lambda, Cognito | IAM, Lambda, **JWT (OIDC/OAuth)** | IAM, Lambda |
+| Canary deployments | ✅ | ❌ | ❌ |
+| Best for | Full-featured public APIs | Simple, high-volume Lambda/HTTP proxies | Chat, live dashboards, notifications |
 **REST API is the exam default** — whenever a question mentions caching, API keys, usage plans, request validation, mapping templates, or canary releases, it is a REST API, because HTTP APIs do not have those features.
 Choose HTTP API when the question emphasises **lowest cost and latency with no advanced features**.
 **WebSocket APIs** use **routes** rather than resources, driven by a route selection expression on the message body, plus three special routes: `$connect`, `$disconnect`, and `$default`. The server pushes messages back with the `@connections` API using the stored connection ID.
@@ -157,43 +91,14 @@ Uses: change JSON structure, filter fields out of a response, rename fields, con
 **The canonical question:** *“Lambda returns the full dataset, but the API should return only some fields / a different format.”*<br>✅ **API Gateway mapping template.** Not a Lambda code change (the requirement is presentation, not logic), and not stage variables (those select backends, not shapes).
 Mapping templates require a **non-proxy (custom) integration** — proxy integration passes everything through untouched by definition.
 #### **Integration types**
-<table header-row="true">
-<tr>
-<td>Your table</td>
-<td>API Gateway integration type</td>
-<td>Meaning</td>
-</tr>
-<tr>
-<td>**Lambda Proxy**</td>
-<td>`AWS_PROXY`</td>
-<td>Pass request to Lambda; Lambda controls response</td>
-</tr>
-<tr>
-<td>**Lambda Custom (non-proxy)**</td>
-<td>`AWS`</td>
-<td>Mapping templates transform request/response</td>
-</tr>
-<tr>
-<td>**HTTP Proxy**</td>
-<td>`HTTP_PROXY`</td>
-<td>Pass request/response through to HTTP backend</td>
-</tr>
-<tr>
-<td>**HTTP Custom**</td>
-<td>`HTTP`</td>
-<td>Custom request/response mapping</td>
-</tr>
-<tr>
-<td>**AWS Service Integration**</td>
-<td>`AWS`</td>
-<td>API Gateway calls an AWS service directly</td>
-</tr>
-<tr>
-<td>**Mock**</td>
-<td>`MOCK`</td>
-<td>No backend; API Gateway returns a configured response</td>
-</tr>
-</table>
+| Your table | API Gateway integration type | Meaning |
+| --- | --- | --- |
+| **Lambda Proxy** | `AWS_PROXY` | Pass request to Lambda; Lambda controls response |
+| **Lambda Custom (non-proxy)** | `AWS` | Mapping templates transform request/response |
+| **HTTP Proxy** | `HTTP_PROXY` | Pass request/response through to HTTP backend |
+| **HTTP Custom** | `HTTP` | Custom request/response mapping |
+| **AWS Service Integration** | `AWS` | API Gateway calls an AWS service directly |
+| **Mock** | `MOCK` | No backend; API Gateway returns a configured response |
 The **AWS Service Integration** is worth remembering: “send the request straight to SQS without a Lambda” is a real answer, and it’s the “least code” option when no logic is needed.
 **Authorization — four mechanisms for four situations**
 Authorization runs **before the backend is invoked**, so a rejected request never costs you a Lambda invocation.
@@ -209,28 +114,12 @@ Usually in:
 **Lambda authorizer** — API Gateway invokes *your* function, which inspects the request (a token, a header, anything) and returns an **IAM policy** allowing or denying. For custom logic: a third-party identity provider, a token format you validate yourself, a database lookup, OAuth. Results are cacheable.
 **Cognito User Pool authorizer** — API Gateway validates a Cognito-issued **JWT** automatically: signature, expiry, claims. **No code required.** For web and mobile application users.
 **API keys + usage plans** — see below. **This is identification, not authentication.**
-<table header-row="true">
-<tr>
-<td>Situation</td>
-<td>Mechanism</td>
-</tr>
-<tr>
-<td>AWS users, roles, or services calling the API</td>
-<td>**IAM**</td>
-</tr>
-<tr>
-<td>Custom auth logic, third-party IdP, token you validate yourself</td>
-<td>**Lambda authorizer**</td>
-</tr>
-<tr>
-<td>App users signing in, managed by Cognito, JWT</td>
-<td>**Cognito User Pool authorizer**</td>
-</tr>
-<tr>
-<td>Identify and meter clients, tiered plans</td>
-<td>**API keys + usage plans**</td>
-</tr>
-</table>
+| Situation | Mechanism |
+| --- | --- |
+| AWS users, roles, or services calling the API | **IAM** |
+| Custom auth logic, third-party IdP, token you validate yourself | **Lambda authorizer** |
+| App users signing in, managed by Cognito, JWT | **Cognito User Pool authorizer** |
+| Identify and meter clients, tiered plans | **API keys + usage plans** |
 **API keys and usage plans — and why a new key returns 403**
 This is a mechanism worth understanding because the question is very specific.
 **An API key identifies a client. It does not authorize anything by itself.** All it does is give API Gateway a handle to count and throttle against.
@@ -242,38 +131,13 @@ CreateUsagePlanKey    → links key → usage plan → the client now has access
 ```
 So: **a newly created API key returning ****`403 Forbidden`**** means it was never associated with a usage plan.** The fix is **`CreateUsagePlanKey`**.
 Related API calls and their distinct jobs:
-<table header-row="true">
-<tr>
-<td>API</td>
-<td>Does</td>
-<td>Does NOT</td>
-</tr>
-<tr>
-<td>**`CreateApiKey`**</td>
-<td>Creates a key</td>
-<td>Grant access</td>
-</tr>
-<tr>
-<td>**`CreateUsagePlanKey`**</td>
-<td>Links a key to a usage plan</td>
-<td>—</td>
-</tr>
-<tr>
-<td>**`ImportApiKeys`**</td>
-<td>Bulk-imports keys from a file</td>
-<td>Associate them with usage plans</td>
-</tr>
-<tr>
-<td>**`UpdateUsagePlan`**</td>
-<td>Changes quota/throttle settings</td>
-<td>Associate new keys</td>
-</tr>
-<tr>
-<td>**`CreateDeployment`**</td>
-<td>Publishes configuration changes to a stage</td>
-<td>—</td>
-</tr>
-</table>
+| API | Does | Does NOT |
+| --- | --- | --- |
+| **`CreateApiKey`** | Creates a key | Grant access |
+| **`CreateUsagePlanKey`** | Links a key to a usage plan | — |
+| **`ImportApiKeys`** | Bulk-imports keys from a file | Associate them with usage plans |
+| **`UpdateUsagePlan`** | Changes quota/throttle settings | Associate new keys |
+| **`CreateDeployment`** | Publishes configuration changes to a stage | — |
 **Caching**
 API Gateway can cache responses at the stage level, keyed on the request. Repeated identical requests are served from the cache and never reach the backend.
 - Reduces backend load, Lambda invocations, and latency simultaneously.
@@ -290,48 +154,15 @@ API Gateway can cache responses at the stage level, keyed on the request. Repeat
 Watch out for the caching-versus-freshness trade: caching a personalised or fast-changing response serves the wrong data to the wrong user.
 **Throttling and errors — the error codes are diagnostic**
 Each status code maps to exactly one cause, and knowing them turns troubleshooting questions into lookups:
-<table header-row="true">
-<tr>
-<td>Code</td>
-<td>Meaning</td>
-<td>Cause</td>
-</tr>
-<tr>
-<td>**429**</td>
-<td>Too Many Requests</td>
-<td>Throttling — account limit, stage limit, or usage plan quota</td>
-</tr>
-<tr>
-<td>**502**</td>
-<td>Bad Gateway</td>
-<td>Lambda returned a **malformed proxy response** (wrong shape), or crashed</td>
-</tr>
-<tr>
-<td>**504**</td>
-<td>Gateway Timeout</td>
-<td>Integration exceeded the timeout — **29 seconds** by default for REST APIs</td>
-</tr>
-<tr>
-<td>**403**</td>
-<td>Forbidden</td>
-<td>Authorizer denied, WAF blocked, or **API key not linked to a usage plan**</td>
-</tr>
-<tr>
-<td>**401**</td>
-<td>Unauthorized</td>
-<td>Missing or invalid authentication</td>
-</tr>
-<tr>
-<td>**503**</td>
-<td>Service unavailable</td>
-<td>The server/service is currently **unable to handle the request**. No healthy targets behind an **ALB, Backend servers are overloaded**</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-</table>
+| Code | Meaning | Cause |
+| --- | --- | --- |
+| **429** | Too Many Requests | Throttling — account limit, stage limit, or usage plan quota |
+| **502** | Bad Gateway | Lambda returned a **malformed proxy response** (wrong shape), or crashed |
+| **504** | Gateway Timeout | Integration exceeded the timeout — **29 seconds** by default for REST APIs |
+| **403** | Forbidden | Authorizer denied, WAF blocked, or **API key not linked to a usage plan** |
+| **401** | Unauthorized | Missing or invalid authentication |
+| **503** | Service unavailable | The server/service is currently **unable to handle the request**. No healthy targets behind an **ALB, Backend servers are overloaded** |
+|    |    |    |
 Default account-level throttle is 10,000 requests/second with a 5,000 burst; stage and method limits sit inside that.
 The 502-vs-504 distinction is heavily tested. **502 = the response was wrong. 504 = the response was too slow.**
 **Other features worth a line**
@@ -373,9 +204,9 @@ The 502-vs-504 distinction is heavily tested. **502 = the response was wrong. 50
 - ELB health check timeout → check **Security Groups, NACLs, port, and health-check** path.
 - EC2 SG should allow traffic from the **ALB SG on the health-check/listener port.**
 - **Require Authorization** →only clients with `execute-api:InvalidateCache` permission can do it.
-<empty-block/>
+
 ---
-<empty-block/>
+
 ### API Gateway CORS
 **Mental model**
 CORS controls whether a **browser** is allowed to call your API from a **different origin**.

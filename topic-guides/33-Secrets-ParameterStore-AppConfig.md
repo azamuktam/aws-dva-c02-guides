@@ -16,33 +16,12 @@ Stores configuration values and simple secrets in a hierarchical path structure 
 - **SecureString** — encrypted with KMS
 **No built-in automatic rotation.** Standard tier is free, which makes it the right default for ordinary configuration and for secrets that don’t need rotation.
 **Standard vs Advanced tier** — a limit worth knowing because it decides whether a value fits at all:
-<table header-row="true">
-<tr>
-<td></td>
-<td>**Standard**</td>
-<td>**Advanced**</td>
-</tr>
-<tr>
-<td>Parameters per account per Region</td>
-<td>**10,000**</td>
-<td>**100,000**</td>
-</tr>
-<tr>
-<td>Max value size</td>
-<td>**4 KB**</td>
-<td>**8 KB**</td>
-</tr>
-<tr>
-<td>Parameter policies (expiration, no-change notification)</td>
-<td>❌</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>Cost</td>
-<td>**Free**</td>
-<td>Paid per parameter</td>
-</tr>
-</table>
+|    | **Standard** | **Advanced** |
+| --- | --- | --- |
+| Parameters per account per Region | **10,000** | **100,000** |
+| Max value size | **4 KB** | **8 KB** |
+| Parameter policies (expiration, no-change notification) | ❌ | ✅ |
+| Cost | **Free** | Paid per parameter |
 Supports versioning (every change creates a new version, and you can reference a specific one), **hierarchical paths** — `GetParametersByPath` fetches a whole prefix such as `/myapp/prod/` in one call, which is the efficient way to load all of an application’s configuration — labels for promoting values between environments, and change notification via EventBridge.
 #### SSM Parameter Policies(Advanced tier only**)**
 **`NoChangeNotification`** → Notifies when a parameter has not changed for a specified time.
@@ -64,64 +43,14 @@ What makes it distinct:
 - **Lambda extension / agent** caches the configuration locally so you aren’t making an API call per invocation.
 Uses: **feature flags**, operational toggles, allow-lists, tuning limits without a deploy.
 **The comparison**
-<table header-row="true">
-<tr>
-<td></td>
-<td>**Secrets Manager**</td>
-<td>**Parameter Store**</td>
-<td>**AppConfig**</td>
-<td>**KMS**</td>
-<td>**IAM DB Auth**</td>
-</tr>
-<tr>
-<td>Stores secrets</td>
-<td>✅</td>
-<td>✅ (`SecureString`)</td>
-<td>❌ (config)</td>
-<td>❌ keys only</td>
-<td>❌ no password exists</td>
-</tr>
-<tr>
-<td>Encryption</td>
-<td>✅ KMS</td>
-<td>✅ KMS</td>
-<td>—</td>
-<td>✅</td>
-<td>IAM tokens</td>
-</tr>
-<tr>
-<td>**Automatic rotation**</td>
-<td>✅</td>
-<td>❌</td>
-<td>❌</td>
-<td>✅ key rotation</td>
-<td>N/A</td>
-</tr>
-<tr>
-<td>Validation before deploy</td>
-<td>❌</td>
-<td>❌</td>
-<td>✅</td>
-<td>—</td>
-<td>—</td>
-</tr>
-<tr>
-<td>Gradual rollout + rollback</td>
-<td>❌</td>
-<td>❌</td>
-<td>✅</td>
-<td>—</td>
-<td>—</td>
-</tr>
-<tr>
-<td>Cost</td>
-<td>Paid per secret</td>
-<td>Standard tier free</td>
-<td>Paid</td>
-<td>Per key + requests</td>
-<td>Free</td>
-</tr>
-</table>
+|    | **Secrets Manager** | **Parameter Store** | **AppConfig** | **KMS** | **IAM DB Auth** |
+| --- | --- | --- | --- | --- | --- |
+| Stores secrets | ✅ | ✅ (`SecureString`) | ❌ (config) | ❌ keys only | ❌ no password exists |
+| Encryption | ✅ KMS | ✅ KMS | — | ✅ | IAM tokens |
+| **Automatic rotation** | ✅ | ❌ | ❌ | ✅ key rotation | N/A |
+| Validation before deploy | ❌ | ❌ | ✅ | — | — |
+| Gradual rollout + rollback | ❌ | ❌ | ✅ | — | — |
+| Cost | Paid per secret | Standard tier free | Paid | Per key + requests | Free |
 **Recall check — secrets and config**
 - **Database credentials + automatic rotation** → **Secrets Manager**
 - **Encrypted configuration or secret, no rotation needed** → **Parameter Store ****`SecureString`**

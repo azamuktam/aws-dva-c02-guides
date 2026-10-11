@@ -1,6 +1,6 @@
 ## AWS CodeBuild and `buildspec.yml`
 **AWS CodeBuild:** A fully managed **CI service** that compiles code, runs tests, and produces deployable artifacts. can run any command
-**Exam memory:** **CodeBuild = CI → Build + Test + Package.** 
+**Exam memory:** **CodeBuild = CI → Build + Test + Package.**
 **buildspec.yml:** A YAML file that tells CodeBuild **which commands to run and which artifacts to produce**, usually stored in the source code root.
 **Exam memory:** **CodeBuild = runs the build; buildspec.yml = instructions for the build.**
 **Why it exists**
@@ -96,5 +96,5 @@ The build’s **service role** needs the matching permissions: `ssm:GetParameter
 - **Pass a value to the next pipeline stage** → `exported-variables`
 - **Avoid managing Jenkins** → CodeBuild
 - **Run a build on your own machine** → CodeBuild agent
-- **Use:** **CodePipeline + CodeBuild + Amazon S3** — CodeBuild (can run any command) converts the Markdown files into static website files, and CodePipeline automatically deploys the build output to the S3 bucket. 
+- **Use:** **CodePipeline + CodeBuild + Amazon S3** — CodeBuild (can run any command) converts the Markdown files into static website files, and CodePipeline automatically deploys the build output to the S3 bucket.
 ---

@@ -66,33 +66,12 @@ Candidates confuse these constantly because both have “concurrency” in the n
 - Set on a **version or alias**, never on `$LATEST`.
 - Can auto-scale on a schedule or via Application Auto Scaling.
 **SnapStart** is the free alternative for cold starts: it takes a snapshot of the initialised environment and restores from it. Originally Java-only, now also Python and .NET.
-<table header-row="true">
-<tr>
-<td></td>
-<td>Reserved</td>
-<td>Provisioned</td>
-</tr>
-<tr>
-<td>Solves</td>
-<td>Starvation, downstream connection limits</td>
-<td>**Cold start latency**</td>
-</tr>
-<tr>
-<td>Cost</td>
-<td>Free</td>
-<td>Paid</td>
-</tr>
-<tr>
-<td>Applied to</td>
-<td>Function</td>
-<td>Version or alias</td>
-</tr>
-<tr>
-<td>Also acts as</td>
-<td>A hard cap</td>
-<td>Nothing (it’s a warm floor)</td>
-</tr>
-</table>
+|    | Reserved | Provisioned |
+| --- | --- | --- |
+| Solves | Starvation, downstream connection limits | **Cold start latency** |
+| Cost | Free | Paid |
+| Applied to | Function | Version or alias |
+| Also acts as | A hard cap | Nothing (it’s a warm floor) |
 ### Event Source Mapping
 Normally, you might imagine:
 ```plain text
@@ -132,28 +111,11 @@ DocumentDB
 These are **poll-based**.
 **Destinations vs DLQ**
 DLQ came first and only handles failures. Destinations are the newer, richer mechanism.
-<table header-row="true">
-<tr>
-<td></td>
-<td>**Destinations** (preferred)</td>
-<td>**DLQ** (legacy)</td>
-</tr>
-<tr>
-<td>Fires on</td>
-<td>Success **and** failure</td>
-<td>Failure only</td>
-</tr>
-<tr>
-<td>Targets</td>
-<td>SQS, SNS, Lambda, **EventBridge**</td>
-<td>SQS, SNS</td>
-</tr>
-<tr>
-<td>Payload</td>
-<td>Request **and** response context</td>
-<td>Original event only</td>
-</tr>
-</table>
+|    | **Destinations** (preferred) | **DLQ** (legacy) |
+| --- | --- | --- |
+| Fires on | Success **and** failure | Failure only |
+| Targets | SQS, SNS, Lambda, **EventBridge** | SQS, SNS |
+| Payload | Request **and** response context | Original event only |
 **Success Destinations**
 This is another big difference.
 DLQ only stores failures.
@@ -188,41 +150,20 @@ Now another system can continue processing.
 - **Lambda container images** are stored in **Amazon ECR**. ✅
 - Lambda container images must support a **single architecture** (for example, `x86_64` or `arm64`); multi-architecture container images are not supported. ✅
 **ZIP vs Container**
-<table header-row="true">
-<tr>
-<td></td>
-<td>ZIP</td>
-<td>Container image</td>
-</tr>
-<tr>
-<td>Package</td>
-<td>ZIP file</td>
-<td>Docker image</td>
-</tr>
-<tr>
-<td>Stored in</td>
-<td>AWS Lambda</td>
-<td>Amazon ECR</td>
-</tr>
-<tr>
-<td>RIC required by you?</td>
-<td>No</td>
-<td>Yes, for custom/OS-only image</td>
-</tr>
-<tr>
-<td>RIE</td>
-<td>Not relevant</td>
-<td>Used for local testing</td>
-</tr>
-</table>
+|    | ZIP | Container image |
+| --- | --- | --- |
+| Package | ZIP file | Docker image |
+| Stored in | AWS Lambda | Amazon ECR |
+| RIC required by you? | No | Yes, for custom/OS-only image |
+| RIE | Not relevant | Used for local testing |
 **Exam memory:**
 > **Container image + Lambda → RIC**
 > **Local testing → RIE**
 > **AWS base image → RIC already included**
 > **Custom/OS-only image → add RIC  (Runtime Interface Client)**
-**Custom Runtime** → you control how Lambda initializes and gets invocation events. 
-<empty-block/>
-#### Lambda supports **two CPU architectures**:`x86_64, arm64` 
+**Custom Runtime** → you control how Lambda initializes and gets invocation events.
+
+#### Lambda supports **two CPU architectures**:`x86_64, arm64`
 But **one Lambda function can use only one architecture**.
 ### Failure Destination
 Destination can be:
@@ -256,11 +197,11 @@ Other points:
 These behave differently from SQS because **order matters within a shard**.
 - **One concurrent invocation per shard** by default. `ParallelizationFactor` (1–10) allows more, at the cost of strict ordering across the batches.
 - Because order must be preserved, **a failing record blocks its shard**. It retries until it expires — the “poison pill”. This is why the exam asks about it. The fixes:
-	- `MaximumRetryAttempts`
-	- `MaximumRecordAgeInSeconds`
-	- `BisectBatchOnFunctionError` — splits the batch repeatedly to isolate the bad record
-	- `OnFailure` destination (SQS/SNS)
-	- `FunctionResponseTypes: ReportBatchItemFailures`
+  - `MaximumRetryAttempts`
+  - `MaximumRecordAgeInSeconds`
+  - `BisectBatchOnFunctionError` — splits the batch repeatedly to isolate the bad record
+  - `OnFailure` destination (SQS/SNS)
+  - `FunctionResponseTypes: ReportBatchItemFailures`
 - `StartingPosition`: `LATEST` (only new records), `TRIM_HORIZON` (everything retained), `AT_TIMESTAMP`.
 - **`IteratorAge`** is the metric that tells you the consumer is falling behind. Rising `IteratorAge` = lag.
 **1. What is a shard?**
@@ -438,38 +379,13 @@ Internet Gateway
 - Max **5** per function; they count toward the **250 MB** unzipped limit.
 - Versioned and shareable across accounts.
 Difference:
-<table header-row="true">
-<tr>
-<td></td>
-<td>Layer</td>
-<td>`/tmp`</td>
-</tr>
-<tr>
-<td>Purpose</td>
-<td>Provide dependencies/code</td>
-<td>Temporary files</td>
-</tr>
-<tr>
-<td>Location</td>
-<td>`/opt`</td>
-<td>`/tmp`</td>
-</tr>
-<tr>
-<td>Writable?</td>
-<td>❌ No</td>
-<td>✅ Yes</td>
-</tr>
-<tr>
-<td>Shared?</td>
-<td>Shared by Lambda functions</td>
-<td>Only this execution environment</td>
-</tr>
-<tr>
-<td>Permanent?</td>
-<td>Versioned and reusable</td>
-<td>Temporary</td>
-</tr>
-</table>
+|    | Layer | `/tmp` |
+| --- | --- | --- |
+| Purpose | Provide dependencies/code | Temporary files |
+| Location | `/opt` | `/tmp` |
+| Writable? | ❌ No | ✅ Yes |
+| Shared? | Shared by Lambda functions | Only this execution environment |
+| Permanent? | Versioned and reusable | Temporary |
 ---
 **Example**
 You create a layer:
@@ -510,7 +426,7 @@ Upload the ZIP to Lambda.
 **If the question specifically asks "How do you bundle your Lambda function?"**
 The expected answer is:
 > **Install the PostgreSQL (****`pg`****) package into ****`node_modules`****, then ZIP your function code together with the ****`node_modules`**** directory and upload it to Lambda.**
-<empty-block/>
+
 No `/tmp` involved.
 But if `resize()` needs to process a 500MB image:
 ```plain text
@@ -581,28 +497,12 @@ If the requirement is that other developers must not see the value, use a **cust
 If the requirement involves **rotation**, environment variables are the wrong tool entirely → Secrets Manager.
 The total size of all environment variables shouldn't exceed** 4 KB. **There is** no limit **on the number of variables
 **Deployment package options**
-<table header-row="true">
-<tr>
-<td>Option</td>
-<td>When</td>
-</tr>
-<tr>
-<td>Inline console editor</td>
-<td>Trivial functions, \< 3 MB</td>
-</tr>
-<tr>
-<td>`.zip` direct upload</td>
-<td>Up to 50 MB zipped</td>
-</tr>
-<tr>
-<td>`.zip` via S3</td>
-<td>Larger zips (250 MB unzipped limit still applies)</td>
-</tr>
-<tr>
-<td>**Container image**</td>
-<td>Up to **10 GB** — the answer when the package is genuinely large (ML models, heavy native dependencies)</td>
-</tr>
-</table>
+| Option | When |
+| --- | --- |
+| Inline console editor | Trivial functions, \< 3 MB |
+| `.zip` direct upload | Up to 50 MB zipped |
+| `.zip` via S3 | Larger zips (250 MB unzipped limit still applies) |
+| **Container image** | Up to **10 GB** — the answer when the package is genuinely large (ML models, heavy native dependencies) |
 Best practices, and the reason for each:
 - **Separate the handler from your core logic.** Makes the logic unit-testable without Lambda.
 - **Use the execution context** — initialise clients and connections outside the handler.
@@ -610,56 +510,19 @@ Best practices, and the reason for each:
 - **Control and minimise dependencies.** Every megabyte is download time on every cold start.
 - **Avoid recursive code.** A function that invokes itself can run away and generate a very large bill. AWS treats this as an anti-pattern.
 **Numbers**
-<table header-row="true">
-<tr>
-<td>Limit</td>
-<td>Value</td>
-</tr>
-<tr>
-<td>Timeout</td>
-<td>default **3 s**, max **900 s (15 min)**</td>
-</tr>
-<tr>
-<td>Memory</td>
-<td>**128 MB – 10,240 MB** (1 MB increments)</td>
-</tr>
-<tr>
-<td>CPU</td>
-<td>Scales **with memory**; \~1 vCPU around 1,769 MB</td>
-</tr>
-<tr>
-<td>Package, zipped direct upload</td>
-<td>**50 MB**</td>
-</tr>
-<tr>
-<td>Package, unzipped (incl. layers)</td>
-<td>**250 MB**</td>
-</tr>
-<tr>
-<td>Container image</td>
-<td>**10 GB**</td>
-</tr>
-<tr>
-<td>`/tmp`</td>
-<td>**512 MB** default, configurable to **10,240 MB**</td>
-</tr>
-<tr>
-<td>Environment variables</td>
-<td>**4 KB** total</td>
-</tr>
-<tr>
-<td>Layers</td>
-<td>**5** per function</td>
-</tr>
-<tr>
-<td>Default account concurrency</td>
-<td>**1,000** (soft)</td>
-</tr>
-<tr>
-<td>Invocation payload</td>
-<td>**6 MB** sync, **256 KB** async</td>
-</tr>
-</table>
+| Limit | Value |
+| --- | --- |
+| Timeout | default **3 s**, max **900 s (15 min)** |
+| Memory | **128 MB – 10,240 MB** (1 MB increments) |
+| CPU | Scales **with memory**; \~1 vCPU around 1,769 MB |
+| Package, zipped direct upload | **50 MB** |
+| Package, unzipped (incl. layers) | **250 MB** |
+| Container image | **10 GB** |
+| `/tmp` | **512 MB** default, configurable to **10,240 MB** |
+| Environment variables | **4 KB** total |
+| Layers | **5** per function |
+| Default account concurrency | **1,000** (soft) |
+| Invocation payload | **6 MB** sync, **256 KB** async |
 **The memory–CPU link is the most-used optimisation fact on the exam.** CPU is not configurable directly; it is allocated in proportion to memory. So a CPU-bound function that doesn’t need more memory still gets faster when you give it more memory — and often gets *cheaper*, because billing is memory × duration and the duration drops faster than the memory rises.
 ```plain text
 512 MB  → 10 seconds
@@ -677,33 +540,12 @@ Write succeeded  → first time → do the work
 Write failed     → already processed → return the previous result
 ```
 **DynamoDB is the right store** because it offers a single atomic “check and write” operation (`ConditionExpression` with `attribute_not_exists`), scales with Lambda’s concurrency, and has single-digit millisecond latency.
-<table header-row="true">
-<tr>
-<td>Store</td>
-<td>Suitable?</td>
-<td>Why</td>
-</tr>
-<tr>
-<td>**DynamoDB**</td>
-<td>✅ Best</td>
-<td>Atomic conditional writes, scales, low latency</td>
-</tr>
-<tr>
-<td>RDS</td>
-<td>⚠️ Possible</td>
-<td>Works, but connection limits fight Lambda’s scaling</td>
-</tr>
-<tr>
-<td>ElastiCache</td>
-<td>❌ No</td>
-<td>A cache can evict entries; you’d lose the record</td>
-</tr>
-<tr>
-<td>S3</td>
-<td>❌ No</td>
-<td>No atomic conditional check, too slow for a per-request gate</td>
-</tr>
-</table>
+| Store | Suitable? | Why |
+| --- | --- | --- |
+| **DynamoDB** | ✅ Best | Atomic conditional writes, scales, low latency |
+| RDS | ⚠️ Possible | Works, but connection limits fight Lambda’s scaling |
+| ElastiCache | ❌ No | A cache can evict entries; you’d lose the record |
+| S3 | ❌ No | No atomic conditional check, too slow for a per-request gate |
 Note the distinction from **atomic counters**: `SET count = count + 1` is safe under concurrency but is *not idempotent* — a retry increments twice. Use it for view counts, not for money.
 **Lambda@Edge**
 **Mental Model**
@@ -729,63 +571,18 @@ Instead of sending every request to your origin, CloudFront can execute code at 
 - Personalize content by country, language, or device
 - A/B testing
 ### CloudFront Functions vs Lambda@Edge
-<table header-row="true">
-<tr>
-<td></td>
-<td>**CloudFront Functions**</td>
-<td>**Lambda@Edge**</td>
-</tr>
-<tr>
-<td>Best for</td>
-<td>Simple, lightweight logic</td>
-<td>Complex logic</td>
-</tr>
-<tr>
-<td>Runtime</td>
-<td>JavaScript</td>
-<td>Node.js / Python</td>
-</tr>
-<tr>
-<td>Startup/performance</td>
-<td>**Very fast**</td>
-<td>Slower than Functions</td>
-</tr>
-<tr>
-<td>Execution time</td>
-<td>Very short</td>
-<td>Longer-running</td>
-</tr>
-<tr>
-<td>Cost</td>
-<td>**Cheaper**</td>
-<td>More expensive</td>
-</tr>
-<tr>
-<td>Use cases</td>
-<td>Headers, URL redirects, JWT validation, redirects</td>
-<td>Complex authentication, image processing, external/API calls</td>
-</tr>
-<tr>
-<td>Trigger</td>
-<td>Viewer Request / Viewer Response</td>
-<td>Viewer Request / Viewer Response / Origin Request / Origin Response</td>
-</tr>
-<tr>
-<td>Access to request</td>
-<td>Basic</td>
-<td>More capabilities</td>
-</tr>
-<tr>
-<td>Network calls</td>
-<td>**No**</td>
-<td>**Yes**</td>
-</tr>
-<tr>
-<td>Operational complexity</td>
-<td>**Lower**</td>
-<td>Higher</td>
-</tr>
-</table>
+|    | **CloudFront Functions** | **Lambda@Edge** |
+| --- | --- | --- |
+| Best for | Simple, lightweight logic | Complex logic |
+| Runtime | JavaScript | Node.js / Python |
+| Startup/performance | **Very fast** | Slower than Functions |
+| Execution time | Very short | Longer-running |
+| Cost | **Cheaper** | More expensive |
+| Use cases | Headers, URL redirects, JWT validation, redirects | Complex authentication, image processing, external/API calls |
+| Trigger | Viewer Request / Viewer Response | Viewer Request / Viewer Response / Origin Request / Origin Response |
+| Access to request | Basic | More capabilities |
+| Network calls | **No** | **Yes** |
+| Operational complexity | **Lower** | Higher |
 **For your question**
 JWT validation is relatively simple:
 **Client → CloudFront Function (Viewer Request) → validate JWT →**
@@ -835,83 +632,22 @@ Lambda@Edge
 Origin
 ```
 **How Lambda fails — the diagnostic table**
-<table header-row="true">
-<tr>
-<td>Symptom</td>
-<td>Cause</td>
-<td>Fix</td>
-</tr>
-<tr>
-<td>Duplicate SQS processing</td>
-<td>Visibility timeout \< function timeout</td>
-<td>Raise visibility timeout to ≥ 6× function timeout</td>
-</tr>
-<tr>
-<td>Whole SQS batch retried on one failure</td>
-<td>Default batch behaviour</td>
-<td>`ReportBatchItemFailures`</td>
-</tr>
-<tr>
-<td>Stream processing frozen forever</td>
-<td>Poison-pill record blocking the shard</td>
-<td>`MaximumRetryAttempts` / `BisectBatchOnFunctionError` / on-failure destination</td>
-</tr>
-<tr>
-<td>Rising `IteratorAge`</td>
-<td>Consumer slower than producer</td>
-<td>More shards, higher `ParallelizationFactor`, faster function</td>
-</tr>
-<tr>
-<td>**429 / ****`TooManyRequestsException`**</td>
-<td>Concurrency limit reached</td>
-<td>Raise account limit, or set reserved concurrency</td>
-</tr>
-<tr>
-<td>Slow first request</td>
-<td>Cold start</td>
-<td>Provisioned concurrency, SnapStart, smaller package</td>
-</tr>
-<tr>
-<td>Function is CPU-bound and slow</td>
-<td>CPU tied to memory</td>
-<td>**Increase memory**</td>
-</tr>
-<tr>
-<td>Cannot reach RDS</td>
-<td>Not in the VPC</td>
-<td>Attach the function to the VPC</td>
-</tr>
-<tr>
-<td>In the VPC, cannot reach the internet</td>
-<td>No route out of the private subnet</td>
-<td>**NAT gateway** (or VPC endpoint)</td>
-</tr>
-<tr>
-<td>**No logs in CloudWatch**</td>
-<td>Execution role lacks log permissions</td>
-<td>Attach `AWSLambdaBasicExecutionRole`</td>
-</tr>
-<tr>
-<td>Async failures vanishing</td>
-<td>No failure handling configured</td>
-<td>On-failure destination or DLQ</td>
-</tr>
-<tr>
-<td>Needs \> 15 minutes</td>
-<td>Hard platform limit</td>
-<td>Fargate, AWS Batch, or Step Functions</td>
-</tr>
-<tr>
-<td>Needs shared persistent files</td>
-<td>`/tmp` is not shared or durable</td>
-<td>Mount **EFS**</td>
-</tr>
-<tr>
-<td>Runaway invocations and cost</td>
-<td>Recursive invocation</td>
-<td>Redesign; recursion is an anti-pattern</td>
-</tr>
-</table>
+| Symptom | Cause | Fix |
+| --- | --- | --- |
+| Duplicate SQS processing | Visibility timeout \< function timeout | Raise visibility timeout to ≥ 6× function timeout |
+| Whole SQS batch retried on one failure | Default batch behaviour | `ReportBatchItemFailures` |
+| Stream processing frozen forever | Poison-pill record blocking the shard | `MaximumRetryAttempts` / `BisectBatchOnFunctionError` / on-failure destination |
+| Rising `IteratorAge` | Consumer slower than producer | More shards, higher `ParallelizationFactor`, faster function |
+| **429 / ****`TooManyRequestsException`** | Concurrency limit reached | Raise account limit, or set reserved concurrency |
+| Slow first request | Cold start | Provisioned concurrency, SnapStart, smaller package |
+| Function is CPU-bound and slow | CPU tied to memory | **Increase memory** |
+| Cannot reach RDS | Not in the VPC | Attach the function to the VPC |
+| In the VPC, cannot reach the internet | No route out of the private subnet | **NAT gateway** (or VPC endpoint) |
+| **No logs in CloudWatch** | Execution role lacks log permissions | Attach `AWSLambdaBasicExecutionRole` |
+| Async failures vanishing | No failure handling configured | On-failure destination or DLQ |
+| Needs \> 15 minutes | Hard platform limit | Fargate, AWS Batch, or Step Functions |
+| Needs shared persistent files | `/tmp` is not shared or durable | Mount **EFS** |
+| Runaway invocations and cost | Recursive invocation | Redesign; recursion is an anti-pattern |
 **Recall check — Lambda**
 - **Improve Lambda performance** → initialise SDK clients and connections **outside the handler**
 - An **execution context** is the environment where a Lambda function runs. AWS creates it for your function and can **reuse it for later invocations**.
@@ -956,5 +692,5 @@ Origin
 - **Complex + needs more capabilities/network access → Lambda@Edge**
 - **Custom token → Lambda Authorizer ✅**
 - **Custom Runtime** → you control how Lambda initializes and gets invocation events. ✅
-<empty-block/>
+
 ---

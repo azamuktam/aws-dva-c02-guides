@@ -28,64 +28,24 @@ Everything below that — **Why it exists**, **How it works**, **Important point
 # PART 0 — HOW TO THINK ABOUT THIS EXAM
 **What the exam is actually testing**
 **Official structure**
-<table>
-<tr>
-<td>Questions</td>
-<td>65 total — **50 scored**, 15 unscored and unmarked</td>
-</tr>
-<tr>
-<td>Format</td>
-<td>Multiple choice (1 of 4) and multiple response (2+ of 5+)</td>
-</tr>
-<tr>
-<td>Time</td>
-<td>130 minutes</td>
-</tr>
-<tr>
-<td>Passing score</td>
-<td>**720** on a 100–1,000 scale</td>
-</tr>
-<tr>
-<td>Scoring model</td>
-<td>**Compensatory** — you only need to pass overall, not each domain</td>
-</tr>
-<tr>
-<td>Cost</td>
-<td>150 USD (varies by country)</td>
-</tr>
-<tr>
-<td>Validity</td>
-<td>3 years</td>
-</tr>
-<tr>
-<td>Retake</td>
-<td>14-day wait after a failure, no annual cap</td>
-</tr>
-</table>
+|    |    |
+| --- | --- |
+| Questions | 65 total — **50 scored**, 15 unscored and unmarked |
+| Format | Multiple choice (1 of 4) and multiple response (2+ of 5+) |
+| Time | 130 minutes |
+| Passing score | **720** on a 100–1,000 scale |
+| Scoring model | **Compensatory** — you only need to pass overall, not each domain |
+| Cost | 150 USD (varies by country) |
+| Validity | 3 years |
+| Retake | 14-day wait after a failure, no annual cap |
 Unanswered questions score as incorrect and there is no guessing penalty. **Never leave a blank.**
 **Domain weights**
-<table header-row="true">
-<tr>
-<td>Domain</td>
-<td>Weight</td>
-</tr>
-<tr>
-<td>1. Development with AWS Services</td>
-<td>**32%**</td>
-</tr>
-<tr>
-<td>2. Security</td>
-<td>**26%**</td>
-</tr>
-<tr>
-<td>3. Deployment</td>
-<td>**24%**</td>
-</tr>
-<tr>
-<td>4. Troubleshooting and Optimization</td>
-<td>**18%**</td>
-</tr>
-</table>
+| Domain | Weight |
+| --- | --- |
+| 1. Development with AWS Services | **32%** |
+| 2. Security | **26%** |
+| 3. Deployment | **24%** |
+| 4. Troubleshooting and Optimization | **18%** |
 Security being second-largest is the single most useful thing to know about this exam. Most candidates over-prepare Domain 1 and lose the exam in Domain 2.
 **The five questions behind almost every question**
 Once you stop pattern-matching keywords, you notice the exam only asks a handful of things in different costumes:
@@ -100,52 +60,18 @@ Once you stop pattern-matching keywords, you notice the exam only asks a handful
 **Least privilege, least effort, least code — in that order.** Security questions prefer the narrowest permission. Everything else prefers the fewest moving parts.
 **The scope boundary — what NOT to study**
 The official in-scope service list is the authority. These are in scope:
-<table header-row="true">
-<tr>
-<td>Category</td>
-<td>Services</td>
-</tr>
-<tr>
-<td>**Compute**</td>
-<td>EC2, Elastic Beanstalk, Lambda</td>
-</tr>
-<tr>
-<td>**Containers**</td>
-<td>ECR, ECS, EKS</td>
-</tr>
-<tr>
-<td>**Database**</td>
-<td>Aurora, DynamoDB, ElastiCache, RDS</td>
-</tr>
-<tr>
-<td>**Storage**</td>
-<td>EBS, EFS, S3</td>
-</tr>
-<tr>
-<td>**Application Integration**</td>
-<td>AppSync, EventBridge, SNS, SQS, Step Functions</td>
-</tr>
-<tr>
-<td>**Analytics**</td>
-<td>Athena, Kinesis, OpenSearch Service</td>
-</tr>
-<tr>
-<td>**Developer Tools**</td>
-<td>Amplify, CloudShell, CodeArtifact, CodeBuild, CodeDeploy, CodePipeline, X-Ray, **Amazon Q Developer**</td>
-</tr>
-<tr>
-<td>**Management & Governance**</td>
-<td>AppConfig, CDK, CloudFormation, CloudTrail, CloudWatch, CLI, Systems Manager</td>
-</tr>
-<tr>
-<td>**Networking & Content Delivery**</td>
-<td>API Gateway, CloudFront, ELB, Route 53, VPC</td>
-</tr>
-<tr>
-<td>**Security, Identity & Compliance**</td>
-<td>Cognito, IAM, KMS, Secrets Manager, STS, WAF</td>
-</tr>
-</table>
+| Category | Services |
+| --- | --- |
+| **Compute** | EC2, Elastic Beanstalk, Lambda |
+| **Containers** | ECR, ECS, EKS |
+| **Database** | Aurora, DynamoDB, ElastiCache, RDS |
+| **Storage** | EBS, EFS, S3 |
+| **Application Integration** | AppSync, EventBridge, SNS, SQS, Step Functions |
+| **Analytics** | Athena, Kinesis, OpenSearch Service |
+| **Developer Tools** | Amplify, CloudShell, CodeArtifact, CodeBuild, CodeDeploy, CodePipeline, X-Ray, **Amazon Q Developer** |
+| **Management & Governance** | AppConfig, CDK, CloudFormation, CloudTrail, CloudWatch, CLI, Systems Manager |
+| **Networking & Content Delivery** | API Gateway, CloudFront, ELB, Route 53, VPC |
+| **Security, Identity & Compliance** | Cognito, IAM, KMS, Secrets Manager, STS, WAF |
 **Job tasks explicitly out of scope for you as a candidate:** designing architectures, designing CI/CD pipelines from scratch, administering IAM users and groups, administering servers and operating systems, designing VPC networking. You need to *use* these, not design them.
 **Services in your notes that are NOT on the in-scope list:** EMR, Redshift, AWS Config, Security Hub, Inspector, GuardDuty, Trusted Advisor, Service Catalog, AWS Marketplace, ACM, Serverless Application Repository, and EC2 purchasing options (Spot/RI/Savings Plans/Dedicated Hosts).
 I have **kept all of them** in Part 7 of this document, because they still appear as **wrong answers**. Knowing why Inspector is not the answer to a code-review question is worth as much as knowing what Q Developer does. But do not spend study *hours* there.

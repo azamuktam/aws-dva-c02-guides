@@ -17,91 +17,25 @@ EC2 + S3 + IAM + RDS + VPC ...
 **Why it exists**
 Clicking resources together in the console is unrepeatable and undocumented. A CloudFormation template is a declarative description of the resources you want. CloudFormation creates them, tracks them as a **stack**, updates them when the template changes, and — crucially — **deletes them all when the stack is deleted**. That lifecycle coupling is the source of several exam questions.
 **Template sections**
-<table header-row="true">
-<tr>
-<td>Section</td>
-<td>What it is</td>
-<td>Example</td>
-</tr>
-<tr>
-<td>**`AWSTemplateFormatVersion`**</td>
-<td>Template version. Almost always the same value</td>
-<td>`"2010-09-09"`</td>
-</tr>
-<tr>
-<td>**`Description`**</td>
-<td>Human-readable notes</td>
-<td>`"Creates a web server"`</td>
-</tr>
-<tr>
-<td>**`Metadata`**</td>
-<td>Extra information for humans or tools. **No resources come from it**</td>
-<td>Author, console UI hints</td>
-</tr>
-<tr>
-<td>**`Parameters`**</td>
-<td>Inputs supplied at deploy time</td>
-<td>`InstanceType = t3.micro`</td>
-</tr>
-<tr>
-<td>**`Mappings`**</td>
-<td>Static lookup table: “if X, use Y”</td>
-<td>`us-east-1 → ami-12345`</td>
-</tr>
-<tr>
-<td>**`Conditions`**</td>
-<td>Decide *whether* to create something</td>
-<td>Create RDS only in Production</td>
-</tr>
-<tr>
-<td>**`Transform`**</td>
-<td>Preprocess the template — mostly **AWS SAM**</td>
-<td>Expand SAM resources into CloudFormation</td>
-</tr>
-<tr>
-<td>**`Resources`** ⭐</td>
-<td>**The only required section.** What to create</td>
-<td>EC2, S3, Lambda, DynamoDB</td>
-</tr>
-<tr>
-<td>**`Outputs`**</td>
-<td>Values returned after deployment</td>
-<td>EC2 public IP, bucket name</td>
-</tr>
-</table>
+| Section | What it is | Example |
+| --- | --- | --- |
+| **`AWSTemplateFormatVersion`** | Template version. Almost always the same value | `"2010-09-09"` |
+| **`Description`** | Human-readable notes | `"Creates a web server"` |
+| **`Metadata`** | Extra information for humans or tools. **No resources come from it** | Author, console UI hints |
+| **`Parameters`** | Inputs supplied at deploy time | `InstanceType = t3.micro` |
+| **`Mappings`** | Static lookup table: “if X, use Y” | `us-east-1 → ami-12345` |
+| **`Conditions`** | Decide *whether* to create something | Create RDS only in Production |
+| **`Transform`** | Preprocess the template — mostly **AWS SAM** | Expand SAM resources into CloudFormation |
+| **`Resources`** ⭐ | **The only required section.** What to create | EC2, S3, Lambda, DynamoDB |
+| **`Outputs`** | Values returned after deployment | EC2 public IP, bucket name |
 **Where conditions can be applied** — a detail that gets asked directly:
-<table header-row="true">
-<tr>
-<td>Section</td>
-<td>Purpose</td>
-<td>`Condition` allowed?</td>
-</tr>
-<tr>
-<td>Parameters</td>
-<td>User inputs</td>
-<td>❌ No</td>
-</tr>
-<tr>
-<td>Mappings</td>
-<td>Static lookup values</td>
-<td>❌ No</td>
-</tr>
-<tr>
-<td>Conditions</td>
-<td>Define the logic itself</td>
-<td>N/A</td>
-</tr>
-<tr>
-<td>**Resources**</td>
-<td>Create resources</td>
-<td>✅ **Yes**</td>
-</tr>
-<tr>
-<td>**Outputs**</td>
-<td>Return values</td>
-<td>✅ **Yes**</td>
-</tr>
-</table>
+| Section | Purpose | `Condition` allowed? |
+| --- | --- | --- |
+| Parameters | User inputs | ❌ No |
+| Mappings | Static lookup values | ❌ No |
+| Conditions | Define the logic itself | N/A |
+| **Resources** | Create resources | ✅ **Yes** |
+| **Outputs** | Return values | ✅ **Yes** |
 **Parameters vs Mappings vs Parameter Store**
 All three supply values, and the difference is *who knows the value and when*.
 - **Parameters** — the **deployer** supplies it at deploy time. “Which instance type do you want?”
@@ -126,44 +60,16 @@ MapName → TopLevelKey → SecondLevelKey → Value
 ```
 **Always three arguments.** Mappings are static, defined in the template, and unsuitable for secrets or frequently changing values.
 **Intrinsic functions**
-<table header-row="true">
-<tr>
-<td>Function</td>
-<td>Returns</td>
-</tr>
-<tr>
-<td>**`!Ref`**</td>
-<td>The value of a parameter, or the primary identifier of a resource</td>
-</tr>
-<tr>
-<td>**`!GetAtt`**</td>
-<td>A specific **attribute** of a resource (`!GetAtt LoadBalancer.DNSName`)</td>
-</tr>
-<tr>
-<td>**`!Sub`**</td>
-<td>A string with variables substituted (`!Sub "${AWS::StackName}-bucket"`)</td>
-</tr>
-<tr>
-<td>**`!FindInMap`**</td>
-<td>A value from a mapping</td>
-</tr>
-<tr>
-<td>**`!ImportValue`**</td>
-<td>An exported output from **another stack**</td>
-</tr>
-<tr>
-<td>**`!GetAZs`**</td>
-<td>The Availability Zones in a Region</td>
-</tr>
-<tr>
-<td>**`!Join`** / **`!Select`** / **`!Split`**</td>
-<td>String and list manipulation</td>
-</tr>
-<tr>
-<td>**`!If`** / **`!Equals`** / **`!Not`**</td>
-<td>Condition logic</td>
-</tr>
-</table>
+| Function | Returns |
+| --- | --- |
+| **`!Ref`** | The value of a parameter, or the primary identifier of a resource |
+| **`!GetAtt`** | A specific **attribute** of a resource (`!GetAtt LoadBalancer.DNSName`) |
+| **`!Sub`** | A string with variables substituted (`!Sub "${AWS::StackName}-bucket"`) |
+| **`!FindInMap`** | A value from a mapping |
+| **`!ImportValue`** | An exported output from **another stack** |
+| **`!GetAZs`** | The Availability Zones in a Region |
+| **`!Join`** / **`!Select`** / **`!Split`** | String and list manipulation |
+| **`!If`** / **`!Equals`** / **`!Not`** | Condition logic |
 **`!Ref`** returns the resource's default/reference value, while **`!GetAtt`** returns a specific attribute of the resource, such as its ARN or DNS name
 **`!Sub`** → **substitutes variables into a string**.
 ```plain text
@@ -244,24 +150,11 @@ Because a stack represents a desired state, someone changing a resource by hand 
 - Reports `IN_SYNC`, `MODIFIED`, `DELETED`, or `NOT_CHECKED`.
 - Triggered by: a resource changed outside CloudFormation.
 Drift answers a narrow, specific question, and it is easy to confuse with two neighbours:
-<table header-row="true">
-<tr>
-<td>Tool</td>
-<td>The question it answers</td>
-</tr>
-<tr>
-<td>**CloudFormation Drift Detection**</td>
-<td>*“Does this resource still match my template?”*</td>
-</tr>
-<tr>
-<td>**AWS Config**</td>
-<td>*“Is this resource configured according to my organisation’s rules?”*</td>
-</tr>
-<tr>
-<td>**CloudTrail**</td>
-<td>*“Who changed it, when, and from where?”*</td>
-</tr>
-</table>
+| Tool | The question it answers |
+| --- | --- |
+| **CloudFormation Drift Detection** | *“Does this resource still match my template?”* |
+| **AWS Config** | *“Is this resource configured according to my organisation’s rules?”* |
+| **CloudTrail** | *“Who changed it, when, and from where?”* |
 Worked example — someone manually edits a Lambda IAM role that CloudFormation created:
 - Is it different from the template? → **Drift Detection**
 - Does it violate a security rule? → **AWS Config**
@@ -273,14 +166,14 @@ For the exam, remember these AWS services/tools that use **CloudFormation** to c
 - **Elastic Beanstalk** → uses CloudFormation to create resources
 - **CloudFormation StackSets** → deploys CloudFormation stacks across accounts/Regions
 ### CloudFormation Pseudo Parameters
-**What it is:** Built-in variables that provide AWS information such as the **Account ID, Region, and Stack Name** without hardcoding values. 
+**What it is:** Built-in variables that provide AWS information such as the **Account ID, Region, and Stack Name** without hardcoding values.
 **Common ones:**
 - `AWS::AccountId` → AWS account ID
 - `AWS::Region` → current Region
 - `AWS::StackName` → stack name
 - `AWS::NoValue` → removes a property when used with `Fn::If`
 - `AWS::Partition` → `aws`, `aws-cn`, etc.
-**Exam memory:** **Pseudo parameters = AWS-provided values that make templates reusable across accounts and Regions.** 
+**Exam memory:** **Pseudo parameters = AWS-provided values that make templates reusable across accounts and Regions.**
 **Other CloudFormation features**
 - **Change sets** — preview exactly what an update will do before executing it. The safe way to update production.
 - **Stack service role** — lets CloudFormation use a specific IAM role to create, update, or delete stack resources on your behalf, with only the permissions you give that role.

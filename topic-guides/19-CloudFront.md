@@ -55,62 +55,20 @@ Trigger signals: 504 errors, origin failure, high availability requirements.
 [**Lambda@Edge**](mailto:Lambda@Edge)** and CloudFront Functions**
 Running code at the edge means acting on a request **before** it reaches your origin — or even before the cache is consulted.
 [**Lambda@Edge**](mailto:Lambda@Edge) runs at four points in the request lifecycle:
-<table header-row="true">
-<tr>
-<td>Event</td>
-<td>When</td>
-<td>Typical use</td>
-</tr>
-<tr>
-<td>**Viewer Request**</td>
-<td>Before CloudFront checks its cache</td>
-<td>**Authentication/authorisation**, URL rewrite, A/B testing</td>
-</tr>
-<tr>
-<td>**Origin Request**</td>
-<td>Before CloudFront calls the origin</td>
-<td>Modify the origin request, change origin</td>
-</tr>
-<tr>
-<td>**Origin Response**</td>
-<td>After the origin responds</td>
-<td>Modify the response before caching</td>
-</tr>
-<tr>
-<td>**Viewer Response**</td>
-<td>Before the response reaches the user</td>
-<td>Add security headers</td>
-</tr>
-</table>
+| Event | When | Typical use |
+| --- | --- | --- |
+| **Viewer Request** | Before CloudFront checks its cache | **Authentication/authorisation**, URL rewrite, A/B testing |
+| **Origin Request** | Before CloudFront calls the origin | Modify the origin request, change origin |
+| **Origin Response** | After the origin responds | Modify the response before caching |
+| **Viewer Response** | Before the response reaches the user | Add security headers |
 Common uses: auth at the edge, HTTP→HTTPS redirects, header manipulation, URL rewrites, A/B testing, geo-based personalisation.
 **Important correction to a common assumption: **[**Lambda@Edge**](mailto:Lambda@Edge)** does not make a website faster by itself.** It is for *executing code closer to users*, not for improving caching. Latency improvements come from caching. If a question asks how to speed up static content, the answer is CloudFront caching, not [Lambda@Edge](mailto:Lambda@Edge).
-<table header-row="true">
-<tr>
-<td></td>
-<td>Runs where</td>
-<td>For</td>
-</tr>
-<tr>
-<td>**CloudFront**</td>
-<td>Edge</td>
-<td>Caching and global delivery</td>
-</tr>
-<tr>
-<td>**CloudFront Functions**</td>
-<td>Edge, very lightweight, sub-millisecond</td>
-<td>Simple header/URL manipulation at massive scale</td>
-</tr>
-<tr>
-<td>[**Lambda@Edge**](mailto:Lambda@Edge)</td>
-<td>Regional edge caches</td>
-<td>Heavier logic, network access, longer execution</td>
-</tr>
-<tr>
-<td>**Lambda**</td>
-<td>A specific Region</td>
-<td>Backend processing</td>
-</tr>
-</table>
+|    | Runs where | For |
+| --- | --- | --- |
+| **CloudFront** | Edge | Caching and global delivery |
+| **CloudFront Functions** | Edge, very lightweight, sub-millisecond | Simple header/URL manipulation at massive scale |
+| [**Lambda@Edge**](mailto:Lambda@Edge) | Regional edge caches | Heavier logic, network access, longer execution |
+| **Lambda** | A specific Region | Backend processing |
 **Restricting access**
 **Signed URLs and signed cookies** provide time-limited access to private content.
 ```plain text
@@ -123,33 +81,12 @@ Common uses: auth at the edge, HTTP→HTTPS redirects, header manipulation, URL 
 - **Signed URL** = one file. **Signed cookie** = many files, without changing any URLs.
 - Signed URLs can additionally restrict by **IP range**, which S3 presigned URLs cannot.
 - Signed URLs take precedence over signed cookies. If you use both signed URLs and signed cookies to control access to the same files and a viewer uses a signed URL to request a file
-<table header-row="true">
-<tr>
-<td></td>
-<td>CloudFront Signed URL</td>
-<td>S3 Presigned URL</td>
-</tr>
-<tr>
-<td>Entry point</td>
-<td>CloudFront edge (cached, fast)</td>
-<td>S3 directly</td>
-</tr>
-<tr>
-<td>Restrict by IP range</td>
-<td>✅</td>
-<td>❌</td>
-</tr>
-<tr>
-<td>Cover many files</td>
-<td>✅ signed cookies</td>
-<td>❌ one object per URL</td>
-</tr>
-<tr>
-<td>Signed with</td>
-<td>Your private key + key group</td>
-<td>The signer’s IAM credentials</td>
-</tr>
-</table>
+|    | CloudFront Signed URL | S3 Presigned URL |
+| --- | --- | --- |
+| Entry point | CloudFront edge (cached, fast) | S3 directly |
+| Restrict by IP range | ✅ | ❌ |
+| Cover many files | ✅ signed cookies | ❌ one object per URL |
+| Signed with | Your private key + key group | The signer’s IAM credentials |
 **Multiple origins** means one **CloudFront distribution** can get content from **more than one backend/source**.
 For your example:
 ```plain text
@@ -162,7 +99,7 @@ For your example:
 So CloudFront has **two origins**:
 1. **S3 bucket** → static files like images, CSS, JS
 2. **Application Load Balancer** → dynamic application/API requests
-<empty-block/>
+
 **Recall check — CloudFront**
 - **Faster global website or API** → CloudFront
 - **Force users onto HTTPS** → Viewer Protocol Policy
@@ -204,7 +141,7 @@ CloudFront Function
    ↓
 tutorialsdojo.com/uk/
 ```
-CloudFront can provide the user's country in the `CloudFront-Viewer-Country` header. AWS has an official example of using this header to perform country-based redirects. 
+CloudFront can provide the user's country in the `CloudFront-Viewer-Country` header. AWS has an official example of using this header to perform country-based redirects.
 **What does the function actually do?**
 Very simple logic:
 ```plain text
@@ -243,9 +180,9 @@ ALB
 ECS
 ```
 We check **before reaching ECS** because there's no reason to send the request all the way to your application just to discover the user's country and redirect them.
-CloudFront Functions are designed for lightweight logic at this point in the request flow. 
-AWS's current documentation notes that CloudFront adds `CloudFront-Viewer-Country` **after the viewer-request event** in the Lambda@Edge example, so for that specific Lambda@Edge pattern AWS uses **origin request**. 
-However, AWS also provides a **CloudFront Functions viewer-request country redirect example**, with the header made available through the appropriate CloudFront configuration. 
+CloudFront Functions are designed for lightweight logic at this point in the request flow.
+AWS's current documentation notes that CloudFront adds `CloudFront-Viewer-Country` **after the viewer-request event** in the Lambda@Edge example, so for that specific Lambda@Edge pattern AWS uses **origin request**.
+However, AWS also provides a **CloudFront Functions viewer-request country redirect example**, with the header made available through the appropriate CloudFront configuration.
 **For your exam**
 The question's answer is simply:
 > **CloudFront Function + ****`CloudFront-Viewer-Country`**** → country-based redirect.**

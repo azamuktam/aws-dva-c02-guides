@@ -33,7 +33,7 @@ Mapping symptoms to strategies:
 - *“The cache is full of data nobody reads”* → write-through churn
 #### ElastiCache Cluster
 **Mental model**
-Think of an **ElastiCache cluster** as a **cache system** made up of one or more cache servers (**nodes**) that work together. Your application sees it as a single cache, while AWS manages the underlying nodes. 
+Think of an **ElastiCache cluster** as a **cache system** made up of one or more cache servers (**nodes**) that work together. Your application sees it as a single cache, while AWS manages the underlying nodes.
 ```plain text
 Application
       │
@@ -52,7 +52,7 @@ Database
 **What is a cluster?**
 - A cluster is a **logical group of one or more cache nodes**.
 - When creating a cluster, you choose the cache engine (Valkey/Redis OSS or Memcached).
-- AWS manages the nodes, networking, scaling, and monitoring. 
+- AWS manages the nodes, networking, scaling, and monitoring.
 **What is a node?**
 A **node** is a single cache server.
 Each node has:
@@ -65,7 +65,7 @@ Cluster
 ├── Node 2
 └── Node 3
 ```
-The node is the smallest building block of ElastiCache. 
+The node is the smallest building block of ElastiCache.
 **Why use multiple nodes?**
 Multiple nodes provide:
 - More memory
@@ -81,7 +81,7 @@ Cluster
 ├── Node 2 (10 GB)
 └── Node 3 (10 GB)
 ```
-Instead of buying one huge server, AWS lets you spread the cache across multiple nodes. 
+Instead of buying one huge server, AWS lets you spread the cache across multiple nodes.
 **Redis (Valkey) cluster**
 Redis/Valkey clusters can contain **shards**.
 A shard contains:
@@ -98,7 +98,7 @@ Cluster
       ├── Primary
       └── Replica
 ```
-When **cluster mode is enabled**, data is automatically partitioned across shards. 
+When **cluster mode is enabled**, data is automatically partitioned across shards.
 **Memcached cluster**
 Memcached does not have primary/replica architecture.
 It simply consists of multiple nodes.
@@ -109,7 +109,7 @@ Cluster
 ├── Node 3
 └── Node 4
 ```
-Data is distributed across the nodes. 
+Data is distributed across the nodes.
 **Cluster hierarchy**
 ```plain text
 ElastiCache Cluster
@@ -143,80 +143,26 @@ Cluster
 - **Cluster = Collection of nodes**
 - **Redis/Valkey → Cluster → Shards → Primary + Replicas**
 - **Memcached → Cluster → Nodes only**
-- **More nodes = More memory + Better scalability + Higher availability** 
+- **More nodes = More memory + Better scalability + Higher availability**
 **Redis vs Memcached**
-<table header-row="true">
-<tr>
-<td>Feature</td>
-<td>**Redis**</td>
-<td>**Memcached**</td>
-</tr>
-<tr>
-<td>Persistence / snapshots</td>
-<td>✅</td>
-<td>❌</td>
-</tr>
-<tr>
-<td>Replication + Multi-AZ failover</td>
-<td>✅</td>
-<td>❌</td>
-</tr>
-<tr>
-<td>Data structures (lists, sets, sorted sets, pub/sub)</td>
-<td>✅</td>
-<td>❌ key-value only</td>
-</tr>
-<tr>
-<td>Multi-threaded</td>
-<td>❌</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>Scale out</td>
-<td>Cluster mode (sharding)</td>
-<td>Add nodes, client-side sharding</td>
-</tr>
-<tr>
-<td>Backup and restore</td>
-<td>✅</td>
-<td>❌</td>
-</tr>
-<tr>
-<td>Best for</td>
-<td>**Sessions**, leaderboards, HA caching, pub/sub</td>
-<td>Simple, large, disposable cache</td>
-</tr>
-</table>
+| Feature | **Redis** | **Memcached** |
+| --- | --- | --- |
+| Persistence / snapshots | ✅ | ❌ |
+| Replication + Multi-AZ failover | ✅ | ❌ |
+| Data structures (lists, sets, sorted sets, pub/sub) | ✅ | ❌ key-value only |
+| Multi-threaded | ❌ | ✅ |
+| Scale out | Cluster mode (sharding) | Add nodes, client-side sharding |
+| Backup and restore | ✅ | ❌ |
+| Best for | **Sessions**, leaderboards, HA caching, pub/sub | Simple, large, disposable cache |
 The reason **Redis wins session questions** is durability: a session lost to a node failure logs a user out. Memcached has no replication or persistence, so a node loss loses those sessions. Redis has both.
 **Session management — the full picture**
 The problem: with multiple application servers behind a load balancer, a user’s second request may hit a different server than the first. If session state lives on the server, that user appears logged out.
-<table header-row="true">
-<tr>
-<td>Approach</td>
-<td>Session storage</td>
-<td>Assessment</td>
-</tr>
-<tr>
-<td>**ElastiCache Redis**</td>
-<td>✅ Central, shared, replicated</td>
-<td>**The correct answer.** Any server can serve any request</td>
-</tr>
-<tr>
-<td>**ElastiCache Memcached**</td>
-<td>⚠️ Central but not durable</td>
-<td>Fine for disposable cache, risky for sessions</td>
-</tr>
-<tr>
-<td>**Sticky sessions (session affinity)**</td>
-<td>✅ On one specific server</td>
-<td>Works, but **less scalable** — and when that instance dies, its users lose their sessions</td>
-</tr>
-<tr>
-<td>**CloudFront**</td>
-<td>❌ None</td>
-<td>A CDN caches content; it does not store application session state</td>
-</tr>
-</table>
+| Approach | Session storage | Assessment |
+| --- | --- | --- |
+| **ElastiCache Redis** | ✅ Central, shared, replicated | **The correct answer.** Any server can serve any request |
+| **ElastiCache Memcached** | ⚠️ Central but not durable | Fine for disposable cache, risky for sessions |
+| **Sticky sessions (session affinity)** | ✅ On one specific server | Works, but **less scalable** — and when that instance dies, its users lose their sessions |
+| **CloudFront** | ❌ None | A CDN caches content; it does not store application session state |
 **Sticky sessions** are worth understanding rather than dismissing: the load balancer pins a user to one instance with a cookie. It’s the zero-code option and appears as a plausible answer. It loses whenever the question mentions scalability, instance failure, or “don’t store sessions on the instances”.
 **Recall check — ElastiCache**
 - **Shared session storage after migrating to multiple servers** → ElastiCache Redis

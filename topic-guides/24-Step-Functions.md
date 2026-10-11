@@ -6,84 +6,26 @@ Step Functions moves the *coordination* out of your code into a declarative stat
 **State types**
 Workflows are defined in **Amazon States Language (ASL)**, a JSON document.
 A **state machine is the entire workflow**; these are **state types inside a state machine**.
-<table header-row="true">
-<tr>
-<td>State</td>
-<td>Purpose</td>
-</tr>
-<tr>
-<td>**Task**</td>
-<td>Do work — Lambda, ECS, DynamoDB, SNS, SQS, or any AWS SDK call</td>
-</tr>
-<tr>
-<td>**Choice**</td>
-<td>Branch on a condition (if/else)</td>
-</tr>
-<tr>
-<td>**Parallel**</td>
-<td>Run several branches simultaneously</td>
-</tr>
-<tr>
-<td>**Map**</td>
-<td>Loop over an array, one iteration per item</td>
-</tr>
-<tr>
-<td>**Wait**</td>
-<td>Pause for a duration or until a timestamp</td>
-</tr>
-<tr>
-<td>**Pass**</td>
-<td>Pass input through, or inject fixed data</td>
-</tr>
-<tr>
-<td>**Succeed** / **Fail**</td>
-<td>Terminate the execution</td>
-</tr>
-</table>
+| State | Purpose |
+| --- | --- |
+| **Task** | Do work — Lambda, ECS, DynamoDB, SNS, SQS, or any AWS SDK call |
+| **Choice** | Branch on a condition (if/else) |
+| **Parallel** | Run several branches simultaneously |
+| **Map** | Loop over an array, one iteration per item |
+| **Wait** | Pause for a duration or until a timestamp |
+| **Pass** | Pass input through, or inject fixed data |
+| **Succeed** / **Fail** | Terminate the execution |
 **Standard vs Express**
 The choice follows from duration and volume.
-<table header-row="true">
-<tr>
-<td></td>
-<td>**Standard**</td>
-<td>**Express**</td>
-</tr>
-<tr>
-<td>Max duration</td>
-<td>**1 year**</td>
-<td>**5 minutes**</td>
-</tr>
-<tr>
-<td>Execution semantics</td>
-<td>**Exactly-once**</td>
-<td>**At-least-once** (async)</td>
-</tr>
-<tr>
-<td>Start rate</td>
-<td>\~2,000/s</td>
-<td>**100,000+/s**</td>
-</tr>
-<tr>
-<td>History</td>
-<td>Full, visible in the console for 90 days</td>
-<td>CloudWatch Logs only</td>
-</tr>
-<tr>
-<td>Pricing</td>
-<td>Per **state transition**</td>
-<td>Per **invocation + duration**</td>
-</tr>
-<tr>
-<td>`.waitForTaskToken`</td>
-<td>✅</td>
-<td>❌</td>
-</tr>
-<tr>
-<td>Best for</td>
-<td>Long, auditable, non-idempotent business processes</td>
-<td>High-volume, short, idempotent event processing</td>
-</tr>
-</table>
+|    | **Standard** | **Express** |
+| --- | --- | --- |
+| Max duration | **1 year** | **5 minutes** |
+| Execution semantics | **Exactly-once** | **At-least-once** (async) |
+| Start rate | \~2,000/s | **100,000+/s** |
+| History | Full, visible in the console for 90 days | CloudWatch Logs only |
+| Pricing | Per **state transition** | Per **invocation + duration** |
+| `.waitForTaskToken` | ✅ | ❌ |
+| Best for | Long, auditable, non-idempotent business processes | High-volume, short, idempotent event processing |
 Anything longer than 5 minutes, or requiring exactly-once, or requiring human approval, must be **Standard**.
 **Error handling — the main reason to use it**
 ```json
@@ -103,28 +45,11 @@ Anything longer than 5 minutes, or requiring exactly-once, or requiring human ap
 Predefined errors: `States.ALL`, `States.TaskFailed`, `States.Timeout`, `States.Permissions`, `States.DataLimitExceeded`.
 Getting this behaviour without Step Functions means writing retry loops and try/catch into every function — which is exactly the “retry logic without writing code” question.
 **Service integration patterns**
-<table header-row="true">
-<tr>
-<td>Pattern</td>
-<td>Suffix</td>
-<td>Behaviour</td>
-</tr>
-<tr>
-<td>**Request Response**</td>
-<td>(none)</td>
-<td>Call and continue immediately</td>
-</tr>
-<tr>
-<td>**Run a Job**</td>
-<td>`.sync`</td>
-<td>Call and **wait for completion** — ECS task, Batch job, EMR step</td>
-</tr>
-<tr>
-<td>**Wait for Callback**</td>
-<td>`.waitForTaskToken`</td>
-<td>Pause indefinitely until an external system calls `SendTaskSuccess`</td>
-</tr>
-</table>
+| Pattern | Suffix | Behaviour |
+| --- | --- | --- |
+| **Request Response** | (none) | Call and continue immediately |
+| **Run a Job** | `.sync` | Call and **wait for completion** — ECS task, Batch job, EMR step |
+| **Wait for Callback** | `.waitForTaskToken` | Pause indefinitely until an external system calls `SendTaskSuccess` |
 `.waitForTaskToken` is how **human approval** works: the workflow emits a task token (typically into an email or a queue), then waits. Days later, a person clicks approve, something calls `SendTaskSuccess` with the token, and the workflow resumes. Standard workflows only, because Express caps out at 5 minutes.
 ### Overall
 ```plain text
@@ -172,19 +97,19 @@ Next State
 - **Pause a workflow** → Wait state
 - **Payload over 256 KB between states** → store in S3, pass the key
 ### Step Functions States
-**Task** → performs a unit of work, such as calling Lambda or another AWS service. 
-**Wait** → pauses the workflow until a time/date. 
+**Task** → performs a unit of work, such as calling Lambda or another AWS service.
+**Wait** → pauses the workflow until a time/date.
 **Choice** → makes a decision and chooses the next path.
 **Pass** → passes data through without performing work.
 **Succeed** → ends successfully.
 **Fail** → ends with failure.
 **Exam memory**
 > **Task = do work**
-	**Wait = wait**
-	**Choice = decide**
-	**Pass = pass data**
-	**Succeed = success**
-	**Fail = failure**
+  **Wait = wait**
+  **Choice = decide**
+  **Pass = pass data**
+  **Succeed = success**
+  **Fail = failure**
 ---
 # AWS Step Functions Activities
 ### Mental model
@@ -280,38 +205,13 @@ SendTaskFailure
 Step Functions knows the Activity failed and can handle it with its workflow error handling.
 ---
 # APIs
-<table header-row="true">
-<tr>
-<td>API</td>
-<td>Who calls it?</td>
-<td>Purpose</td>
-</tr>
-<tr>
-<td>`CreateActivity`</td>
-<td>Developer/setup</td>
-<td>Create the Activity</td>
-</tr>
-<tr>
-<td>`GetActivityTask`</td>
-<td>**Worker**</td>
-<td>Ask for a job</td>
-</tr>
-<tr>
-<td>`SendTaskHeartbeat`</td>
-<td>**Worker**</td>
-<td>“I'm still working”</td>
-</tr>
-<tr>
-<td>`SendTaskSuccess`</td>
-<td>**Worker**</td>
-<td>“I finished successfully”</td>
-</tr>
-<tr>
-<td>`SendTaskFailure`</td>
-<td>**Worker**</td>
-<td>“I failed”</td>
-</tr>
-</table>
+| API | Who calls it? | Purpose |
+| --- | --- | --- |
+| `CreateActivity` | Developer/setup | Create the Activity |
+| `GetActivityTask` | **Worker** | Ask for a job |
+| `SendTaskHeartbeat` | **Worker** | “I'm still working” |
+| `SendTaskSuccess` | **Worker** | “I finished successfully” |
+| `SendTaskFailure` | **Worker** | “I failed” |
 ## Complete example
 Imagine a hospital appointment system needs a worker to generate a complicated insurance report.
 ```plain text

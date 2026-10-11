@@ -43,36 +43,14 @@ Common uses:
 - Federated users
 - Applications that need temporary AWS access
 **The APIs**
-<table header-row="true">
-<tr>
-<td>API</td>
-<td>Use</td>
-</tr>
-<tr>
-<td>**`AssumeRole`**</td>
-<td>Same-account or **cross-account** role assumption</td>
-</tr>
-<tr>
-<td>**`AssumeRoleWithWebIdentity`**</td>
-<td>OIDC / social login (Google, Facebook, Cognito)</td>
-</tr>
-<tr>
-<td>**`AssumeRoleWithSAML`**</td>
-<td>Enterprise identity provider (Active Directory, SAML 2.0)</td>
-</tr>
-<tr>
-<td>**`GetSessionToken`**</td>
-<td>MFA-protected temporary credentials for an IAM user</td>
-</tr>
-<tr>
-<td>**`GetFederationToken`**</td>
-<td>Temporary credentials for a non-IAM user</td>
-</tr>
-<tr>
-<td>**`GetCallerIdentity`**</td>
-<td>“Who am I?” — requires no permissions, invaluable for debugging</td>
-</tr>
-</table>
+| API | Use |
+| --- | --- |
+| **`AssumeRole`** | Same-account or **cross-account** role assumption |
+| **`AssumeRoleWithWebIdentity`** | OIDC / social login (Google, Facebook, Cognito) |
+| **`AssumeRoleWithSAML`** | Enterprise identity provider (Active Directory, SAML 2.0) |
+| **`GetSessionToken`** | MFA-protected temporary credentials for an IAM user |
+| **`GetFederationToken`** | Temporary credentials for a non-IAM user |
+| **`GetCallerIdentity`** | “Who am I?” — requires no permissions, invaluable for debugging |
 **Cross-account access — the two-sided requirement**
 This is the single most testable STS fact, and it follows directly from the trust-policy/permissions-policy split.
 **Both sides must agree:**
@@ -115,7 +93,7 @@ Configure only one and you get **`AccessDenied`**. So when a question describes 
 - **Longest session** → 12 hours (1 hour with role chaining)
 - **Users signing in with Google/Facebook and needing AWS access** → Cognito identity pool (which calls `AssumeRoleWithWebIdentity` for you)
 - **Enterprise Active Directory federation** → `AssumeRoleWithSAML`
-- **MFA-protected temporary credentials for an IAM user** → `GetSessionToken` 
+- **MFA-protected temporary credentials for an IAM user** → `GetSessionToken`
 - **Temporary credentials for a non-IAM user** → `GetFederationToken`
 - **Temporary credentials always include a ****`SessionToken`**
 - **Which identity am I using?** → `GetCallerIdentity`

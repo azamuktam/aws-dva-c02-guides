@@ -34,43 +34,14 @@ When SQL Server reads the data, TDE transparently decrypts it.
 > **SQL Server + transparent database encryption → TDE**
 ---
 ### RDS Encryption vs TDE
-<table header-row="true">
-<tr>
-<td></td>
-<td>RDS Encryption</td>
-<td>TDE</td>
-</tr>
-<tr>
-<td>Encryption level</td>
-<td>AWS/RDS storage</td>
-<td>SQL Server database engine</td>
-</tr>
-<tr>
-<td>Key management</td>
-<td>AWS KMS</td>
-<td>SQL Server/TDE</td>
-</tr>
-<tr>
-<td>Encrypts at rest</td>
-<td>✅</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>Automatic encrypt/decrypt</td>
-<td>✅</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>Application changes</td>
-<td>No</td>
-<td>No</td>
-</tr>
-<tr>
-<td>Main exam clue</td>
-<td>**KMS / RDS encryption**</td>
-<td>**SQL Server / TDE**</td>
-</tr>
-</table>
+|    | RDS Encryption | TDE |
+| --- | --- | --- |
+| Encryption level | AWS/RDS storage | SQL Server database engine |
+| Key management | AWS KMS | SQL Server/TDE |
+| Encrypts at rest | ✅ | ✅ |
+| Automatic encrypt/decrypt | ✅ | ✅ |
+| Application changes | No | No |
+| Main exam clue | **KMS / RDS encryption** | **SQL Server / TDE** |
 **Important distinction**
 Both can encrypt data before it is stored and decrypt it when accessed.
 > **RDS encryption = AWS-level storage encryption**

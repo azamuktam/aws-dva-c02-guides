@@ -34,7 +34,7 @@ API Gateway
  ↓
 Cognito User Pool Authorizer
  ↓
-Token valid? 
+Token valid?
  ├── YES → request reaches API ✅
  └── NO  → request rejected ❌
 ```
@@ -77,43 +77,14 @@ S3 / DynamoDB / any AWS service, directly
 - Role permissions can be scoped per user with **policy variables**, so each user reaches only their own S3 prefix.
 - This is what removes AWS access keys from client applications entirely.
 **The distinction, stated plainly**
-<table header-row="true">
-<tr>
-<td>Feature</td>
-<td>**User Pool**</td>
-<td>**Identity Pool**</td>
-</tr>
-<tr>
-<td>Purpose</td>
-<td>**Authentication** — who is this user?</td>
-<td>**Authorization to AWS resources**</td>
-</tr>
-<tr>
-<td>Returns</td>
-<td>**JWT tokens**</td>
-<td>**Temporary AWS credentials**</td>
-</tr>
-<tr>
-<td>Manages users</td>
-<td>✅ Yes</td>
-<td>❌ No</td>
-</tr>
-<tr>
-<td>Uses IAM roles</td>
-<td>❌ No</td>
-<td>✅ Yes</td>
-</tr>
-<tr>
-<td>Sign-up / sign-in</td>
-<td>✅ Yes</td>
-<td>❌ No</td>
-</tr>
-<tr>
-<td>Access S3/DynamoDB directly</td>
-<td>❌ No</td>
-<td>✅ Yes</td>
-</tr>
-</table>
+| Feature | **User Pool** | **Identity Pool** |
+| --- | --- | --- |
+| Purpose | **Authentication** — who is this user? | **Authorization to AWS resources** |
+| Returns | **JWT tokens** | **Temporary AWS credentials** |
+| Manages users | ✅ Yes | ❌ No |
+| Uses IAM roles | ❌ No | ✅ Yes |
+| Sign-up / sign-in | ✅ Yes | ❌ No |
+| Access S3/DynamoDB directly | ❌ No | ✅ Yes |
 **The full pattern for a mobile app uploading to S3 uses both:**
 ```plain text
 1. User signs in           → User Pool → JWT

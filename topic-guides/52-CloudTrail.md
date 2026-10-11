@@ -20,24 +20,11 @@ Event history (90 days, free)  or  a Trail → S3 (+ optionally CloudWatch Logs)
 - Athena is the usual way to query CloudTrail logs in S3.
 Applies to: IAM, EC2, Lambda, S3, CloudFormation, KMS — effectively everything.
 **The three-way distinction, one more time**
-<table header-row="true">
-<tr>
-<td>Tool</td>
-<td>Question</td>
-</tr>
-<tr>
-<td>**CloudTrail**</td>
-<td>*“Who made the change?”*</td>
-</tr>
-<tr>
-<td>**AWS Config**</td>
-<td>*“What is the current configuration, and is it compliant?”*</td>
-</tr>
-<tr>
-<td>**CloudFormation Drift Detection**</td>
-<td>*“Does it still match my template?”*</td>
-</tr>
-</table>
+| Tool | Question |
+| --- | --- |
+| **CloudTrail** | *“Who made the change?”* |
+| **AWS Config** | *“What is the current configuration, and is it compliant?”* |
+| **CloudFormation Drift Detection** | *“Does it still match my template?”* |
 Worked example — someone changes a Lambda IAM role:
 - **CloudTrail** → identifies which user or role changed it, and when
 - **AWS Config** → checks whether the role now violates a rule

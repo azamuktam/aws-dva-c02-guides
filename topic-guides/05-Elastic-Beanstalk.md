@@ -1,5 +1,5 @@
 ## AWS Elastic Beanstalk
-<empty-block/>
+
 **Why it exists**
 Between “here is a function” (Lambda) and “here is a virtual machine” (EC2) sits a common case: a conventional web application that needs EC2 instances, a load balancer, auto scaling, and monitoring wired together correctly. Assembling that yourself is repetitive. Beanstalk takes a code bundle and builds the whole stack for you — **Platform as a Service**.
 Crucially, Beanstalk is not a black box: it creates *ordinary* EC2 instances, ASGs, and load balancers in your account, and you can see and tune them.
@@ -24,40 +24,27 @@ Under the hood:
 ### AWS Developer Associate exam
 Know these two environment types:
 - ✅ **Single-instance environment**
-	- 1 EC2
-	- No Load Balancer
-	- No Auto Scaling beyond 1 instance
-	- Lower cost
-	- Development/testing
+  - 1 EC2
+  - No Load Balancer
+  - No Auto Scaling beyond 1 instance
+  - Lower cost
+  - Development/testing
 - ✅ **Load-balanced, scalable environment (High Availability)**
-	- Elastic Load Balancer
-	- Auto Scaling Group
-	- Multiple EC2 instances
-	- Can span multiple Availability Zones
-	- Recommended for production
+  - Elastic Load Balancer
+  - Auto Scaling Group
+  - Multiple EC2 instances
+  - Can span multiple Availability Zones
+  - Recommended for production
 **Environment types:**
-<table header-row="true">
-<tr>
-<td>Environment</td>
-<td>Use</td>
-</tr>
-<tr>
-<td>**Web server environment**</td>
-<td>Handles normal HTTP/web requests</td>
-</tr>
-<tr>
-<td>**Worker environment**</td>
-<td>Processes background jobs from **SQS**</td>
-</tr>
-<tr>
-<td>**Single-instance environment**</td>
-<td>One EC2 instance; mainly for simple/dev workloads</td>
-</tr>
-</table>
+| Environment | Use |
+| --- | --- |
+| **Web server environment** | Handles normal HTTP/web requests |
+| **Worker environment** | Processes background jobs from **SQS** |
+| **Single-instance environment** | One EC2 instance; mainly for simple/dev workloads |
 - **Web Server environment** — handles HTTP requests. `User → Load Balancer → EC2 → Application`
 - **Worker environment** — processes background jobs from an **SQS queue**. `SQS → Worker → background processing`
-	A **SQS daemon (****`sqsd`****)** runs on each worker instance. It polls the queue and **POSTs each message to your application over local HTTP** (`localhost` by default). Your code therefore never talks to SQS directly — it just handles an HTTP request. A `200` response means success and the daemon deletes the message; a non-`200` means failure and the message returns to the queue, eventually landing in the DLQ.
-	**Periodic tasks** are configured with a **`cron.yaml`** file at the root of the application bundle — this is how you get scheduled work in a worker environment without EventBridge:
+  A **SQS daemon (****`sqsd`****)** runs on each worker instance. It polls the queue and **POSTs each message to your application over local HTTP** (`localhost` by default). Your code therefore never talks to SQS directly — it just handles an HTTP request. A `200` response means success and the daemon deletes the message; a non-`200` means failure and the message returns to the queue, eventually landing in the DLQ.
+  **Periodic tasks** are configured with a **`cron.yaml`** file at the root of the application bundle — this is how you get scheduled work in a worker environment without EventBridge:
 ```yaml
 version:1
 cron:
@@ -80,36 +67,14 @@ That leads directly to the rule:
 - **Databases must be created *outside* Beanstalk** (a standalone RDS instance) and connected via environment variables. Otherwise rebuilding the environment destroys your production data.
 - **Temporary/recreatable resources** like an ElastiCache cluster are acceptable inside `.ebextensions`, because losing them costs nothing but a cache warm-up.
 This isn’t arbitrary — it follows from “the resource dies with the environment”.
-<table header-row="true">
-<tr>
-<td>File</td>
-<td>Simple meaning</td>
-</tr>
-<tr>
-<td>`env.yaml`</td>
-<td>Environment settings/configuration</td>
-</tr>
-<tr>
-<td>`.ebextensions/*.config`</td>
-<td>Configure the underlying EC2 instances</td>
-</tr>
-<tr>
-<td>`cron.yaml`</td>
-<td>Scheduled jobs for **worker environments**</td>
-</tr>
-<tr>
-<td>`Dockerrun.aws.json`</td>
-<td>Tell EB how to run a **Docker container**</td>
-</tr>
-<tr>
-<td>`Procfile`</td>
-<td>Tell EB **how to start the app**</td>
-</tr>
-<tr>
-<td>`.ebignore`</td>
-<td>Files to **exclude from deployment**</td>
-</tr>
-</table>
+| File | Simple meaning |
+| --- | --- |
+| `env.yaml` | Environment settings/configuration |
+| `.ebextensions/*.config` | Configure the underlying EC2 instances |
+| `cron.yaml` | Scheduled jobs for **worker environments** |
+| `Dockerrun.aws.json` | Tell EB how to run a **Docker container** |
+| `Procfile` | Tell EB **how to start the app** |
+| `.ebignore` | Files to **exclude from deployment** |
 **Beanstalk deployment policies**
 These stay here, with the rest of Beanstalk, so the service is in one place. The cross-service comparison against CodeDeploy’s strategies lives in **Part 5**, because that is where the exam pits them against each other.
 The five policies trade off speed, downtime, capacity, cost, and rollback safety. Once you see what each one does to the instances, the properties follow.
@@ -148,50 +113,13 @@ New version → 10%
     ↓ (validated)
 New version → 100%
 ```
-<table header-row="true">
-<tr>
-<td>Policy</td>
-<td>Instances</td>
-<td>Downtime</td>
-<td>Capacity</td>
-<td>Risk</td>
-</tr>
-<tr>
-<td>All at once</td>
-<td>Replace all together</td>
-<td>Possible</td>
-<td>Reduced</td>
-<td>Highest</td>
-</tr>
-<tr>
-<td>Rolling</td>
-<td>Replace in batches</td>
-<td>Minimal</td>
-<td>Reduced temporarily</td>
-<td>Medium</td>
-</tr>
-<tr>
-<td>Rolling + additional batch</td>
-<td>Extra instances first</td>
-<td>Minimal</td>
-<td>**Full**</td>
-<td>Lower</td>
-</tr>
-<tr>
-<td>Immutable</td>
-<td>Brand-new ASG</td>
-<td>**None**</td>
-<td>Full (extra cost)</td>
-<td>**Lowest**</td>
-</tr>
-<tr>
-<td>Traffic splitting</td>
-<td>New ASG + weighted traffic</td>
-<td>**None**</td>
-<td>Full</td>
-<td>Lowest + canary</td>
-</tr>
-</table>
+| Policy | Instances | Downtime | Capacity | Risk |
+| --- | --- | --- | --- | --- |
+| All at once | Replace all together | Possible | Reduced | Highest |
+| Rolling | Replace in batches | Minimal | Reduced temporarily | Medium |
+| Rolling + additional batch | Extra instances first | Minimal | **Full** | Lower |
+| Immutable | Brand-new ASG | **None** | Full (extra cost) | **Lowest** |
+| Traffic splitting | New ASG + weighted traffic | **None** | Full | Lowest + canary |
 **Blue/green in Beanstalk** is a separate approach: clone the environment, deploy to the clone, then **swap environment URLs (CNAME swap)**. This gives the fastest possible rollback — swap back — and is what you use when you need to change something Beanstalk can’t do in place.
 **Blue Environment:** Acts as the current live production system serving active user requests.**Green Environment:** Hosts the updated software version where final deployment verification and tests run in isolation.
 **Burst balance = saved CPU credits.**
@@ -221,32 +149,11 @@ Rolling, rolling with additional batch, and all-at-once reuse the existing insta
 Web app → **SQS queue** → Worker Environment → process task. Elastic Beanstalk manages the queue and worker processes for you.
 **Scaling:** Uses **EC2 Auto Scaling + CloudWatch** to add/remove worker instances based on workload.
 **Recall check — Elastic Beanstalk**
-<table header-row="true">
-<tr>
-<td>Service</td>
-<td>Simple meaning</td>
-<td>You manage</td>
-<td>Best clue</td>
-</tr>
-<tr>
-<td>**Elastic Beanstalk**</td>
-<td>Deploy an application easily; AWS manages the infrastructure</td>
-<td>Mostly your app</td>
-<td>**Easiest / simplest deployment**</td>
-</tr>
-<tr>
-<td>**ECS**</td>
-<td>AWS container orchestration</td>
-<td>Containers/tasks; compute can be EC2 or Fargate</td>
-<td>**Run/manage Docker containers**</td>
-</tr>
-<tr>
-<td>**Fargate**</td>
-<td>Serverless compute **for containers**</td>
-<td>Containers only, not servers</td>
-<td>**No EC2/server management**</td>
-</tr>
-</table>
+| Service | Simple meaning | You manage | Best clue |
+| --- | --- | --- | --- |
+| **Elastic Beanstalk** | Deploy an application easily; AWS manages the infrastructure | Mostly your app | **Easiest / simplest deployment** |
+| **ECS** | AWS container orchestration | Containers/tasks; compute can be EC2 or Fargate | **Run/manage Docker containers** |
+| **Fargate** | Serverless compute **for containers** | Containers only, not servers | **No EC2/server management** |
 - **Deploy an application without managing infrastructure / PaaS** → Elastic Beanstalk
 - **Automatic scaling + load balancing + deployment, minimal effort** → Elastic Beanstalk
 - **Need full EC2 control** → EC2

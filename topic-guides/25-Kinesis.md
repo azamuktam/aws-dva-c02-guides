@@ -14,32 +14,13 @@ Consumers (Lambda, KCL applications, Firehose, Managed Flink)
    each tracking its own position
 ```
 **Ordering is per shard**, and the **partition key** decides which shard a record lands on. That single design choice explains both the ordering guarantee and the hot-shard failure mode.
-<table header-row="true">
-<tr>
-<td>Limit</td>
-<td>Value</td>
-</tr>
-<tr>
-<td>Write per shard</td>
-<td>**1 MB/s** or **1,000 records/s**</td>
-</tr>
-<tr>
-<td>Read per shard (shared)</td>
-<td>**2 MB/s**, max 5 `GetRecords` calls/s, **shared by all consumers**</td>
-</tr>
-<tr>
-<td>Read per shard (**enhanced fan-out**)</td>
-<td>**2 MB/s per consumer**</td>
-</tr>
-<tr>
-<td>Record size</td>
-<td>1 MB max</td>
-</tr>
-<tr>
-<td>Retention</td>
-<td>**24 hours** default, up to **365 days**</td>
-</tr>
-</table>
+| Limit | Value |
+| --- | --- |
+| Write per shard | **1 MB/s** or **1,000 records/s** |
+| Read per shard (shared) | **2 MB/s**, max 5 `GetRecords` calls/s, **shared by all consumers** |
+| Read per shard (**enhanced fan-out**) | **2 MB/s per consumer** |
+| Record size | 1 MB max |
+| Retention | **24 hours** default, up to **365 days** |
 - **Capacity modes:** provisioned (you manage shards) or **on-demand** (scales automatically).
 - **Resharding:** split a shard to scale out, merge to scale in.
 - **Enhanced fan-out** gives each consumer its own dedicated 2 MB/s and *pushes* records rather than being polled, which lowers latency. Use it when several consumers each need full throughput.
@@ -76,50 +57,14 @@ Firehose exists because most streaming use cases are just “get this data into 
 - **No storage and no replay** — once delivered, Firehose has no copy.
 **Managed Service for Apache Flink** (formerly Kinesis Data Analytics) runs SQL or Flink applications over a stream for real-time aggregation and analytics.
 **Data Streams vs Firehose vs SQS**
-<table header-row="true">
-<tr>
-<td></td>
-<td>**Data Streams**</td>
-<td>**Firehose**</td>
-<td>**SQS**</td>
-</tr>
-<tr>
-<td>Latency</td>
-<td>Real time (\~200 ms)</td>
-<td>Near real time (60 s+)</td>
-<td>Real time</td>
-</tr>
-<tr>
-<td>Storage / replay</td>
-<td>✅ up to 365 days (default 1 day)</td>
-<td>❌</td>
-<td>Up to 14 days, no replay</td>
-</tr>
-<tr>
-<td>Ordering</td>
-<td>✅ per partition key</td>
-<td>❌</td>
-<td>FIFO queues only</td>
-</tr>
-<tr>
-<td>Many consumers, same data</td>
-<td>✅</td>
-<td>❌</td>
-<td>❌ one consumer per message</td>
-</tr>
-<tr>
-<td>Scaling</td>
-<td>Shards or on-demand</td>
-<td>Automatic</td>
-<td>Automatic</td>
-</tr>
-<tr>
-<td>Consumer code required</td>
-<td>✅</td>
-<td>❌</td>
-<td>✅</td>
-</tr>
-</table>
+|    | **Data Streams** | **Firehose** | **SQS** |
+| --- | --- | --- | --- |
+| Latency | Real time (\~200 ms) | Near real time (60 s+) | Real time |
+| Storage / replay | ✅ up to 365 days (default 1 day) | ❌ | Up to 14 days, no replay |
+| Ordering | ✅ per partition key | ❌ | FIFO queues only |
+| Many consumers, same data | ✅ | ❌ | ❌ one consumer per message |
+| Scaling | Shards or on-demand | Automatic | Automatic |
+| Consumer code required | ✅ | ❌ | ✅ |
 **Recall check — Kinesis**
 - **Real-time streaming, live data, event stream** → Kinesis Data Streams
 - **Read from Kinesis with checkpointing and multiple consumers** → KCL
@@ -173,13 +118,13 @@ Kinesis Agent is mainly for **collecting and sending data**, not processing it.
 > **Agent runs on your server/EC2.**
 > **Common destination → Kinesis Data Firehose.**
 ## Kinesis Agent for Windows — Sink Types
-**Sink = where Kinesis Agent for Windows sends the collected data.** AWS documents these built-in sink types: 
+**Sink = where Kinesis Agent for Windows sends the collected data.** AWS documents these built-in sink types:
 - **Kinesis Data Streams** ✅
 - **Kinesis Data Firehose** ✅
 - **CloudWatch** ✅
 - **CloudWatch Logs** ✅
 - **Local FileSystem** ✅
-For **Firehose**, the data can then be delivered to destinations such as **S3, Redshift, OpenSearch, and Splunk**. 
+For **Firehose**, the data can then be delivered to destinations such as **S3, Redshift, OpenSearch, and Splunk**.
 ### Exam memory
 > **Agent → Sink → destination**
 ```plain text

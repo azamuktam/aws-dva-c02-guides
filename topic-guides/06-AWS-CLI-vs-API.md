@@ -23,9 +23,9 @@ Both perform the same underlying EC2 operation.
 - `false` → EBS volume is kept
 **Exam memory**
 > **CLI = command-line interface to AWS APIs**
-	**SDK = programming interface to AWS APIs**
-	**API = underlying service interface**
+  **SDK = programming interface to AWS APIs**
+  **API = underlying service interface**
 ### **AWS Glue**
 AWS Glue is a fully managed extract, transform, and load (ETL) service that makes it easy for customers to prepare and load their data for analytics. AWS Glue cannot orchestrate a workflow.
 ### ** AWS Batch**
- AWS Batch runs batch computing jobs on the AWS Cloud. AWS Batch dynamically provisions the optimal quantity and type of compute resources (e.g., CPU or memory optimized instances) based on the volume and specific resource requirements of the batch jobs submitted. AWS Batch cannot orchestrate a workflow.
+  AWS Batch runs batch computing jobs on the AWS Cloud. AWS Batch dynamically provisions the optimal quantity and type of compute resources (e.g., CPU or memory optimized instances) based on the volume and specific resource requirements of the batch jobs submitted. AWS Batch cannot orchestrate a workflow.

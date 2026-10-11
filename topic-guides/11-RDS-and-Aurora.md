@@ -4,16 +4,16 @@
 > AWS manages your database server for you.
 - Fully managed **relational database** service.
 - AWS handles:
-	- Provisioning
-	- Patching
-	- Backups
-	- Monitoring
-	- Automatic failover
+  - Provisioning
+  - Patching
+  - Backups
+  - Monitoring
+  - Automatic failover
 - You manage:
-	- Database schema
-	- SQL queries
-	- Indexes
-	- Performance tuning
+  - Database schema
+  - SQL queries
+  - Indexes
+  - Performance tuning
 ### Supported Database Engines
 - MySQL
 - PostgreSQL
@@ -185,33 +185,12 @@ Use when: high availability, automatic failover, disaster recovery.
 - Uses **one endpoint (DNS)**.
 - During failover, AWS updates the endpoint to the standby.
 - **No connection string change** is required.
-<table header-row="true">
-<tr>
-<td>Need</td>
-<td>Answer</td>
-<td>Why</td>
-</tr>
-<tr>
-<td>More read capacity</td>
-<td>**Read Replicas**</td>
-<td>Readable copies, simplest change</td>
-</tr>
-<tr>
-<td>Survive an AZ failure</td>
-<td>**Multi-AZ**</td>
-<td>Automatic failover, standby not readable</td>
-</tr>
-<tr>
-<td>Eliminate repeated queries entirely</td>
-<td>**ElastiCache**</td>
-<td>Fastest, but you own the cache logic</td>
-</tr>
-<tr>
-<td>Least code change for read scaling</td>
-<td>**Read Replicas**</td>
-<td>Just a second endpoint</td>
-</tr>
-</table>
+| Need | Answer | Why |
+| --- | --- | --- |
+| More read capacity | **Read Replicas** | Readable copies, simplest change |
+| Survive an AZ failure | **Multi-AZ** | Automatic failover, standby not readable |
+| Eliminate repeated queries entirely | **ElastiCache** | Fastest, but you own the cache logic |
+| Least code change for read scaling | **Read Replicas** | Just a second endpoint |
 **IAM database authentication**
 Instead of a stored password, the application requests a short-lived **IAM authentication token** and uses that to connect.
 ```plain text
@@ -223,28 +202,11 @@ Connect using the token instead of a password
 ```
 The value: **there is no password to store, leak, or rotate.** Supported by **MySQL and PostgreSQL** on RDS/Aurora.
 Important boundary: it **does not rotate an existing database password** — it removes the need for one. If a question says “the existing password must be rotated automatically”, that’s Secrets Manager, not IAM DB auth.
-<table header-row="true">
-<tr>
-<td>Approach</td>
-<td>Stores a secret?</td>
-<td>Rotation</td>
-</tr>
-<tr>
-<td>**Secrets Manager**</td>
-<td>✅ Yes</td>
-<td>✅ Automatic, with built-in RDS support</td>
-</tr>
-<tr>
-<td>**Parameter Store ****`SecureString`**</td>
-<td>✅ Yes</td>
-<td>❌ No</td>
-</tr>
-<tr>
-<td>**IAM DB authentication**</td>
-<td>❌ **No password exists**</td>
-<td>N/A — tokens are short-lived by design</td>
-</tr>
-</table>
+| Approach | Stores a secret? | Rotation |
+| --- | --- | --- |
+| **Secrets Manager** | ✅ Yes | ✅ Automatic, with built-in RDS support |
+| **Parameter Store ****`SecureString`** | ✅ Yes | ❌ No |
+| **IAM DB authentication** | ❌ **No password exists** | N/A — tokens are short-lived by design |
 **RDS proxy: **
 - connection pooling and reuse.
 - Many application connections → **RDS Proxy** → fewer DB connections.

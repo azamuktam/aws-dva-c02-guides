@@ -37,36 +37,14 @@ Run `cdk deploy` to deploy the generated CloudFormation stacks and create/update
 4. cdk synth     → generate the CloudFormation template
 5. cdk deploy    → create/update resources
 ```
-<table header-row="true">
-<tr>
-<td>Command</td>
-<td>Does</td>
-</tr>
-<tr>
-<td>**`cdk init`**</td>
-<td>Create a CDK application</td>
-</tr>
-<tr>
-<td>**`cdk synth`**</td>
-<td>**Generate the CloudFormation template**</td>
-</tr>
-<tr>
-<td>**`cdk deploy`**</td>
-<td>Create or update AWS resources</td>
-</tr>
-<tr>
-<td>**`cdk diff`**</td>
-<td>Compare the code against what’s deployed, before deploying</td>
-</tr>
-<tr>
-<td>**`cdk bootstrap`**</td>
-<td>Prepare the account/Region for CDK (creates the staging bucket and roles)</td>
-</tr>
-<tr>
-<td>**`cdk destroy`**</td>
-<td>Delete the stack</td>
-</tr>
-</table>
+| Command | Does |
+| --- | --- |
+| **`cdk init`** | Create a CDK application |
+| **`cdk synth`** | **Generate the CloudFormation template** |
+| **`cdk deploy`** | Create or update AWS resources |
+| **`cdk diff`** | Compare the code against what’s deployed, before deploying |
+| **`cdk bootstrap`** | Prepare the account/Region for CDK (creates the staging bucket and roles) |
+| **`cdk destroy`** | Delete the stack |
 **Supported languages:** TypeScript, Python, Java, C#, Go.
 **Recall check — CDK**
 - **IaC using Python / TypeScript / a real programming language** → CDK

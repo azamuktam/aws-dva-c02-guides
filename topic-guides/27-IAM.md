@@ -15,38 +15,22 @@ Every AWS API call must be authenticated and authorised. IAM is the system that 
 **Group** — a collection of users, so a permission set is defined once and applied to many. Groups cannot contains other groups and cannot be principals in a policy.
 **Role** — an identity with permissions but **no permanent credentials**. It is *assumed*, which produces temporary credentials via STS. This is the mechanism that lets a Lambda function, EC2 instance, or ECS task call AWS APIs without any secret being stored anywhere.
 **Policy** — a JSON document defining permissions.
-<table header-row="true">
-<tr>
-<td></td>
-<td>Difference</td>
-</tr>
-<tr>
-<td>**User**</td>
-<td>Permanent identity, long-lived credentials</td>
-</tr>
-<tr>
-<td>**Group**</td>
-<td>Same permissions for many users</td>
-</tr>
-<tr>
-<td>**Role**</td>
-<td>**Temporary** credentials, assumable by services or people</td>
-</tr>
-<tr>
-<td>**Policy**</td>
-<td>Defines Allow / Deny on actions and resources</td>
-</tr>
-</table>
-IAM roles and resource-based policies can provide cross-account access **only within the same AWS partition**. They cannot be used to delegate access between, for example, `aws` and `aws-cn`. 
+|    | Difference |
+| --- | --- |
+| **User** | Permanent identity, long-lived credentials |
+| **Group** | Same permissions for many users |
+| **Role** | **Temporary** credentials, assumable by services or people |
+| **Policy** | Defines Allow / Deny on actions and resources |
+IAM roles and resource-based policies can provide cross-account access **only within the same AWS partition**. They cannot be used to delegate access between, for example, `aws` and `aws-cn`.
 **AWS partition → **contains multiple AWS Regions
 Example:
 - **`aws`**** partition**
-	- `us-east-1`
-	- `eu-west-1`
-	- `ap-southeast-1`
+  - `us-east-1`
+  - `eu-west-1`
+  - `ap-southeast-1`
 - **`aws-cn`**** partition**
-	- `cn-north-1`
-	- `cn-northwest-1`
+  - `cn-north-1`
+  - `cn-northwest-1`
 **Why roles beat access keys, concretely:** a stored key can be committed to Git, leaked in a log, or copied to a laptop, and it stays valid until someone notices and revokes it. A role’s credentials are generated on demand, expire automatically, and never exist in your code or configuration. This is why “attach an IAM role” beats “store the access key” on every single question where both appear.
 **MFA** adds a second factor. Always enable it on the root user.
 **Policy types — and what question each answers**
@@ -70,54 +54,19 @@ IAM Role
      └── Permissions policy  →  WHAT it can do once assumed
 ```
 For an IAM **role**, there are two different policies:
-<table header-row="true">
-<tr>
-<td>Policy</td>
-<td>Answers</td>
-<td>Type</td>
-</tr>
-<tr>
-<td>**Trust policy**</td>
-<td>**Who can assume this role?**</td>
-<td>**Resource-based policy**</td>
-</tr>
-<tr>
-<td>**Permissions policy**</td>
-<td>**What can this role do?**</td>
-<td>**Identity-based policy**</td>
-</tr>
-</table>
+| Policy | Answers | Type |
+| --- | --- | --- |
+| **Trust policy** | **Who can assume this role?** | **Resource-based policy** |
+| **Permissions policy** | **What can this role do?** | **Identity-based policy** |
 **Other policy types**
-<table header-row="true">
-<tr>
-<td>Policy</td>
-<td>Purpose</td>
-</tr>
-<tr>
-<td>**Permissions policy**</td>
-<td>Grants Allow/Deny on actions</td>
-</tr>
-<tr>
-<td>**Trust policy**</td>
-<td>Defines who may assume a role</td>
-</tr>
-<tr>
-<td>**Permissions boundary**</td>
-<td>The **maximum** permissions an identity can ever receive, however many policies are attached</td>
-</tr>
-<tr>
-<td>**SCP (Service Control Policy)**</td>
-<td>Limits what an entire account or OU can do, in AWS Organizations</td>
-</tr>
-<tr>
-<td>**Session policy**</td>
-<td>Passed at assume time; can only narrow the role’s permissions</td>
-</tr>
-<tr>
-<td>**ACL**</td>
-<td>Older, cross-account resource access control (legacy S3)</td>
-</tr>
-</table>
+| Policy | Purpose |
+| --- | --- |
+| **Permissions policy** | Grants Allow/Deny on actions |
+| **Trust policy** | Defines who may assume a role |
+| **Permissions boundary** | The **maximum** permissions an identity can ever receive, however many policies are attached |
+| **SCP (Service Control Policy)** | Limits what an entire account or OU can do, in AWS Organizations |
+| **Session policy** | Passed at assume time; can only narrow the role’s permissions |
+| **ACL** | Older, cross-account resource access control (legacy S3) |
 A permissions boundary does not grant anything — it caps. An identity’s effective permissions are the *intersection* of its policies and its boundary.
 **Policy elements**
 ```json
@@ -177,40 +126,14 @@ IAM can store uploaded SSL/TLS server certificates. It is a legacy feature for c
 - **Upload an existing certificate** → ACM import, or IAM (legacy)
 - **Private/internal certificates** → **AWS Private CA**
 **IAM analysis tools — three different questions**
-<table header-row="true">
-<colgroup>
-<col width="167.9375">
-<col>
-</colgroup>
-<tr>
-<td>Tool</td>
-<td>Answers</td>
-</tr>
-<tr>
-<td>**IAM Access Analyzer**</td>
-<td>“Which of my resources are shared externally or publicly?”</td>
-</tr>
-<tr>
-<td>**IAM Policy Simulator**</td>
-<td>“Would this policy allow this specific action?”</td>
-</tr>
-<tr>
-<td>**IAM Access Advisor**</td>
-<td>“Which services has this identity actually used?” (for pruning unused permissions)</td>
-</tr>
-<tr>
-<td>**AWS Config**</td>
-<td>“Has this resource’s configuration changed, and is it compliant?”</td>
-</tr>
-<tr>
-<td>**IAM Credential Report**</td>
-<td> A downloadable CSV report showing all IAM users and the status of their **passwords, access keys, MFA, and other credentials** for security auditing</td>
-</tr>
-<tr>
-<td></td>
-<td></td>
-</tr>
-</table>
+| Tool | Answers |
+| --- | --- |
+| **IAM Access Analyzer** | “Which of my resources are shared externally or publicly?” |
+| **IAM Policy Simulator** | “Would this policy allow this specific action?” |
+| **IAM Access Advisor** | “Which services has this identity actually used?” (for pruning unused permissions) |
+| **AWS Config** | “Has this resource’s configuration changed, and is it compliant?” |
+| **IAM Credential Report** | A downloadable CSV report showing all IAM users and the status of their **passwords, access keys, MFA, and other credentials** for security auditing |
+|    |    |
 **Access Analyzer** continuously analyses identity and resource policies and generates findings when something is reachable from outside the account. It covers S3 buckets, KMS keys, IAM roles, SQS/SNS, Secrets Manager, and other supported resources. **It reports; it does not modify permissions.**
 **Access Advisor** is how you implement least privilege on an existing identity: see what was never used, then remove it.
 **Recall check — IAM**

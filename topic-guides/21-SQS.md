@@ -19,64 +19,22 @@ Consumer calls DeleteMessage  →  message is gone for good
 **The bug:** if processing takes longer than the visibility timeout, the message reappears while the first consumer is still working. A second consumer starts on it. The work happens twice.
 **The rule that follows:** **visibility timeout ≥ processing time.** With Lambda, that means visibility timeout ≥ function timeout, and AWS recommends **6×** to absorb retries. If a consumer needs more time mid-processing, it can call **`ChangeMessageVisibility`** to extend the hold.
 **Standard vs FIFO**
-<table header-row="true">
-<tr>
-<td></td>
-<td>**Standard**</td>
-<td>**FIFO**</td>
-</tr>
-<tr>
-<td>Throughput</td>
-<td>Effectively unlimited</td>
-<td>300 msg/s, **3,000** with batching (high-throughput FIFO: much higher)</td>
-</tr>
-<tr>
-<td>Ordering</td>
-<td>Best-effort</td>
-<td>**Strict, within a message group**</td>
-</tr>
-<tr>
-<td>Delivery</td>
-<td>**At least once** (duplicates possible)</td>
-<td>**Exactly once** (deduplicated)</td>
-</tr>
-<tr>
-<td>Name requirement</td>
-<td>—</td>
-<td>Must end in `.fifo`</td>
-</tr>
-</table>
+|    | **Standard** | **FIFO** |
+| --- | --- | --- |
+| Throughput | Effectively unlimited | 300 msg/s, **3,000** with batching (high-throughput FIFO: much higher) |
+| Ordering | Best-effort | **Strict, within a message group** |
+| Delivery | **At least once** (duplicates possible) | **Exactly once** (deduplicated) |
+| Name requirement | — | Must end in `.fifo` |
 **The queue type cannot be changed after creation.** If you need the other type, create a new queue. This is a `CreateQueue` decision.
 FIFO mechanics:
 - **`MessageGroupId`** — the ordering scope. Messages in the same group are strictly ordered; different groups process in parallel. This is how FIFO scales at all: use many groups. You can have as many consumers as “MessageGroupId” for you SQS FIFO queues
 - **`MessageDeduplicationId`** — SQS discards duplicates with the same ID within a **5-minute** deduplication window. **Content-based deduplication** hashes the body instead of requiring an explicit ID.
-<table header-row="true">
-<tr>
-<td></td>
-<td>**MessageDeduplicationId**</td>
-<td>**Content-based deduplication**</td>
-</tr>
-<tr>
-<td>ID created by</td>
-<td>**You**</td>
-<td>**SQS**</td>
-</tr>
-<tr>
-<td>Based on</td>
-<td>Any ID you provide</td>
-<td>Hash of the **message body**</td>
-</tr>
-<tr>
-<td>Need to provide ID?</td>
-<td>✅ Yes</td>
-<td>❌ No</td>
-</tr>
-<tr>
-<td>Purpose</td>
-<td>Decide yourself which messages are duplicates</td>
-<td>Automatically detect identical message bodies</td>
-</tr>
-</table>
+|    | **MessageDeduplicationId** | **Content-based deduplication** |
+| --- | --- | --- |
+| ID created by | **You** | **SQS** |
+| Based on | Any ID you provide | Hash of the **message body** |
+| Need to provide ID? | ✅ Yes | ❌ No |
+| Purpose | Decide yourself which messages are duplicates | Automatically detect identical message bodies |
 **Long polling**
 `ReceiveMessage` with a wait time of 0 returns immediately, often empty, and you pay for the call. **Long polling** (`ReceiveMessageWaitTimeSeconds`, up to **20 seconds**) holds the request open until a message arrives or the timer expires.
 Result: fewer empty responses, lower cost, lower latency. There is no downside — enable it.
@@ -93,64 +51,23 @@ The common exam trap is the statement *“a standard queue’s DLQ can be either
 **Delay queues**
 `DelaySeconds` (0–15 minutes) postpones delivery of new messages. Queue-level delay applies to every message; **per-message delay is available on Standard queues only**.
 **Queue management APIs — three that are easy to confuse**
-<table header-row="true">
-<tr>
-<td>API</td>
-<td>Effect</td>
-</tr>
-<tr>
-<td>**`DeleteQueue`**</td>
-<td>Deletes the queue, all messages, and the configuration. **Irreversible.** AWS recommends waiting \~60 seconds before recreating a queue with the same name</td>
-</tr>
-<tr>
-<td>**`PurgeQueue`**</td>
-<td>Deletes all messages, **keeps the queue**</td>
-</tr>
-<tr>
-<td>**`RemovePermission`**</td>
-<td>Removes an access permission from the queue policy</td>
-</tr>
-</table>
+| API | Effect |
+| --- | --- |
+| **`DeleteQueue`** | Deletes the queue, all messages, and the configuration. **Irreversible.** AWS recommends waiting \~60 seconds before recreating a queue with the same name |
+| **`PurgeQueue`** | Deletes all messages, **keeps the queue** |
+| **`RemovePermission`** | Removes an access permission from the queue policy |
 So: cleaning up after a test and never needing the queue again → `DeleteQueue`. Clearing bad messages but keeping the queue for future use → `PurgeQueue`.
 **Numbers**
-<table header-row="true">
-<tr>
-<td>Setting</td>
-<td>Value</td>
-</tr>
-<tr>
-<td>Max message size</td>
-<td>**1 MiB** (SQS Extended Client Library + S3 for up to 2 GB)</td>
-</tr>
-<tr>
-<td>Message retention</td>
-<td>Default **4 days**, range 60 s – **14 days**</td>
-</tr>
-<tr>
-<td>Visibility timeout</td>
-<td>Default **30 s**, range 0 – **12 hours**</td>
-</tr>
-<tr>
-<td>Long polling wait</td>
-<td>0 – **20 s**</td>
-</tr>
-<tr>
-<td>Delay</td>
-<td>0 – **15 minutes**</td>
-</tr>
-<tr>
-<td>Batch APIs (`SendMessageBatch` etc.)</td>
-<td>**10 messages**</td>
-</tr>
-<tr>
-<td>Message attributes</td>
-<td>**10** per message, and they count toward the 256 KB limit</td>
-</tr>
-<tr>
-<td>Messages per `ReceiveMessage`</td>
-<td>**10**</td>
-</tr>
-</table>
+| Setting | Value |
+| --- | --- |
+| Max message size | **1 MiB** (SQS Extended Client Library + S3 for up to 2 GB) |
+| Message retention | Default **4 days**, range 60 s – **14 days** |
+| Visibility timeout | Default **30 s**, range 0 – **12 hours** |
+| Long polling wait | 0 – **20 s** |
+| Delay | 0 – **15 minutes** |
+| Batch APIs (`SendMessageBatch` etc.) | **10 messages** |
+| Message attributes | **10** per message, and they count toward the 256 KB limit |
+| Messages per `ReceiveMessage` | **10** |
 - **Stored/backlog messages:** **No limit** on the number of messages a queue can store.
 - **In-flight messages:** received by a consumer but **not yet deleted** → approximately **120,000 max** for a standard queue by default.
 **Recall check — SQS**

@@ -1,54 +1,17 @@
-## AWS CloudWatch 
-<table header-row="true">
-<tr>
-<td>Field</td>
-<td>Simple meaning</td>
-</tr>
-<tr>
-<td>**namespace**</td>
-<td>Who am I calling? `aws` or `remote`</td>
-</tr>
-<tr>
-<td>**http**</td>
-<td>Details about an outgoing HTTP request</td>
-</tr>
-<tr>
-<td>**aws**</td>
-<td>Details about the AWS service/resource called</td>
-</tr>
-<tr>
-<td>**error**</td>
-<td>An error occurred</td>
-</tr>
-<tr>
-<td>**throttle**</td>
-<td>Request was throttled</td>
-</tr>
-<tr>
-<td>**fault**</td>
-<td>Server-side failure</td>
-</tr>
-<tr>
-<td>**cause**</td>
-<td>What caused the error</td>
-</tr>
-<tr>
-<td>**annotations**</td>
-<td>Searchable/indexed key-value data</td>
-</tr>
-<tr>
-<td>**metadata**</td>
-<td>Extra data stored for debugging; not indexed</td>
-</tr>
-<tr>
-<td>**subsegments**</td>
-<td>Smaller downstream operations inside this subsegment</td>
-</tr>
-<tr>
-<td>**precursor_ids**</td>
-<td>IDs of earlier related subsegments</td>
-</tr>
-</table>
+## AWS CloudWatch
+| Field | Simple meaning |
+| --- | --- |
+| **namespace** | Who am I calling? `aws` or `remote` |
+| **http** | Details about an outgoing HTTP request |
+| **aws** | Details about the AWS service/resource called |
+| **error** | An error occurred |
+| **throttle** | Request was throttled |
+| **fault** | Server-side failure |
+| **cause** | What caused the error |
+| **annotations** | Searchable/indexed key-value data |
+| **metadata** | Extra data stored for debugging; not indexed |
+| **subsegments** | Smaller downstream operations inside this subsegment |
+| **precursor_ids** | IDs of earlier related subsegments |
 **Metric:** A measurement tracked over time, such as CPU usage.
 **Namespace:** Who am I calling? `aws` or `remote`
 **Dimensions:** Identify what the metric belongs to, such as an EC2 instance ID.
@@ -69,7 +32,7 @@
 - **`PutMetricData`** — an API operation used to **publish custom metric data to CloudWatch**; set `StorageResolution: 1` for **1-second high-resolution metrics**
 - Use dimensions to segment (per environment, per customer, per function).
 - **Metric math** combines metrics into expressions; **anomaly detection** builds an expected band. Both can drive alarms.
-**`SetAlarmState`** — temporarily changes a CloudWatch alarm to `ALARM`, `OK`, or `INSUFFICIENT_DATA` **for testing**, so you can verify that its configured actions (e.g. SNS notification) work. The metric alarm normally returns to its real state after the next evaluation. 
+**`SetAlarmState`** — temporarily changes a CloudWatch alarm to `ALARM`, `OK`, or `INSUFFICIENT_DATA` **for testing**, so you can verify that its configured actions (e.g. SNS notification) work. The metric alarm normally returns to its real state after the next evaluation.
 **Retention** is tiered automatically: 1-second data for 3 hours, 1-minute for 15 days, 5-minute for 63 days, 1-hour for 15 months.
 **Logs**
 ```plain text
@@ -106,93 +69,24 @@ Interactive and ad-hoc — not a streaming mechanism. Use it to *investigate*; u
 - Dashboards can be shared publicly or with specific people via a link, without giving them console access.
 An alarm stuck in `INSUFFICIENT_DATA` means no datapoints are arriving — either the metric isn’t being published, or the “treat missing data” setting is wrong for a sparse metric.
 **Metrics worth recognising by name**
-<table header-row="true">
-<tr>
-<td>Service</td>
-<td>Metric</td>
-<td>What it tells you</td>
-</tr>
-<tr>
-<td>**Lambda**</td>
-<td>`Invocations`, `Duration`, `Errors`</td>
-<td>Basic health</td>
-</tr>
-<tr>
-<td>**Lambda**</td>
-<td>**`Throttles`**</td>
-<td>Concurrency limit hit (429)</td>
-</tr>
-<tr>
-<td>**Lambda**</td>
-<td>`ConcurrentExecutions`</td>
-<td>How much concurrency is in use</td>
-</tr>
-<tr>
-<td>**Lambda**</td>
-<td>**`IteratorAge`**</td>
-<td>Stream consumer falling behind</td>
-</tr>
-<tr>
-<td>**Lambda**</td>
-<td>`DeadLetterErrors`</td>
-<td>Failed to write to the DLQ</td>
-</tr>
-<tr>
-<td>**API Gateway**</td>
-<td>`4XXError` / `5XXError`</td>
-<td>Client vs server errors</td>
-</tr>
-<tr>
-<td>**API Gateway**</td>
-<td>**`Latency`** vs **`IntegrationLatency`**</td>
-<td>Total time vs backend-only time</td>
-</tr>
-<tr>
-<td>**API Gateway**</td>
-<td>`CacheHitCount` / `CacheMissCount`</td>
-<td>Cache effectiveness</td>
-</tr>
-<tr>
-<td>**API Gateway**</td>
-<td>`Count`</td>
-<td>Request volume</td>
-</tr>
-<tr>
-<td>**SQS**</td>
-<td>`ApproximateNumberOfMessagesVisible`</td>
-<td>Backlog — use this for scaling</td>
-</tr>
-<tr>
-<td>**SQS**</td>
-<td>`ApproximateAgeOfOldestMessage`</td>
-<td>Consumers are too slow</td>
-</tr>
-<tr>
-<td>**DynamoDB**</td>
-<td>`ThrottledRequests`, `ConsumedReadCapacityUnits`</td>
-<td>Capacity problems</td>
-</tr>
-<tr>
-<td>**DynamoDB**</td>
-<td>`SuccessfulRequestLatency`</td>
-<td>Table latency</td>
-</tr>
-<tr>
-<td>**Kinesis**</td>
-<td>`GetRecords.IteratorAgeMilliseconds`</td>
-<td>Consumer lag</td>
-</tr>
-<tr>
-<td>**Kinesis**</td>
-<td>`WriteProvisionedThroughputExceeded`</td>
-<td>Hot shard or too few shards</td>
-</tr>
-<tr>
-<td>**ECS**</td>
-<td>`CPUUtilization`, `MemoryUtilization`</td>
-<td>Service load</td>
-</tr>
-</table>
+| Service | Metric | What it tells you |
+| --- | --- | --- |
+| **Lambda** | `Invocations`, `Duration`, `Errors` | Basic health |
+| **Lambda** | **`Throttles`** | Concurrency limit hit (429) |
+| **Lambda** | `ConcurrentExecutions` | How much concurrency is in use |
+| **Lambda** | **`IteratorAge`** | Stream consumer falling behind |
+| **Lambda** | `DeadLetterErrors` | Failed to write to the DLQ |
+| **API Gateway** | `4XXError` / `5XXError` | Client vs server errors |
+| **API Gateway** | **`Latency`** vs **`IntegrationLatency`** | Total time vs backend-only time |
+| **API Gateway** | `CacheHitCount` / `CacheMissCount` | Cache effectiveness |
+| **API Gateway** | `Count` | Request volume |
+| **SQS** | `ApproximateNumberOfMessagesVisible` | Backlog — use this for scaling |
+| **SQS** | `ApproximateAgeOfOldestMessage` | Consumers are too slow |
+| **DynamoDB** | `ThrottledRequests`, `ConsumedReadCapacityUnits` | Capacity problems |
+| **DynamoDB** | `SuccessfulRequestLatency` | Table latency |
+| **Kinesis** | `GetRecords.IteratorAgeMilliseconds` | Consumer lag |
+| **Kinesis** | `WriteProvisionedThroughputExceeded` | Hot shard or too few shards |
+| **ECS** | `CPUUtilization`, `MemoryUtilization` | Service load |
 **The ****`Latency`**** vs ****`IntegrationLatency`**** pair is worth understanding rather than memorising.** `IntegrationLatency` is the time API Gateway spent waiting for your backend. `Latency` is the total time the client experienced. So:
 - Both high → the **backend** is slow.
 - `Latency` high, `IntegrationLatency` low → the extra time was spent **in API Gateway** (authorizer, mapping template, throttling queue), not in your code.
@@ -206,7 +100,7 @@ That single subtraction turns a vague “the API is slow” scenario into a prec
 - **Memory or disk-space metrics missing** → install the **CloudWatch agent** (custom metric)
 - **Do NOT answer “enable detailed monitoring”** for a missing memory metric
 - **1-minute EC2 metrics** → detailed monitoring
-- **1 second** — High-resolution custom metrics in CloudWatch can have a minimum resolution of **1 second**. 
+- **1 second** — High-resolution custom metrics in CloudWatch can have a minimum resolution of **1 second**.
 - **High-resolution metric:** 1-second resolution
 - **High-resolution alarm:** **10, 20, or 30 seconds**
 - **Regular alarm:** **60 seconds or any multiple of 60** 
@@ -228,13 +122,13 @@ That single subtraction turns a vague “the API is slow” scenario into a prec
 - **Scale workers on queue depth** → `ApproximateNumberOfMessagesVisible`
 - **Queue is short but messages are old** → `ApproximateAgeOfOldestMessage`, consumers too slow
 - **`Throttles`**** \> 0 on Lambda** → raise concurrency
-- **\`CloudWatchAgentServerPolicy\`** → For EC2 instances running the CloudWatch Agent. Allows the agent to **publish metrics/logs** to CloudWatch. 
+- **\`CloudWatchAgentServerPolicy\`** → For EC2 instances running the CloudWatch Agent. Allows the agent to **publish metrics/logs** to CloudWatch.
 - **\`CloudWatchAgentAdminPolicy\`** → For **installing/configuring/managing** the CloudWatch Agent, with additional **Systems Manager/Parameter Store** permissions.
 ---
 ### CloudWatch Alarm Evaluation
 **Period** = how long each data point represents.
 **Evaluation Periods** = how many recent data points CloudWatch checks.
-**Datapoints to Alarm** = how many of those must breach the threshold. 
+**Datapoints to Alarm** = how many of those must breach the threshold.
 **Example: 3 consecutive breaches**
 ```plain text
 Period = 1 minute
@@ -248,7 +142,7 @@ Datapoints to Alarm = 3
              ↓
            ALARM
 ```
-All **3 of the latest 3** must breach. 
+All **3 of the latest 3** must breach.
 **M out of N**
 ```plain text
 Evaluation Periods = N
@@ -261,17 +155,17 @@ Example:
 Evaluation Periods = 3
 Datapoints to Alarm = 2
 ```
-Means **at least 2 of the latest 3** must breach. They **do not have to be consecutive**. 
+Means **at least 2 of the latest 3** must breach. They **do not have to be consecutive**.
 **Period ≠ Evaluation Periods**
 ```plain text
 Period = 3 minutes
 ```
 means **each data point covers 3 minutes**.
 It does **not** mean “check 3 data points.”
-**High-resolution:** CloudWatch can use 10-, 20-, or 30-second periods, but high-resolution alarms cost more. 
+**High-resolution:** CloudWatch can use 10-, 20-, or 30-second periods, but high-resolution alarms cost more.
 **Exam memory:**
 > **Period = size of each data point**
-	**Evaluation Periods = how many to look at**
-	**Datapoints to Alarm = how many must breach**
-	**3 consecutive → 3 / 3**
-	**2 of 3 → 2 / 3**
+  **Evaluation Periods = how many to look at**
+  **Datapoints to Alarm = how many must breach**
+  **3 consecutive → 3 / 3**
+  **2 of 3 → 2 / 3**

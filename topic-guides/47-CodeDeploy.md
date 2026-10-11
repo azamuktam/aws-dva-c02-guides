@@ -6,52 +6,18 @@
 Copying files onto servers is the easy part. Doing it without downtime, stopping the old process cleanly, verifying the new version works, and rolling back automatically when it doesn't — that is deployment. CodeDeploy handles the sequencing and the rollback.
 The `appspec` file is where you declare **what to deploy** and **what to run at each stage of the deployment**.
 **Compute platforms and file locations**
-<table header-row="true">
-<tr>
-<td>Platform</td>
-<td>File</td>
-<td>Format</td>
-<td>Agent required?</td>
-</tr>
-<tr>
-<td>**EC2 / On-premises**</td>
-<td>`appspec.yml` at the **root of the bundle**</td>
-<td>YAML only</td>
-<td>✅ **CodeDeploy agent**</td>
-</tr>
-<tr>
-<td>**Lambda**</td>
-<td>`appspec.yml` or `.json`</td>
-<td>YAML or JSON</td>
-<td>❌</td>
-</tr>
-<tr>
-<td>**ECS**</td>
-<td>`appspec.yml` or `.json`</td>
-<td>YAML or JSON</td>
-<td>❌</td>
-</tr>
-</table>
+| Platform | File | Format | Agent required? |
+| --- | --- | --- | --- |
+| **EC2 / On-premises** | `appspec.yml` at the **root of the bundle** | YAML only | ✅ **CodeDeploy agent** |
+| **Lambda** | `appspec.yml` or `.json` | YAML or JSON | ❌ |
+| **ECS** | `appspec.yml` or `.json` | YAML or JSON | ❌ |
 #### ECS CodeDeploy AppSpec — `resources`
 For an **ECS deployment**, the `resources` section needs to identify:
-<table header-row="true">
-<tr>
-<td>Property</td>
-<td>Purpose</td>
-</tr>
-<tr>
-<td>**`TaskDefinition`**</td>
-<td>The ECS task definition to deploy</td>
-</tr>
-<tr>
-<td>**`ContainerName`**</td>
-<td>Container receiving the new task definition</td>
-</tr>
-<tr>
-<td>**`ContainerPort`**</td>
-<td>Port exposed by that container</td>
-</tr>
-</table>
+| Property | Purpose |
+| --- | --- |
+| **`TaskDefinition`** | The ECS task definition to deploy |
+| **`ContainerName`** | Container receiving the new task definition |
+| **`ContainerPort`** | Port exposed by that container |
 **EC2 / On-premises lifecycle hooks**
 For **EC2 and on-premises**, the key component is the **CodeDeploy Agent**.
 The order mirrors what a deployment physically has to do: stop the old thing, put the new files down, start it, check it worked.
@@ -102,49 +68,26 @@ AfterAllowTraffic
 ```
 ECS deployments with CodeDeploy are **always blue/green** and require an ALB with a production listener, plus optionally a test listener — which is what `AfterAllowTestTraffic` validates against.
 **Two separate settings — don't mix them up**
-<table header-row="true">
-<tr>
-<td>Setting</td>
-<td>Question it answers</td>
-<td>Values</td>
-</tr>
-<tr>
-<td>**Deployment type**</td>
-<td>*Where* does the new version run?</td>
-<td>**In-place** (EC2 / on-prem only) or **Blue/green**</td>
-</tr>
-<tr>
-<td>**Deployment configuration**</td>
-<td>*How fast* does the switch happen?</td>
-<td>EC2: `OneAtATime` / `HalfAtATime` / `AllAtOnce` · Lambda & ECS: `AllAtOnce` / `Canary` / `Linear`</td>
-</tr>
-</table>
+| Setting | Question it answers | Values |
+| --- | --- | --- |
+| **Deployment type** | *Where* does the new version run? | **In-place** (EC2 / on-prem only) or **Blue/green** |
+| **Deployment configuration** | *How fast* does the switch happen? | EC2: `OneAtATime` / `HalfAtATime` / `AllAtOnce` · Lambda & ECS: `AllAtOnce` / `Canary` / `Linear` |
 You pick **one of each**. Blue/green is not a speed; canary is not a place.
 **Deployment configurations**
-<table header-row="true">
-<tr>
-<td>Platform</td>
-<td>Configurations</td>
-</tr>
-<tr>
-<td>**EC2 / On-premises**</td>
-<td>`CodeDeployDefault.OneAtATime`, `HalfAtATime`, `AllAtOnce`, or custom by count/percentage</td>
-</tr>
-<tr>
-<td>**Lambda / ECS**</td>
-<td>`AllAtOnce`, **`Canary`**, **`Linear`**</td>
-</tr>
-</table>
+| Platform | Configurations |
+| --- | --- |
+| **EC2 / On-premises** | `CodeDeployDefault.OneAtATime`, `HalfAtATime`, `AllAtOnce`, or custom by count/percentage |
+| **Lambda / ECS** | `AllAtOnce`, **`Canary`**, **`Linear`** |
 Naming pattern: `CodeDeployDefault.LambdaCanary10Percent5Minutes`, `CodeDeployDefault.LambdaLinear10PercentEvery1Minute`.
 **The canary/linear distinction:**
 - **Canary** — **two** shifts. A small percentage, a wait, then the remainder.
-	```plain text
+```plain text
 10% → wait 5 min → 90%
-	```
+```
 - **Linear** — **equal** increments on a repeating interval.
-	```plain text
+```plain text
 10% → wait → 20% → wait → 30% → ...
-	```
+```
 Both are **deployment configurations**, and they exist **only for Lambda and ECS** — where the deployment type is always blue/green anyway. They set the speed of the shift, not the type:
 ```plain text
 Lambda / ECS  →  deployment type is always Blue/green
@@ -158,28 +101,12 @@ EC2 Blue/green →  deployment configuration:
                          (no Canary, no Linear)
 ```
 ### CodeDeploy deployment support
-<table header-row="true">
-<tr>
-<td>Compute platform</td>
-<td>Deployment type</td>
-</tr>
-<tr>
-<td>**EC2 / on-premises**</td>
-<td>✅ In-place</td>
-</tr>
-<tr>
-<td>**EC2 / on-premises**</td>
-<td>✅ Blue/green</td>
-</tr>
-<tr>
-<td>**Lambda**</td>
-<td>✅ Blue/green</td>
-</tr>
-<tr>
-<td>**ECS**</td>
-<td>✅ Blue/green</td>
-</tr>
-</table>
+| Compute platform | Deployment type |
+| --- | --- |
+| **EC2 / on-premises** | ✅ In-place |
+| **EC2 / on-premises** | ✅ Blue/green |
+| **Lambda** | ✅ Blue/green |
+| **ECS** | ✅ Blue/green |
 So the key thing is:
 - **ECS → Blue/green** ✅
 - **Lambda → Blue/green** ✅
@@ -255,149 +182,37 @@ Every AWS deployment mechanism is answering the same question: **what happens to
 **3. Add new capacity first, then remove the old.** Capacity never drops. Costs more during the deployment. Rollback is easy because the old thing still exists.
 **4. Send a fraction of real traffic to the new version, then the rest.** Everything in (3), plus you find out with 10% of users rather than 100%.
 **How each service names them**
-<table header-row="true">
-<tr>
-<td>Underlying shape</td>
-<td>Elastic Beanstalk</td>
-<td>CodeDeploy (EC2)</td>
-<td>CodeDeploy (Lambda / ECS)</td>
-</tr>
-<tr>
-<td>Replace all at once</td>
-<td>**All at once**</td>
-<td>`AllAtOnce`</td>
-<td>`AllAtOnce`</td>
-</tr>
-<tr>
-<td>Batches, capacity dips</td>
-<td>**Rolling**</td>
-<td>`OneAtATime` / `HalfAtATime`</td>
-<td>—</td>
-</tr>
-<tr>
-<td>New capacity first</td>
-<td>**Rolling with additional batch**</td>
-<td>Blue/green</td>
-<td>Blue/green (implicit)</td>
-</tr>
-<tr>
-<td>Brand-new environment</td>
-<td>**Immutable**</td>
-<td>Blue/green</td>
-<td>Blue/green (implicit)</td>
-</tr>
-<tr>
-<td>Fraction of live traffic</td>
-<td>**Traffic splitting**</td>
-<td>Blue/green + `HalfAtATime`</td>
-<td>**Canary** / **Linear**</td>
-</tr>
-<tr>
-<td>Instant switch back</td>
-<td>Blue/green **URL (CNAME) swap**</td>
-<td>Blue/green + rollback</td>
-<td>Move the **alias** back</td>
-</tr>
-</table>
+| Underlying shape | Elastic Beanstalk | CodeDeploy (EC2) | CodeDeploy (Lambda / ECS) |
+| --- | --- | --- | --- |
+| Replace all at once | **All at once** | `AllAtOnce` | `AllAtOnce` |
+| Batches, capacity dips | **Rolling** | `OneAtATime` / `HalfAtATime` | — |
+| New capacity first | **Rolling with additional batch** | Blue/green | Blue/green (implicit) |
+| Brand-new environment | **Immutable** | Blue/green | Blue/green (implicit) |
+| Fraction of live traffic | **Traffic splitting** | Blue/green + `HalfAtATime` | **Canary** / **Linear** |
+| Instant switch back | Blue/green **URL (CNAME) swap** | Blue/green + rollback | Move the **alias** back |
 In the CodeDeploy columns, **Blue/green** is the deployment *type*; `AllAtOnce`, `OneAtATime`, `HalfAtATime`, `Canary`, `Linear` are deployment *configurations*. Elastic Beanstalk has no such split — each Beanstalk policy is a single setting.
 **The properties that distinguish them, one table**
-<table header-row="true">
-<tr>
-<td>Property</td>
-<td>All at once</td>
-<td>Rolling</td>
-<td>Rolling + batch</td>
-<td>Immutable / Blue-green</td>
-<td>Canary / Traffic splitting</td>
-</tr>
-<tr>
-<td>Downtime</td>
-<td>Possible</td>
-<td>None</td>
-<td>None</td>
-<td>**None**</td>
-<td>**None**</td>
-</tr>
-<tr>
-<td>Capacity during deploy</td>
-<td>Reduced</td>
-<td>**Reduced**</td>
-<td>Full</td>
-<td>Full (extra cost)</td>
-<td>Full</td>
-</tr>
-<tr>
-<td>New instances created</td>
-<td>No</td>
-<td>No</td>
-<td>Some</td>
-<td>**Yes, all**</td>
-<td>**Yes, all**</td>
-</tr>
-<tr>
-<td>EC2 burst balance preserved</td>
-<td>Yes</td>
-<td>Yes</td>
-<td>Mostly</td>
-<td>**No**</td>
-<td>**No**</td>
-</tr>
-<tr>
-<td>Rollback speed</td>
-<td>Slow (redeploy)</td>
-<td>Slow</td>
-<td>Slow</td>
-<td>**Fast**</td>
-<td>**Fast**</td>
-</tr>
-<tr>
-<td>Cost during deploy</td>
-<td>Lowest</td>
-<td>Low</td>
-<td>Slightly higher</td>
-<td>**Highest**</td>
-<td>Highest</td>
-</tr>
-<tr>
-<td>Risk</td>
-<td>Highest</td>
-<td>Medium</td>
-<td>Lower</td>
-<td>Lowest</td>
-<td>**Lowest**</td>
-</tr>
-</table>
+| Property | All at once | Rolling | Rolling + batch | Immutable / Blue-green | Canary / Traffic splitting |
+| --- | --- | --- | --- | --- | --- |
+| Downtime | Possible | None | None | **None** | **None** |
+| Capacity during deploy | Reduced | **Reduced** | Full | Full (extra cost) | Full |
+| New instances created | No | No | Some | **Yes, all** | **Yes, all** |
+| EC2 burst balance preserved | Yes | Yes | Mostly | **No** | **No** |
+| Rollback speed | Slow (redeploy) | Slow | Slow | **Fast** | **Fast** |
+| Cost during deploy | Lowest | Low | Slightly higher | **Highest** | Highest |
+| Risk | Highest | Medium | Lower | Lowest | **Lowest** |
 **Canary vs Linear, precisely**
 - **Canary** — **two** shifts. `10% → wait 5 min → 90%`
 - **Linear** — **equal** increments on a repeating timer. `10% → wait → 20% → wait → 30% → ...`
 Both are **deployment configurations** for Lambda and ECS, whose deployment type is blue/green either way. See the tree in the CodeDeploy section above.
 **Where the mechanism actually lives, per compute type**
-<table header-row="true">
-<tr>
-<td>Compute</td>
-<td>What physically moves the traffic</td>
-</tr>
-<tr>
-<td>**Lambda**</td>
-<td>**Alias weighted routing**, adjusted by CodeDeploy</td>
-</tr>
-<tr>
-<td>**ECS**</td>
-<td>**ALB listener** switching between two target groups</td>
-</tr>
-<tr>
-<td>**EC2 (blue/green)**</td>
-<td>**ALB** switching between two Auto Scaling Groups</td>
-</tr>
-<tr>
-<td>**Elastic Beanstalk (immutable / traffic splitting)**</td>
-<td>A second **Auto Scaling Group**, plus load balancer weights</td>
-</tr>
-<tr>
-<td>**Elastic Beanstalk (blue/green)**</td>
-<td>**Route 53 CNAME swap** between two environments</td>
-</tr>
-</table>
+| Compute | What physically moves the traffic |
+| --- | --- |
+| **Lambda** | **Alias weighted routing**, adjusted by CodeDeploy |
+| **ECS** | **ALB listener** switching between two target groups |
+| **EC2 (blue/green)** | **ALB** switching between two Auto Scaling Groups |
+| **Elastic Beanstalk (immutable / traffic splitting)** | A second **Auto Scaling Group**, plus load balancer weights |
+| **Elastic Beanstalk (blue/green)** | **Route 53 CNAME swap** between two environments |
 Once you see that traffic shifting is always "point the router somewhere else", the strategies stop being names to memorise.
 **Recall check — deployment strategies**
 - **Fastest, accept downtime** → All at once

@@ -32,33 +32,12 @@ The important nuance for exam purposes: attribute-based filtering requires the *
 - **Delivery retry policies** — many retries for HTTP/S endpoints; AWS-managed for SQS and Lambda.
 - Encryption with KMS; a **topic access policy** controls cross-account publishing.
 **SNS vs SQS**
-<table header-row="true">
-<tr>
-<td></td>
-<td>**SNS**</td>
-<td>**SQS**</td>
-</tr>
-<tr>
-<td>Model</td>
-<td>**Push** to subscribers</td>
-<td>**Pull** (poll) by consumers</td>
-</tr>
-<tr>
-<td>Consumers</td>
-<td>Many, all get every message</td>
-<td>Each message goes to **one** consumer</td>
-</tr>
-<tr>
-<td>Persistence</td>
-<td>Not stored (retries only)</td>
-<td>Stored up to 14 days</td>
-</tr>
-<tr>
-<td>Purpose</td>
-<td>Fan-out, notification</td>
-<td>Buffering, load levelling</td>
-</tr>
-</table>
+|    | **SNS** | **SQS** |
+| --- | --- | --- |
+| Model | **Push** to subscribers | **Pull** (poll) by consumers |
+| Consumers | Many, all get every message | Each message goes to **one** consumer |
+| Persistence | Not stored (retries only) | Stored up to 14 days |
+| Purpose | Fan-out, notification | Buffering, load levelling |
 **Recall check — SNS**
 - **One event, several independent systems must each handle it** → **SNS → SQS fan-out**
 - **Notify a person (email/SMS)** → SNS

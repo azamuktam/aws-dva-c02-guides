@@ -1,6 +1,9 @@
 # PART 8 — THE REFLEX LIST
+
 Everything above, compressed. **Use this to check yourself, not to learn from.** If you read a row and can’t reconstruct *why* it’s true from the relevant section, that’s the section to go back to.
+
 ---
+
 ## Domain 1 — Development with AWS Services (32%)
 
 | Situation | Answer |
@@ -106,7 +109,7 @@ Everything above, compressed. **Use this to check yourself, not to learn from.**
 | Temporary AWS credentials for app users | **Cognito Identity Pool** |
 | Mobile app uploads to S3, no keys embedded | **Identity Pool** (after a User Pool sign-in) |
 | **User Pool = authentication. Identity Pool = AWS access.** | Both together for the full flow |
-| Encrypt data larger than 4 KB | **Envelope encryption / ****`GenerateDataKey`** |
+| Encrypt data larger than 4 KB | **Envelope encryption / `GenerateDataKey`** |
 | KMS `Encrypt` fails on a big file | Use `GenerateDataKey`, **not** a quota increase |
 | `AccessDenied` on KMS despite an IAM Allow | **Check the key policy** |
 | Audit who decrypted an object | **SSE-KMS** + CloudTrail |
@@ -116,9 +119,9 @@ Everything above, compressed. **Use this to check yourself, not to learn from.**
 | Control and audit the key | **SSE-KMS** (`aws:kms`) |
 | Customer supplies the key each request | **SSE-C** |
 | Encrypt before upload | Client-side encryption |
-| Require every upload be encrypted | **Bucket policy ****`Deny`** on the missing header |
+| Require every upload be encrypted | **Bucket policy `Deny`** on the missing header |
 | Database credentials + automatic rotation | **Secrets Manager** |
-| Encrypted config, no rotation needed | **Parameter Store ****`SecureString`** |
+| Encrypted config, no rotation needed | **Parameter Store `SecureString`** |
 | Feature flag / config change without redeploy | **AppConfig** |
 | Validate config and roll back automatically | **AppConfig** |
 | Passwordless database login | **IAM DB authentication** |
@@ -210,7 +213,7 @@ Everything above, compressed. **Use this to check yourself, not to learn from.**
 | One bad message retries the whole batch | Enable **`ReportBatchItemFailures`** |
 | Stream processing frozen forever | Poison pill; retry limits / **`BisectBatchOnFunctionError`** / on-failure destination |
 | Rising `IteratorAge` | Consumer falling behind |
-| **429 / ****`Throttles`** on Lambda | Concurrency limit reached |
+| **429 / `Throttles`** on Lambda | Concurrency limit reached |
 | Lambda produces no logs | Execution role missing `logs:*` |
 | Lambda in a VPC cannot reach the internet | **NAT gateway** (or VPC endpoint) |
 | Memory or disk-space metric missing | Install the **CloudWatch agent** |

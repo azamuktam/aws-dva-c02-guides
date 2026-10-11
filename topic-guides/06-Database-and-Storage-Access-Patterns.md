@@ -1,4 +1,4 @@
-# PART 2 — DATA: WHERE STATE LIVES
+*PART 2 — DATA: WHERE STATE LIVES*
 
 ## AWS Database & Storage Access Patterns
 
@@ -15,8 +15,11 @@
 | **EFS** | Shared filesystem | Multiple EC2s/containers need to **access the same files** | Shared `/uploads` folder |
 
 AWS categorizes DynamoDB as a key-value/document database, RDS/Aurora as relational databases, ElastiCache as an in-memory cache, and Redshift as a data warehouse.
+
 For storage, AWS describes **EBS as block storage attached to EC2** and **EFS as shared file storage for multiple compute resources**.
+
 ### The mental shortcut
+
 ```plain text
 Need normal application DATABASE?
         ↓
@@ -43,8 +46,11 @@ Need FILE STORAGE?
   S3   EBS   EFS
 files  disk  shared files
 ```
+
 **Important distinction:** DAX is specifically a DynamoDB caching layer, while ElastiCache is a general-purpose in-memory caching service.
+
 This version is much better for your exam because when you see **RDS / Aurora / DynamoDB / Redshift / ElastiCache / DAX / S3 / EBS / EFS** as answer choices, you can immediately ask: **“What kind of data/access does the question describe?”**
+
 ---
 
 # Question patterns

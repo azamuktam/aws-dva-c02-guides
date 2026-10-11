@@ -1,7 +1,11 @@
 ## AWS SAM (Serverless Application Model)
+
 **Why it exists**
+
 Defining a Lambda function in raw CloudFormation takes a function resource, a role, a log group, a permission, and — for an API — several API Gateway resources. SAM adds shorthand resource types that expand into all of that, plus a local testing toolchain.
+
 **SAM is CloudFormation.** The `Transform` directive tells CloudFormation to expand SAM resources into standard ones before deploying. So everything you know about CloudFormation still applies: stacks, parameters, outputs, rollback.
+
 ```plain text
 SAM template (YAML)
       ↓  Transform
@@ -9,11 +13,15 @@ CloudFormation template
       ↓
 AWS resources
 ```
+
 **The identifying marker:**
+
 ```yaml
 Transform:'AWS::Serverless-2016-10-31'
 ```
+
 Seeing that line means the template is a SAM template. Note that `Transform` is a template section, not a parameter.
+
 **SAM resource types**
 
 | SAM type | Expands into |
@@ -28,6 +36,7 @@ Seeing that line means the template is a SAM template. Note that `Transform` is 
 |    |    |
 
 SAM also has **globals** (shared settings across functions) and built-in support for **gradual deployment** via CodeDeploy, which is how canary Lambda deployments are configured declaratively.
+
 **The CLI commands**
 
 | Command | Does | When you use it |
@@ -54,20 +63,35 @@ SAM also has **globals** (shared settings across functions) and built-in support
 | **Elastic Beanstalk** | Deploys an **application**; AWS assembles the infrastructure |
 
 ### AWS SAM — Lambda Packaging
+
 **Mental model**
+
 SAM lets you describe a Lambda function using local source code. Before CloudFormation can deploy it, the code is packaged and uploaded to **S3**.
+
 **`CodeUri`**
+
 `CodeUri` tells SAM **where the Lambda source code is**.
+
 It can point to a local folder containing the application code.
+
 **Packaging**
+
 `aws cloudformation package`:
+
 **local code → package → upload to S3 → create packaged template**
-You normally **do not edit the ****`CodeUri`**** yourself**. The generated packaged template contains the S3 location.
+
+You normally **do not edit the `CodeUri` yourself**. The generated packaged template contains the S3 location.
+
 **Deployment**
+
 After packaging, use the **packaged template** with `aws cloudformation deploy`.
+
 **Exam memory**
+
 **Local Lambda code → Package to S3 → Deploy packaged template**
+
 **Recall check — SAM**
+
 - **Lambda + API Gateway + DynamoDB application** → SAM
 - **Serverless IaC** → SAM
 - **YAML templates for any AWS resource** → CloudFormation
@@ -84,6 +108,7 @@ After packaging, use the **packaged template** with `aws cloudformation deploy`.
 - **CodeUri** → location of Lambda source code
 - **package** → uploads code to S3 and prepares the template for deplou
 - **deploy** → creates/updates the CloudFormation stack
+
 ---
 
 # Question patterns

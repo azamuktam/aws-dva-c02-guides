@@ -19,22 +19,26 @@ Consumer calls DeleteMessage  →  message is gone for good
 **The bug:** if processing takes longer than the visibility timeout, the message reappears while the first consumer is still working. A second consumer starts on it. The work happens twice.
 **The rule that follows:** **visibility timeout ≥ processing time.** With Lambda, that means visibility timeout ≥ function timeout, and AWS recommends **6×** to absorb retries. If a consumer needs more time mid-processing, it can call **`ChangeMessageVisibility`** to extend the hold.
 **Standard vs FIFO**
+
 |    | **Standard** | **FIFO** |
 | --- | --- | --- |
 | Throughput | Effectively unlimited | 300 msg/s, **3,000** with batching (high-throughput FIFO: much higher) |
 | Ordering | Best-effort | **Strict, within a message group** |
 | Delivery | **At least once** (duplicates possible) | **Exactly once** (deduplicated) |
 | Name requirement | — | Must end in `.fifo` |
+
 **The queue type cannot be changed after creation.** If you need the other type, create a new queue. This is a `CreateQueue` decision.
 FIFO mechanics:
 - **`MessageGroupId`** — the ordering scope. Messages in the same group are strictly ordered; different groups process in parallel. This is how FIFO scales at all: use many groups. You can have as many consumers as “MessageGroupId” for you SQS FIFO queues
 - **`MessageDeduplicationId`** — SQS discards duplicates with the same ID within a **5-minute** deduplication window. **Content-based deduplication** hashes the body instead of requiring an explicit ID.
+
 |    | **MessageDeduplicationId** | **Content-based deduplication** |
 | --- | --- | --- |
 | ID created by | **You** | **SQS** |
 | Based on | Any ID you provide | Hash of the **message body** |
 | Need to provide ID? | ✅ Yes | ❌ No |
 | Purpose | Decide yourself which messages are duplicates | Automatically detect identical message bodies |
+
 **Long polling**
 `ReceiveMessage` with a wait time of 0 returns immediately, often empty, and you pay for the call. **Long polling** (`ReceiveMessageWaitTimeSeconds`, up to **20 seconds**) holds the request open until a message arrives or the timer expires.
 Result: fewer empty responses, lower cost, lower latency. There is no downside — enable it.
@@ -51,13 +55,16 @@ The common exam trap is the statement *“a standard queue’s DLQ can be either
 **Delay queues**
 `DelaySeconds` (0–15 minutes) postpones delivery of new messages. Queue-level delay applies to every message; **per-message delay is available on Standard queues only**.
 **Queue management APIs — three that are easy to confuse**
+
 | API | Effect |
 | --- | --- |
 | **`DeleteQueue`** | Deletes the queue, all messages, and the configuration. **Irreversible.** AWS recommends waiting \~60 seconds before recreating a queue with the same name |
 | **`PurgeQueue`** | Deletes all messages, **keeps the queue** |
 | **`RemovePermission`** | Removes an access permission from the queue policy |
+
 So: cleaning up after a test and never needing the queue again → `DeleteQueue`. Clearing bad messages but keeping the queue for future use → `PurgeQueue`.
 **Numbers**
+
 | Setting | Value |
 | --- | --- |
 | Max message size | **1 MiB** (SQS Extended Client Library + S3 for up to 2 GB) |
@@ -68,6 +75,7 @@ So: cleaning up after a test and never needing the queue again → `DeleteQueue`
 | Batch APIs (`SendMessageBatch` etc.) | **10 messages** |
 | Message attributes | **10** per message, and they count toward the 256 KB limit |
 | Messages per `ReceiveMessage` | **10** |
+
 - **Stored/backlog messages:** **No limit** on the number of messages a queue can store.
 - **In-flight messages:** received by a consumer but **not yet deleted** → approximately **120,000 max** for a standard queue by default.
 **Recall check — SQS**

@@ -17,6 +17,7 @@ Response mapping template
 Client
 ```
 **The three API types**
+
 |    | **REST API** | **HTTP API** | **WebSocket API** |
 | --- | --- | --- | --- |
 | Direction | Request/response | Request/response | **Bidirectional, persistent** |
@@ -31,6 +32,7 @@ Client
 | Authorizers | IAM, Lambda, Cognito | IAM, Lambda, **JWT (OIDC/OAuth)** | IAM, Lambda |
 | Canary deployments | ✅ | ❌ | ❌ |
 | Best for | Full-featured public APIs | Simple, high-volume Lambda/HTTP proxies | Chat, live dashboards, notifications |
+
 **REST API is the exam default** — whenever a question mentions caching, API keys, usage plans, request validation, mapping templates, or canary releases, it is a REST API, because HTTP APIs do not have those features.
 Choose HTTP API when the question emphasises **lowest cost and latency with no advanced features**.
 **WebSocket APIs** use **routes** rather than resources, driven by a route selection expression on the message body, plus three special routes: `$connect`, `$disconnect`, and `$default`. The server pushes messages back with the `@connections` API using the stored connection ID.
@@ -91,6 +93,7 @@ Uses: change JSON structure, filter fields out of a response, rename fields, con
 **The canonical question:** *“Lambda returns the full dataset, but the API should return only some fields / a different format.”*<br>✅ **API Gateway mapping template.** Not a Lambda code change (the requirement is presentation, not logic), and not stage variables (those select backends, not shapes).
 Mapping templates require a **non-proxy (custom) integration** — proxy integration passes everything through untouched by definition.
 #### **Integration types**
+
 | Your table | API Gateway integration type | Meaning |
 | --- | --- | --- |
 | **Lambda Proxy** | `AWS_PROXY` | Pass request to Lambda; Lambda controls response |
@@ -99,6 +102,7 @@ Mapping templates require a **non-proxy (custom) integration** — proxy integra
 | **HTTP Custom** | `HTTP` | Custom request/response mapping |
 | **AWS Service Integration** | `AWS` | API Gateway calls an AWS service directly |
 | **Mock** | `MOCK` | No backend; API Gateway returns a configured response |
+
 The **AWS Service Integration** is worth remembering: “send the request straight to SQS without a Lambda” is a real answer, and it’s the “least code” option when no logic is needed.
 **Authorization — four mechanisms for four situations**
 Authorization runs **before the backend is invoked**, so a rejected request never costs you a Lambda invocation.
@@ -114,12 +118,14 @@ Usually in:
 **Lambda authorizer** — API Gateway invokes *your* function, which inspects the request (a token, a header, anything) and returns an **IAM policy** allowing or denying. For custom logic: a third-party identity provider, a token format you validate yourself, a database lookup, OAuth. Results are cacheable.
 **Cognito User Pool authorizer** — API Gateway validates a Cognito-issued **JWT** automatically: signature, expiry, claims. **No code required.** For web and mobile application users.
 **API keys + usage plans** — see below. **This is identification, not authentication.**
+
 | Situation | Mechanism |
 | --- | --- |
 | AWS users, roles, or services calling the API | **IAM** |
 | Custom auth logic, third-party IdP, token you validate yourself | **Lambda authorizer** |
 | App users signing in, managed by Cognito, JWT | **Cognito User Pool authorizer** |
 | Identify and meter clients, tiered plans | **API keys + usage plans** |
+
 **API keys and usage plans — and why a new key returns 403**
 This is a mechanism worth understanding because the question is very specific.
 **An API key identifies a client. It does not authorize anything by itself.** All it does is give API Gateway a handle to count and throttle against.
@@ -131,6 +137,7 @@ CreateUsagePlanKey    → links key → usage plan → the client now has access
 ```
 So: **a newly created API key returning ****`403 Forbidden`**** means it was never associated with a usage plan.** The fix is **`CreateUsagePlanKey`**.
 Related API calls and their distinct jobs:
+
 | API | Does | Does NOT |
 | --- | --- | --- |
 | **`CreateApiKey`** | Creates a key | Grant access |
@@ -138,6 +145,7 @@ Related API calls and their distinct jobs:
 | **`ImportApiKeys`** | Bulk-imports keys from a file | Associate them with usage plans |
 | **`UpdateUsagePlan`** | Changes quota/throttle settings | Associate new keys |
 | **`CreateDeployment`** | Publishes configuration changes to a stage | — |
+
 **Caching**
 API Gateway can cache responses at the stage level, keyed on the request. Repeated identical requests are served from the cache and never reach the backend.
 - Reduces backend load, Lambda invocations, and latency simultaneously.
@@ -154,6 +162,7 @@ API Gateway can cache responses at the stage level, keyed on the request. Repeat
 Watch out for the caching-versus-freshness trade: caching a personalised or fast-changing response serves the wrong data to the wrong user.
 **Throttling and errors — the error codes are diagnostic**
 Each status code maps to exactly one cause, and knowing them turns troubleshooting questions into lookups:
+
 | Code | Meaning | Cause |
 | --- | --- | --- |
 | **429** | Too Many Requests | Throttling — account limit, stage limit, or usage plan quota |
@@ -163,6 +172,7 @@ Each status code maps to exactly one cause, and knowing them turns troubleshooti
 | **401** | Unauthorized | Missing or invalid authentication |
 | **503** | Service unavailable | The server/service is currently **unable to handle the request**. No healthy targets behind an **ALB, Backend servers are overloaded** |
 |    |    |    |
+
 Default account-level throttle is 10,000 requests/second with a 5,000 burst; stage and method limits sit inside that.
 The 502-vs-504 distinction is heavily tested. **502 = the response was wrong. 504 = the response was too slow.**
 **Other features worth a line**

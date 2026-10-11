@@ -80,11 +80,13 @@ The ALB knows the **EC2 instance + dynamically assigned port** for each task and
 > **Dynamic host port mapping → multiple ECS tasks on the same EC2 instance.**
 > **ECS + dynamic host ports → ALB supports this.**
 ### Elastic Load Balancer DNS and Static IP
+
 | Load Balancer | DNS Name | Static IP |
 | --- | --- | --- |
 | **Application Load Balancer (ALB)** | ✅ Yes | ❌ No |
 | **Network Load Balancer (NLB)** | ✅ Yes | ✅ Yes (Static IP / Elastic IP support) |
 | **Gateway Load Balancer (GWLB)** | ✅ Yes | ❌ No |
+
 **Host-based routing examples:**
 > [api.sample.com](http://api.sample.com/)     → API servers<br>[shop.sample.com](http://shop.sample.com/)    → Shop servers<br>[admin.sample.com](http://admin.sample.com/)   → Admin servers
 **Problem**

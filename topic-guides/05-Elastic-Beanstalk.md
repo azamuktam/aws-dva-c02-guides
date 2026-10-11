@@ -36,11 +36,13 @@ Know these two environment types:
   - Can span multiple Availability Zones
   - Recommended for production
 **Environment types:**
+
 | Environment | Use |
 | --- | --- |
 | **Web server environment** | Handles normal HTTP/web requests |
 | **Worker environment** | Processes background jobs from **SQS** |
 | **Single-instance environment** | One EC2 instance; mainly for simple/dev workloads |
+
 - **Web Server environment** — handles HTTP requests. `User → Load Balancer → EC2 → Application`
 - **Worker environment** — processes background jobs from an **SQS queue**. `SQS → Worker → background processing`
   A **SQS daemon (****`sqsd`****)** runs on each worker instance. It polls the queue and **POSTs each message to your application over local HTTP** (`localhost` by default). Your code therefore never talks to SQS directly — it just handles an HTTP request. A `200` response means success and the daemon deletes the message; a non-`200` means failure and the message returns to the queue, eventually landing in the DLQ.
@@ -67,6 +69,7 @@ That leads directly to the rule:
 - **Databases must be created *outside* Beanstalk** (a standalone RDS instance) and connected via environment variables. Otherwise rebuilding the environment destroys your production data.
 - **Temporary/recreatable resources** like an ElastiCache cluster are acceptable inside `.ebextensions`, because losing them costs nothing but a cache warm-up.
 This isn’t arbitrary — it follows from “the resource dies with the environment”.
+
 | File | Simple meaning |
 | --- | --- |
 | `env.yaml` | Environment settings/configuration |
@@ -75,6 +78,7 @@ This isn’t arbitrary — it follows from “the resource dies with the environ
 | `Dockerrun.aws.json` | Tell EB how to run a **Docker container** |
 | `Procfile` | Tell EB **how to start the app** |
 | `.ebignore` | Files to **exclude from deployment** |
+
 **Beanstalk deployment policies**
 These stay here, with the rest of Beanstalk, so the service is in one place. The cross-service comparison against CodeDeploy’s strategies lives in **Part 5**, because that is where the exam pits them against each other.
 The five policies trade off speed, downtime, capacity, cost, and rollback safety. Once you see what each one does to the instances, the properties follow.
@@ -113,6 +117,7 @@ New version → 10%
     ↓ (validated)
 New version → 100%
 ```
+
 | Policy | Instances | Downtime | Capacity | Risk |
 | --- | --- | --- | --- | --- |
 | All at once | Replace all together | Possible | Reduced | Highest |
@@ -120,6 +125,7 @@ New version → 100%
 | Rolling + additional batch | Extra instances first | Minimal | **Full** | Lower |
 | Immutable | Brand-new ASG | **None** | Full (extra cost) | **Lowest** |
 | Traffic splitting | New ASG + weighted traffic | **None** | Full | Lowest + canary |
+
 **Blue/green in Beanstalk** is a separate approach: clone the environment, deploy to the clone, then **swap environment URLs (CNAME swap)**. This gives the fastest possible rollback — swap back — and is what you use when you need to change something Beanstalk can’t do in place.
 **Blue Environment:** Acts as the current live production system serving active user requests.**Green Environment:** Hosts the updated software version where final deployment verification and tests run in isolation.
 **Burst balance = saved CPU credits.**
@@ -149,11 +155,13 @@ Rolling, rolling with additional batch, and all-at-once reuse the existing insta
 Web app → **SQS queue** → Worker Environment → process task. Elastic Beanstalk manages the queue and worker processes for you.
 **Scaling:** Uses **EC2 Auto Scaling + CloudWatch** to add/remove worker instances based on workload.
 **Recall check — Elastic Beanstalk**
+
 | Service | Simple meaning | You manage | Best clue |
 | --- | --- | --- | --- |
 | **Elastic Beanstalk** | Deploy an application easily; AWS manages the infrastructure | Mostly your app | **Easiest / simplest deployment** |
 | **ECS** | AWS container orchestration | Containers/tasks; compute can be EC2 or Fargate | **Run/manage Docker containers** |
 | **Fargate** | Serverless compute **for containers** | Containers only, not servers | **No EC2/server management** |
+
 - **Deploy an application without managing infrastructure / PaaS** → Elastic Beanstalk
 - **Automatic scaling + load balancing + deployment, minimal effort** → Elastic Beanstalk
 - **Need full EC2 control** → EC2

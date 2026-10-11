@@ -22,12 +22,14 @@
 **Use:** business intelligence, reporting, dashboards over structured data loaded from S3, databases, or streams.
 **Why it’s a distractor:** it competes with Athena in “query a lot of data with SQL” questions. The difference: Redshift requires **loading data into the warehouse** and is built for repeated, heavy BI workloads; Athena queries data **in place** in S3 and is built for ad-hoc analysis.
 **The four-way analytics comparison**
+
 | Service | Best for | Data type |
 | --- | --- | --- |
 | **EMR** | Processing huge datasets | Batch big data (Spark/Hadoop) |
 | **Kinesis Data Streams** | Processing data as it arrives | Real-time streaming |
 | **Redshift** | SQL analytics and reporting | Structured analytical data |
 | **DynamoDB** | Fast application database | NoSQL key-value / document |
+
 Compressed: **EMR processes. Kinesis streams. Redshift analyses. DynamoDB stores.** And **Athena queries S3 in place** — which is the in-scope member of this family.
 ---
 ### The security-services family
@@ -42,6 +44,7 @@ Four services that overlap in appearance and differ completely in function. The 
 **Amazon GuardDuty** — **threat detection**. Analyses CloudTrail, VPC flow logs, and DNS logs with machine learning to spot malicious or anomalous **activity** — crypto mining, credential exfiltration, communication with known-bad IPs.
 **Amazon Macie** — discovers and classifies **sensitive data** (PII, credentials) in S3.
 **AWS Trusted Advisor** — **best-practice recommendations** across five categories: Cost Optimisation, Performance, Security, Fault Tolerance, and Service Limits. Examples: unused resources, overly open security groups, IAM usage, low-utilisation instances.
+
 | Service | The question it answers |
 | --- | --- |
 | **Security Hub** | “Show me all my security findings in one place” |
@@ -51,6 +54,7 @@ Four services that overlap in appearance and differ completely in function. The 
 | **Trusted Advisor** | “Am I following AWS best practices? Can I save money?” |
 | **AWS Config** | “Are my resource configurations compliant?” |
 | **Q Developer** | “Are there security issues in the code I’m writing?” |
+
 **Recall check**
 - **One place for all security findings / compliance dashboard** → Security Hub
 - **Vulnerability and CVE scanning of deployed resources** → Inspector
@@ -105,11 +109,13 @@ Publish to it with `sam publish`.
 - **ACM-issued public certificates renew automatically.** That is the primary reason to use ACM over uploading your own.
 - **CloudFront certificates must be in ****`us-east-1`**, regardless of where the rest of your infrastructure lives. This is because CloudFront is a global service whose control plane lives in `us-east-1`.
 **The alternatives:**
+
 | Service | Difference |
 | --- | --- |
 | **ACM** | Create, manage, and **auto-renew** public SSL/TLS certificates |
 | **IAM certificate store** | Store an **uploaded** server certificate (legacy). **No auto-renewal** |
 | **AWS Private CA** | Issue **private** certificates for internal applications |
+
 **Recall check**
 - **Enable HTTPS** → ACM
 - **Automatically renew a certificate** → ACM
@@ -129,12 +135,14 @@ Supported authentication methods:
 **Not supported:**
 - **IAM console username and password** — these log you into the AWS Console. They are **not** usable for Git operations.
 The trap works because “IAM username and password” sounds correct — it *is* a username and password — but it is a different credential from the Git credentials IAM generates for CodeCommit.
+
 | Scenario | Authentication |
 | --- | --- |
 | Clone over HTTPS | **Git credentials** |
 | Clone over SSH | **SSH key** |
 | Application using the AWS SDK | Access keys or an IAM role |
 | Console login | IAM password — **not for Git** |
+
 **Two secondary features, for completeness**
 - **Triggers and notifications** — a repository could fire an **SNS** notification or invoke a **Lambda** on a push or branch/tag event, and integrate with EventBridge so a commit starts a CodePipeline execution. The modern equivalent for a GitHub source is a webhook through **CodeStar Connections** (now “AWS CodeConnections”), which is what a current pipeline uses.
 - **Approval rule templates** — pull requests could require a minimum number of approvals from specified users before merging. Governance rather than developer skill, and now firmly out of scope.
@@ -196,6 +204,7 @@ Use it when you want to:
 3. Configure build settings in **`amplify.yml`**.
 4. Amplify builds and deploys the application.
 **Important points**
+
 | Feature | Meaning |
 | --- | --- |
 | Git integration | Connect GitHub/GitLab/Bitbucket |
@@ -204,6 +213,7 @@ Use it when you want to:
 | Preview deployments | Test branches/changes before production |
 | Custom domain | Connect your own domain |
 | HTTPS | SSL/TLS provided |
+
 **Exam memory**
 > **Git repository → Amplify Hosting → build/test/deploy web app**
 **`amplify.yml`**** = tells Amplify what to do during build and testing.**
@@ -233,6 +243,7 @@ ADOT vs X-Ray
 | Multiple backends | Mainly AWS X-Ray |
 | Vendor-neutral | AWS-focused |
 | Collector available | X-Ray daemon/agent |
+
 Exam memory
 **Multiple tracing backends → ADOT / OpenTelemetry**
 **AWS X-Ray specifically → X-Ray**

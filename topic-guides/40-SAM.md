@@ -15,6 +15,7 @@ Transform:'AWS::Serverless-2016-10-31'
 ```
 Seeing that line means the template is a SAM template. Note that `Transform` is a template section, not a parameter.
 **SAM resource types**
+
 | SAM type | Expands into |
 | --- | --- |
 | **`AWS::Serverless::Function`** | Lambda function (+ role, permissions, event sources) |
@@ -25,8 +26,10 @@ Seeing that line means the template is a SAM template. Note that `Transform` is 
 | **`AWS::Serverless::LayerVersion`** | Lambda layer |
 | **`AWS::Serverless::Application`** | A nested serverless application |
 |    |    |
+
 SAM also has **globals** (shared settings across functions) and built-in support for **gradual deployment** via CodeDeploy, which is how canary Lambda deployments are configured declaratively.
 **The CLI commands**
+
 | Command | Does | When you use it |
 | --- | --- | --- |
 | **`sam init`** | Create a new application from a template | Starting a project |
@@ -40,13 +43,16 @@ SAM also has **globals** (shared settings across functions) and built-in support
 | **`sam publish`** | Publish a layer or an app to the Serverless Application Repository | Share something reusable |
 | **`sam logs`** | Tail CloudWatch Logs for a function | Debugging |
 | **`sam sync`** | Rapid iterative deploy during development | Inner development loop |
+
 **SAM vs CloudFormation vs CDK vs Beanstalk**
+
 |    | Difference |
 | --- | --- |
 | **SAM** | IaC optimised for **serverless**; still CloudFormation underneath |
 | **CloudFormation** | General-purpose IaC in **YAML/JSON** |
 | **CDK** | IaC in a **programming language**, synthesises to CloudFormation |
 | **Elastic Beanstalk** | Deploys an **application**; AWS assembles the infrastructure |
+
 ### AWS SAM — Lambda Packaging
 **Mental model**
 SAM lets you describe a Lambda function using local source code. Before CloudFormation can deploy it, the code is packaged and uploaded to **S3**.

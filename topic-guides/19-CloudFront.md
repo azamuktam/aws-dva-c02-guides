@@ -55,20 +55,24 @@ Trigger signals: 504 errors, origin failure, high availability requirements.
 [**Lambda@Edge**](mailto:Lambda@Edge)** and CloudFront Functions**
 Running code at the edge means acting on a request **before** it reaches your origin — or even before the cache is consulted.
 [**Lambda@Edge**](mailto:Lambda@Edge) runs at four points in the request lifecycle:
+
 | Event | When | Typical use |
 | --- | --- | --- |
 | **Viewer Request** | Before CloudFront checks its cache | **Authentication/authorisation**, URL rewrite, A/B testing |
 | **Origin Request** | Before CloudFront calls the origin | Modify the origin request, change origin |
 | **Origin Response** | After the origin responds | Modify the response before caching |
 | **Viewer Response** | Before the response reaches the user | Add security headers |
+
 Common uses: auth at the edge, HTTP→HTTPS redirects, header manipulation, URL rewrites, A/B testing, geo-based personalisation.
 **Important correction to a common assumption: **[**Lambda@Edge**](mailto:Lambda@Edge)** does not make a website faster by itself.** It is for *executing code closer to users*, not for improving caching. Latency improvements come from caching. If a question asks how to speed up static content, the answer is CloudFront caching, not [Lambda@Edge](mailto:Lambda@Edge).
+
 |    | Runs where | For |
 | --- | --- | --- |
 | **CloudFront** | Edge | Caching and global delivery |
 | **CloudFront Functions** | Edge, very lightweight, sub-millisecond | Simple header/URL manipulation at massive scale |
 | [**Lambda@Edge**](mailto:Lambda@Edge) | Regional edge caches | Heavier logic, network access, longer execution |
 | **Lambda** | A specific Region | Backend processing |
+
 **Restricting access**
 **Signed URLs and signed cookies** provide time-limited access to private content.
 ```plain text
@@ -81,12 +85,14 @@ Common uses: auth at the edge, HTTP→HTTPS redirects, header manipulation, URL 
 - **Signed URL** = one file. **Signed cookie** = many files, without changing any URLs.
 - Signed URLs can additionally restrict by **IP range**, which S3 presigned URLs cannot.
 - Signed URLs take precedence over signed cookies. If you use both signed URLs and signed cookies to control access to the same files and a viewer uses a signed URL to request a file
+
 |    | CloudFront Signed URL | S3 Presigned URL |
 | --- | --- | --- |
 | Entry point | CloudFront edge (cached, fast) | S3 directly |
 | Restrict by IP range | ✅ | ❌ |
 | Cover many files | ✅ signed cookies | ❌ one object per URL |
 | Signed with | Your private key + key group | The signer’s IAM credentials |
+
 **Multiple origins** means one **CloudFront distribution** can get content from **more than one backend/source**.
 For your example:
 ```plain text

@@ -29,12 +29,14 @@ Build → Test → [Manual Approval] → Deploy to Production
 - Approvers need `codepipeline:PutApprovalResult` permission.
 - Optionally include a review URL and a comment.
 Why this and not something else: SQS stores messages but has no human interface; Step Functions `Wait` pauses for a *duration*, not for a decision. For a release gate inside CI/CD, manual approval is purpose-built.
+
 | Need | Answer |
 | --- | --- |
 | Human approval before the next stage | **CodePipeline manual approval** |
 | Notify the approvers | **SNS** |
 | Queue messages between components | **SQS** |
 | Orchestrate a workflow, including human callbacks | **Step Functions** (`.waitForTaskToken`) |
+
 **Recall check — CodePipeline**
 - **Automate the entire CI/CD workflow** → CodePipeline
 - **Connect source, build, and deploy stages** → CodePipeline

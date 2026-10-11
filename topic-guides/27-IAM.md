@@ -15,12 +15,14 @@ Every AWS API call must be authenticated and authorised. IAM is the system that 
 **Group** — a collection of users, so a permission set is defined once and applied to many. Groups cannot contains other groups and cannot be principals in a policy.
 **Role** — an identity with permissions but **no permanent credentials**. It is *assumed*, which produces temporary credentials via STS. This is the mechanism that lets a Lambda function, EC2 instance, or ECS task call AWS APIs without any secret being stored anywhere.
 **Policy** — a JSON document defining permissions.
+
 |    | Difference |
 | --- | --- |
 | **User** | Permanent identity, long-lived credentials |
 | **Group** | Same permissions for many users |
 | **Role** | **Temporary** credentials, assumable by services or people |
 | **Policy** | Defines Allow / Deny on actions and resources |
+
 IAM roles and resource-based policies can provide cross-account access **only within the same AWS partition**. They cannot be used to delegate access between, for example, `aws` and `aws-cn`.
 **AWS partition → **contains multiple AWS Regions
 Example:
@@ -54,11 +56,14 @@ IAM Role
      └── Permissions policy  →  WHAT it can do once assumed
 ```
 For an IAM **role**, there are two different policies:
+
 | Policy | Answers | Type |
 | --- | --- | --- |
 | **Trust policy** | **Who can assume this role?** | **Resource-based policy** |
 | **Permissions policy** | **What can this role do?** | **Identity-based policy** |
+
 **Other policy types**
+
 | Policy | Purpose |
 | --- | --- |
 | **Permissions policy** | Grants Allow/Deny on actions |
@@ -67,6 +72,7 @@ For an IAM **role**, there are two different policies:
 | **SCP (Service Control Policy)** | Limits what an entire account or OU can do, in AWS Organizations |
 | **Session policy** | Passed at assume time; can only narrow the role’s permissions |
 | **ACL** | Older, cross-account resource access control (legacy S3) |
+
 A permissions boundary does not grant anything — it caps. An identity’s effective permissions are the *intersection* of its policies and its boundary.
 **Policy elements**
 ```json
@@ -126,6 +132,7 @@ IAM can store uploaded SSL/TLS server certificates. It is a legacy feature for c
 - **Upload an existing certificate** → ACM import, or IAM (legacy)
 - **Private/internal certificates** → **AWS Private CA**
 **IAM analysis tools — three different questions**
+
 | Tool | Answers |
 | --- | --- |
 | **IAM Access Analyzer** | “Which of my resources are shared externally or publicly?” |
@@ -134,6 +141,7 @@ IAM can store uploaded SSL/TLS server certificates. It is a legacy feature for c
 | **AWS Config** | “Has this resource’s configuration changed, and is it compliant?” |
 | **IAM Credential Report** | A downloadable CSV report showing all IAM users and the status of their **passwords, access keys, MFA, and other credentials** for security auditing |
 |    |    |
+
 **Access Analyzer** continuously analyses identity and resource policies and generates findings when something is reachable from outside the account. It covers S3 buckets, KMS keys, IAM roles, SQS/SNS, Secrets Manager, and other supported resources. **It reports; it does not modify permissions.**
 **Access Advisor** is how you implement least privilege on an existing identity: see what was never used, then remove it.
 **Recall check — IAM**

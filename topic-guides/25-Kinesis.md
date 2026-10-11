@@ -14,6 +14,7 @@ Consumers (Lambda, KCL applications, Firehose, Managed Flink)
    each tracking its own position
 ```
 **Ordering is per shard**, and the **partition key** decides which shard a record lands on. That single design choice explains both the ordering guarantee and the hot-shard failure mode.
+
 | Limit | Value |
 | --- | --- |
 | Write per shard | **1 MB/s** or **1,000 records/s** |
@@ -21,6 +22,7 @@ Consumers (Lambda, KCL applications, Firehose, Managed Flink)
 | Read per shard (**enhanced fan-out**) | **2 MB/s per consumer** |
 | Record size | 1 MB max |
 | Retention | **24 hours** default, up to **365 days** |
+
 - **Capacity modes:** provisioned (you manage shards) or **on-demand** (scales automatically).
 - **Resharding:** split a shard to scale out, merge to scale in.
 - **Enhanced fan-out** gives each consumer its own dedicated 2 MB/s and *pushes* records rather than being polled, which lowers latency. Use it when several consumers each need full throughput.
@@ -57,6 +59,7 @@ Firehose exists because most streaming use cases are just “get this data into 
 - **No storage and no replay** — once delivered, Firehose has no copy.
 **Managed Service for Apache Flink** (formerly Kinesis Data Analytics) runs SQL or Flink applications over a stream for real-time aggregation and analytics.
 **Data Streams vs Firehose vs SQS**
+
 |    | **Data Streams** | **Firehose** | **SQS** |
 | --- | --- | --- | --- |
 | Latency | Real time (\~200 ms) | Near real time (60 s+) | Real time |
@@ -65,6 +68,7 @@ Firehose exists because most streaming use cases are just “get this data into 
 | Many consumers, same data | ✅ | ❌ | ❌ one consumer per message |
 | Scaling | Shards or on-demand | Automatic | Automatic |
 | Consumer code required | ✅ | ❌ | ✅ |
+
 **Recall check — Kinesis**
 - **Real-time streaming, live data, event stream** → Kinesis Data Streams
 - **Read from Kinesis with checkpointing and multiple consumers** → KCL

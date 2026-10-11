@@ -77,6 +77,7 @@ S3 / DynamoDB / any AWS service, directly
 - Role permissions can be scoped per user with **policy variables**, so each user reaches only their own S3 prefix.
 - This is what removes AWS access keys from client applications entirely.
 **The distinction, stated plainly**
+
 | Feature | **User Pool** | **Identity Pool** |
 | --- | --- | --- |
 | Purpose | **Authentication** — who is this user? | **Authorization to AWS resources** |
@@ -85,6 +86,7 @@ S3 / DynamoDB / any AWS service, directly
 | Uses IAM roles | ❌ No | ✅ Yes |
 | Sign-up / sign-in | ✅ Yes | ❌ No |
 | Access S3/DynamoDB directly | ❌ No | ✅ Yes |
+
 **The full pattern for a mobile app uploading to S3 uses both:**
 ```plain text
 1. User signs in           → User Pool → JWT

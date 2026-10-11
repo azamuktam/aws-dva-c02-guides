@@ -1,12 +1,14 @@
 # PART 6 — OBSERVABILITY: KNOWING WHAT WENT WRONG
 **Domain 4 is 18%, but observability questions also hide inside the other three domains** — most “why is this broken” questions are really asking which tool would tell you.
 Four tools, four different questions:
+
 | Tool | Answers |
 | --- | --- |
 | **CloudWatch Metrics** | “Is the number too high or too low?” |
 | **CloudWatch Logs** | “What did the application say?” |
 | **X-Ray** | “Which step in the chain was slow or failed?” |
 | **CloudTrail** | “Who made this change to AWS itself?” |
+
 ---
 
 ## Retries, Backoff, and Idempotency
@@ -30,6 +32,7 @@ Exponential
 **The AWS SDKs already do this.** Every SDK retries throttling and 5xx errors with exponential backoff and jitter by default, configurable via `maxAttempts` and a retry mode (`legacy`, `standard`, `adaptive`). So on the exam, *“the client should implement exponential backoff”* usually means either the code is using raw HTTP calls, or it needs a higher retry count — not that you must write the algorithm.
 **What must NOT be retried**
 Only **transient** failures. A `400`, a validation error, an `AccessDenied`, or a `ConditionalCheckFailedException` will fail identically forever, and retrying wastes capacity and hides the bug.
+
 | Retry | Don’t retry |
 | --- | --- |
 | `429` / `ThrottlingException` | `400` / validation errors |
@@ -37,6 +40,7 @@ Only **transient** failures. A `400`, a validation error, an `AccessDenied`, or 
 | `500` / `503` / `ServiceUnavailable` | `ConditionalCheckFailedException` — re-read first, then retry the *logic* |
 | Timeouts and connection resets | `ResourceNotFoundException` |
 | `UnprocessedItems` / `UnprocessedKeys` | Malformed requests |
+
 **Why retries force idempotency**
 A retry after a timeout is dangerous in a specific way: **you do not know whether the first attempt succeeded.** The request may have been processed and only the response lost. So retrying can duplicate the effect — charge a card twice, ship an order twice.
 The pattern:
@@ -51,6 +55,7 @@ Write failed    → already processed → return the stored result
 **DynamoDB’s conditional write is the right primitive** because “check and record” happens atomically in one operation, at any scale, in single-digit milliseconds. A cache would evict the record; a relational database fights Lambda’s connection scaling; S3 has no atomic conditional gate.
 Note that an **atomic counter** (`SET x = x + 1`) is concurrency-safe but **not idempotent** — a retry increments twice. Safe for view counts; wrong for money.
 **Where this appears, service by service**
+
 | Service | The retry/idempotency fact |
 | --- | --- |
 | **DynamoDB** | `ProvisionedThroughputExceededException` → backoff. **`UnprocessedItems`**** from ****`BatchWriteItem`**** must be retried by you** — ignoring them silently loses data |
@@ -64,6 +69,7 @@ Note that an **atomic counter** (`SET x = x + 1`) is concurrency-safe but **not 
 | **API Gateway** | Does not retry the integration; clients retry. A `504` may mean the work *did* complete |
 | **S3** | Event notifications are at-least-once |
 | **CloudFormation / CodeDeploy** | Roll back rather than retry — a failed deploy is not transient |
+
 **Recall check — retries and idempotency**
 - **Handle throttled requests** → **exponential backoff with jitter**
 - **Why jitter** → prevents a synchronised retry wave (thundering herd)

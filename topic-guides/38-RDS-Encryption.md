@@ -34,6 +34,7 @@ When SQL Server reads the data, TDE transparently decrypts it.
 > **SQL Server + transparent database encryption → TDE**
 ---
 ### RDS Encryption vs TDE
+
 |    | RDS Encryption | TDE |
 | --- | --- | --- |
 | Encryption level | AWS/RDS storage | SQL Server database engine |
@@ -42,6 +43,7 @@ When SQL Server reads the data, TDE transparently decrypts it.
 | Automatic encrypt/decrypt | ✅ | ✅ |
 | Application changes | No | No |
 | Main exam clue | **KMS / RDS encryption** | **SQL Server / TDE** |
+
 **Important distinction**
 Both can encrypt data before it is stored and decrypt it when accessed.
 > **RDS encryption = AWS-level storage encryption**

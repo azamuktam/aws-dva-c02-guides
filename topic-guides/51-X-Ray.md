@@ -17,6 +17,7 @@ AWS X-Ray Service  ← receives and stores the data, then shows you the trace an
 - **X-Ray service** — stores traces and renders the **service map** with latency, error rate, and fault rate per node.
 - `ebextensions/xray-daemon.config` is an **Elastic Beanstalk configuration file** that tells Elastic Beanstalk to **enable and run the X-Ray daemon on your EC2 instances**
 Where the daemon runs:
+
 | Platform | Daemon |
 | --- | --- |
 | **EC2** | Install and run it on the instance |
@@ -36,12 +37,14 @@ ECS Task
 **Annotations** → extra information/instructions attached to something.
 **Metadata** → information that **describes** something.
 **Annotations vs metadata** — the distinction exists because indexing costs money and has limits.
+
 |    | **Annotation** | **Metadata** |
 | --- | --- | --- |
 | **Indexed** | ✅ **Yes** | ❌ No |
 | Searchable in filter expressions | ✅ | ❌ |
 | Limit | 50 per trace | Larger, arbitrary JSON |
 | Use for | `customerId`, `orderId`, `environment` | Debug payloads, request bodies |
+
 So: *“I want to filter traces in the console by customer ID”* → **annotation**, because only indexed fields are searchable. Metadata is for context you’ll read once you’ve found the trace.
 **Sampling**
 X-Ray does not trace every request — at high volume that would be expensive and slow. **Sampling rules** decide which requests are recorded.
@@ -88,6 +91,7 @@ Check, in order:<br>1. Does the EC2 instance have an IAM role with **`AWSXRayDae
 ---
 ### Lambda + X-Ray Environment Variables
 **Main X-Ray variables to know for the DVA exam:**
+
 | Variable | Simple meaning |
 | --- | --- |
 | `_X_AMZN_TRACE_ID` | Contains the **X-Ray trace information** for the current invocation |
@@ -97,6 +101,7 @@ Check, in order:<br>1. Does the EC2 instance have an IAM role with **`AWSXRayDae
 | `AWS_XRAY_DEBUG_MODE` | Enables **debug-level X-Ray logs** |
 | `AWS_XRAY_LOG_LEVEL` | Controls X-Ray **log level** |
 | `AWS_XRAY_SDK_ENABLED` | Enables/disables the X-Ray SDK |
+
 AWS documents these as X-Ray SDK/Lambda configuration variables.
 **`_X_AMZN_TRACE_ID`**
 Think:

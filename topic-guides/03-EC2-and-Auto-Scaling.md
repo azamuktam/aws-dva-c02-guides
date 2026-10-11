@@ -47,6 +47,7 @@ It exists so you don’t have to SSH into every new instance. It’s how an Auto
 **EC2 Instance Types**
 **Mental Model**
 **Choose the instance based on the resource your application needs most.**
+
 | Type | Best For | Think |
 | --- | --- | --- |
 | **General Purpose (M, T)** | Balanced CPU + RAM | Everyday workloads |
@@ -55,6 +56,7 @@ It exists so you don’t have to SSH into every new instance. It’s how an Auto
 | **Storage Optimized (I, D, H)** | Fast local disk I/O | Databases, analytics |
 | **Accelerated Computing (P, G, Inf, Trn, F)** | GPU/FPGA/AI accelerators | ML, graphics, inference |
 | **HPC Optimized (Hpc)** | High-Performance Computing | Scientific simulations |
+
 **General Purpose**
 - Balanced CPU, memory, networking.
 - **Examples:** Web servers, application servers, small/medium databases.
@@ -95,6 +97,7 @@ For your question, **`DeleteOnTermination`**** → can be changed while running.
 **Instance store** — physically attached NVMe. Very fast, but **ephemeral** — data is lost when the instance stops. Use for scratch, cache, temporary processing.
 **EC2 purchasing options**
 Not on the in-scope service list — kept because they appear as distractors. The organising idea: you trade *commitment* or *interruption tolerance* for price.
+
 | Option | The trade | Best for |
 | --- | --- | --- |
 | **On-Demand** | No commitment, highest price | Unpredictable workloads, testing |
@@ -105,6 +108,7 @@ Not on the in-scope service list — kept because they appear as distractors. Th
 | **Dedicated Host** | An entire physical server, hardware visibility | Compliance, bring-your-own-licence |
 | **Dedicated Instance** | Hardware isolated to your account, less control than a host | Isolation requirements |
 | **Capacity Reservation** | Pay to guarantee capacity exists in an AZ | Critical availability |
+
 ### EC2 Reserved Instances
 **Topic:** **EC2 pricing & capacity**
 **Reserved Instance (RI):** Get a **discount** for long-running EC2 workloads.
@@ -145,12 +149,14 @@ A new AWS account (under 12 months) gets **750 hours/month of ****`t2.micro`** f
 > **Target Tracking → CPU, NetworkOut, ALB requests/target**
 > **SQS messages → not a predefined Target Tracking metric**
 **Recall check — EC2**
+
 | Purpose | Command |
 | --- | --- |
 | Enable detailed monitoring on **existing** instance | `aws ec2 monitor-instances --instance-ids i-1234567890abcdef0` |
 | Disable detailed monitoring | `aws ec2 unmonitor-instances --instance-ids i-1234567890abcdef0` |
 | Launch new instance with detailed monitoring | `aws ec2 run-instances --image-id ami-09092360 --monitoring Enabled=true` |
 | Check instance monitoring state | `aws ec2 describe-instances --instance-ids i-1234567890abcdef0` |
+
 - **Need a virtual machine / full OS control** → EC2
 - **Automatically add and remove instances** → Auto Scaling Group
 - **Create identical instances** → Launch Template

@@ -37,6 +37,7 @@ Run `cdk deploy` to deploy the generated CloudFormation stacks and create/update
 4. cdk synth     → generate the CloudFormation template
 5. cdk deploy    → create/update resources
 ```
+
 | Command | Does |
 | --- | --- |
 | **`cdk init`** | Create a CDK application |
@@ -45,6 +46,7 @@ Run `cdk deploy` to deploy the generated CloudFormation stacks and create/update
 | **`cdk diff`** | Compare the code against what’s deployed, before deploying |
 | **`cdk bootstrap`** | Prepare the account/Region for CDK (creates the staging bucket and roles) |
 | **`cdk destroy`** | Delete the stack |
+
 **Supported languages:** TypeScript, Python, Java, C#, Go.
 **Recall check — CDK**
 - **IaC using Python / TypeScript / a real programming language** → CDK

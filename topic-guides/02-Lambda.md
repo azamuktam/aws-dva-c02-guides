@@ -66,12 +66,14 @@ Candidates confuse these constantly because both have “concurrency” in the n
 - Set on a **version or alias**, never on `$LATEST`.
 - Can auto-scale on a schedule or via Application Auto Scaling.
 **SnapStart** is the free alternative for cold starts: it takes a snapshot of the initialised environment and restores from it. Originally Java-only, now also Python and .NET.
+
 |    | Reserved | Provisioned |
 | --- | --- | --- |
 | Solves | Starvation, downstream connection limits | **Cold start latency** |
 | Cost | Free | Paid |
 | Applied to | Function | Version or alias |
 | Also acts as | A hard cap | Nothing (it’s a warm floor) |
+
 ### Event Source Mapping
 Normally, you might imagine:
 ```plain text
@@ -111,11 +113,13 @@ DocumentDB
 These are **poll-based**.
 **Destinations vs DLQ**
 DLQ came first and only handles failures. Destinations are the newer, richer mechanism.
+
 |    | **Destinations** (preferred) | **DLQ** (legacy) |
 | --- | --- | --- |
 | Fires on | Success **and** failure | Failure only |
 | Targets | SQS, SNS, Lambda, **EventBridge** | SQS, SNS |
 | Payload | Request **and** response context | Original event only |
+
 **Success Destinations**
 This is another big difference.
 DLQ only stores failures.
@@ -150,12 +154,14 @@ Now another system can continue processing.
 - **Lambda container images** are stored in **Amazon ECR**. ✅
 - Lambda container images must support a **single architecture** (for example, `x86_64` or `arm64`); multi-architecture container images are not supported. ✅
 **ZIP vs Container**
+
 |    | ZIP | Container image |
 | --- | --- | --- |
 | Package | ZIP file | Docker image |
 | Stored in | AWS Lambda | Amazon ECR |
 | RIC required by you? | No | Yes, for custom/OS-only image |
 | RIE | Not relevant | Used for local testing |
+
 **Exam memory:**
 > **Container image + Lambda → RIC**
 > **Local testing → RIE**
@@ -379,6 +385,7 @@ Internet Gateway
 - Max **5** per function; they count toward the **250 MB** unzipped limit.
 - Versioned and shareable across accounts.
 Difference:
+
 |    | Layer | `/tmp` |
 | --- | --- | --- |
 | Purpose | Provide dependencies/code | Temporary files |
@@ -386,6 +393,7 @@ Difference:
 | Writable? | ❌ No | ✅ Yes |
 | Shared? | Shared by Lambda functions | Only this execution environment |
 | Permanent? | Versioned and reusable | Temporary |
+
 ---
 **Example**
 You create a layer:
@@ -497,12 +505,14 @@ If the requirement is that other developers must not see the value, use a **cust
 If the requirement involves **rotation**, environment variables are the wrong tool entirely → Secrets Manager.
 The total size of all environment variables shouldn't exceed** 4 KB. **There is** no limit **on the number of variables
 **Deployment package options**
+
 | Option | When |
 | --- | --- |
 | Inline console editor | Trivial functions, \< 3 MB |
 | `.zip` direct upload | Up to 50 MB zipped |
 | `.zip` via S3 | Larger zips (250 MB unzipped limit still applies) |
 | **Container image** | Up to **10 GB** — the answer when the package is genuinely large (ML models, heavy native dependencies) |
+
 Best practices, and the reason for each:
 - **Separate the handler from your core logic.** Makes the logic unit-testable without Lambda.
 - **Use the execution context** — initialise clients and connections outside the handler.
@@ -510,6 +520,7 @@ Best practices, and the reason for each:
 - **Control and minimise dependencies.** Every megabyte is download time on every cold start.
 - **Avoid recursive code.** A function that invokes itself can run away and generate a very large bill. AWS treats this as an anti-pattern.
 **Numbers**
+
 | Limit | Value |
 | --- | --- |
 | Timeout | default **3 s**, max **900 s (15 min)** |
@@ -523,6 +534,7 @@ Best practices, and the reason for each:
 | Layers | **5** per function |
 | Default account concurrency | **1,000** (soft) |
 | Invocation payload | **6 MB** sync, **256 KB** async |
+
 **The memory–CPU link is the most-used optimisation fact on the exam.** CPU is not configurable directly; it is allocated in proportion to memory. So a CPU-bound function that doesn’t need more memory still gets faster when you give it more memory — and often gets *cheaper*, because billing is memory × duration and the duration drops faster than the memory rises.
 ```plain text
 512 MB  → 10 seconds
@@ -540,12 +552,14 @@ Write succeeded  → first time → do the work
 Write failed     → already processed → return the previous result
 ```
 **DynamoDB is the right store** because it offers a single atomic “check and write” operation (`ConditionExpression` with `attribute_not_exists`), scales with Lambda’s concurrency, and has single-digit millisecond latency.
+
 | Store | Suitable? | Why |
 | --- | --- | --- |
 | **DynamoDB** | ✅ Best | Atomic conditional writes, scales, low latency |
 | RDS | ⚠️ Possible | Works, but connection limits fight Lambda’s scaling |
 | ElastiCache | ❌ No | A cache can evict entries; you’d lose the record |
 | S3 | ❌ No | No atomic conditional check, too slow for a per-request gate |
+
 Note the distinction from **atomic counters**: `SET count = count + 1` is safe under concurrency but is *not idempotent* — a retry increments twice. Use it for view counts, not for money.
 **Lambda@Edge**
 **Mental Model**
@@ -571,6 +585,7 @@ Instead of sending every request to your origin, CloudFront can execute code at 
 - Personalize content by country, language, or device
 - A/B testing
 ### CloudFront Functions vs Lambda@Edge
+
 |    | **CloudFront Functions** | **Lambda@Edge** |
 | --- | --- | --- |
 | Best for | Simple, lightweight logic | Complex logic |
@@ -583,6 +598,7 @@ Instead of sending every request to your origin, CloudFront can execute code at 
 | Access to request | Basic | More capabilities |
 | Network calls | **No** | **Yes** |
 | Operational complexity | **Lower** | Higher |
+
 **For your question**
 JWT validation is relatively simple:
 **Client → CloudFront Function (Viewer Request) → validate JWT →**
@@ -632,6 +648,7 @@ Lambda@Edge
 Origin
 ```
 **How Lambda fails — the diagnostic table**
+
 | Symptom | Cause | Fix |
 | --- | --- | --- |
 | Duplicate SQS processing | Visibility timeout \< function timeout | Raise visibility timeout to ≥ 6× function timeout |
@@ -648,6 +665,7 @@ Origin
 | Needs \> 15 minutes | Hard platform limit | Fargate, AWS Batch, or Step Functions |
 | Needs shared persistent files | `/tmp` is not shared or durable | Mount **EFS** |
 | Runaway invocations and cost | Recursive invocation | Redesign; recursion is an anti-pattern |
+
 **Recall check — Lambda**
 - **Improve Lambda performance** → initialise SDK clients and connections **outside the handler**
 - An **execution context** is the environment where a Lambda function runs. AWS creates it for your function and can **reuse it for later invocations**.

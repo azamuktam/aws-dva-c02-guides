@@ -1,6 +1,7 @@
 # PART 2 — DATA: WHERE STATE LIVES
 
 ## AWS Database & Storage Access Patterns
+
 | Service | Think of it as | Best when... | Example |
 | --- | --- | --- | --- |
 | **DynamoDB** | Fast NoSQL database | You need **key-based access, huge scale, flexible schema** | Get order by `orderId` |
@@ -12,6 +13,7 @@
 | **S3** | Object/file storage | You store **files/objects** | Images, videos, PDFs |
 | **EBS** | EC2 disk | One EC2 instance needs **block storage** | Database disk / application disk |
 | **EFS** | Shared filesystem | Multiple EC2s/containers need to **access the same files** | Shared `/uploads` folder |
+
 AWS categorizes DynamoDB as a key-value/document database, RDS/Aurora as relational databases, ElastiCache as an in-memory cache, and Redshift as a data warehouse.
 For storage, AWS describes **EBS as block storage attached to EC2** and **EFS as shared file storage for multiple compute resources**.
 ### The mental shortcut

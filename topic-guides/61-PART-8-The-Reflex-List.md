@@ -2,6 +2,7 @@
 Everything above, compressed. **Use this to check yourself, not to learn from.** If you read a row and can’t reconstruct *why* it’s true from the relevant section, that’s the section to go back to.
 ---
 ## Domain 1 — Development with AWS Services (32%)
+
 | Situation | Answer |
 | --- | --- |
 | Improve Lambda performance | Initialise clients and connections **outside the handler** |
@@ -75,7 +76,9 @@ Everything above, compressed. **Use this to check yourself, not to learn from.**
 | Search over DynamoDB data | Streams → Lambda → OpenSearch |
 | SQL on S3 | **Athena** |
 | SQL on one object | **S3 Select** |
+
 ## Domain 2 — Security (26%)
+
 | Situation | Answer |
 | --- | --- |
 | A service needs AWS permissions | IAM **role**, never stored keys |
@@ -136,7 +139,9 @@ Everything above, compressed. **Use this to check yourself, not to learn from.**
 | `CannotPullContainerError` | Task **execution** role |
 | Container app gets `AccessDenied` | Task **role** |
 | Enable HTTPS / auto-renew certificates | **ACM** (us-east-1 for CloudFront) |
+
 ## Domain 3 — Deployment (24%)
+
 | Situation | Answer |
 | --- | --- |
 | Serverless IaC (Lambda + API GW + DynamoDB) | **SAM** |
@@ -196,7 +201,9 @@ Everything above, compressed. **Use this to check yourself, not to learn from.**
 | Database must survive a Beanstalk rebuild | Create **RDS externally** |
 | Private npm / pip / Maven repository | **CodeArtifact** |
 | Cache and proxy public packages | CodeArtifact external connection |
+
 ## Domain 4 — Troubleshooting and Optimization (18%)
+
 | Symptom | Cause / answer |
 | --- | --- |
 | Duplicate SQS processing | Visibility timeout \< processing time |
@@ -237,4 +244,5 @@ Everything above, compressed. **Use this to check yourself, not to learn from.**
 | Who changed this AWS resource | **CloudTrail** |
 | Is the resource compliant | **AWS Config** |
 | Does it match the template | **Drift Detection** |
+
 ---

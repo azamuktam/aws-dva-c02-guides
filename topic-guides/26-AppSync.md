@@ -101,6 +101,7 @@ AppSync supports several authorization methods, including:
 - Lambda authorization
 Choose based on the application's authentication requirements.
 **AppSync vs API Gateway**
+
 | Requirement | Best fit |
 | --- | --- |
 | **GraphQL API** | **AppSync** |
@@ -112,8 +113,10 @@ Choose based on the application's authentication requirements.
 | HTTP API | **API Gateway** |
 | Custom WebSocket API | **API Gateway** |
 | API Gateway stages / REST-style API management | **API Gateway** |
+
 Don't think **"AppSync = replacement for API Gateway."** They solve different API patterns. AWS supports using both when appropriate.
 **Exam clues**
+
 | Question says... | Think... |
 | --- | --- |
 | **GraphQL** | **AppSync** |
@@ -125,6 +128,7 @@ Don't think **"AppSync = replacement for API Gateway."** They solve different AP
 | REST API | **API Gateway** |
 | HTTP API | **API Gateway** |
 | Custom WebSocket routes/connections | **API Gateway WebSocket** |
+
 ### One-line memory
 > **AppSync = GraphQL + multiple data sources + real-time + mobile/offline synchronization.**
 **Exam memory:**

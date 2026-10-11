@@ -1,5 +1,6 @@
 ## EBS vs EFS
 The distinction is disk versus network filesystem.
+
 |    | **Amazon EBS** | **Amazon EFS** |
 | --- | --- | --- |
 | Linux analogy | A local hard disk (`/dev/xvda`) | An **NFS** mount |
@@ -8,6 +9,7 @@ The distinction is disk versus network filesystem.
 | Availability Zone | **Single AZ** | **Multi-AZ** |
 | Typical use | OS disk, databases, high IOPS | Shared files, web content, container storage, home directories |
 | Shared by many? | ❌ No (except Multi-Attach for specific workloads) | ✅ Yes |
+
 Mental model: **EBS is a hard drive plugged into one server. EFS is a network folder mounted by many servers.**
 Because EBS is single-AZ and single-attach, it is always the wrong answer to “persistent shared storage across Availability Zones” — including for **Fargate**, where EFS is the only option.
 **Instance store** is a third thing: physically attached, very fast, and **ephemeral**. Lost on stop.
@@ -40,11 +42,13 @@ Example: `/dev/xvdf`
 - Designed for long-term retention
 - Retrieval/access charges apply
 ### Simple comparison
+
 | Storage class | Access frequency | Cost |
 | --- | --- | --- |
 | **EFS Standard** | Frequent | Higher |
 | **EFS Standard-IA** | Infrequent | Lower |
 | **EFS Archive** | Rare | Lowest |
+
 ### Important
 EFS can use **Lifecycle Management** to automatically move files between storage classes based on how long they've gone without being accessed.
 For example:
@@ -69,12 +73,14 @@ HDD → large sequential workloads, throughput
 ```
 AWS groups EBS volumes into **SSD**, **HDD**, and **previous-generation Magnetic** volumes.
 ## SSD volumes
+
 | Type | What to remember |
 | --- | --- |
 | **gp3** | General purpose; **3,000 IOPS + 125 MiB/s included**; IOPS/throughput can be increased independently |
 | **gp2** | General purpose; **3 IOPS/GiB**, max **16,000 IOPS** |
 | **io1** | High-performance database; provisioned IOPS; max **64,000 IOPS**; **50 IOPS/GiB** |
 | **io2** | High-performance database; more durable than io1; max **64,000 IOPS**, or **256,000 with Block Express** |
+
 SSD volumes are suited to workloads with frequent reads/writes and random I/O.
 **gp2 — testable calculation**
 > **3 IOPS/GiB**
@@ -111,10 +117,12 @@ And:
 > **io2 Block Express → up to 256,000 IOPS** on supported Nitro instances.
 ---
 ## HDD volumes
+
 | Type | What to remember |
 | --- | --- |
 | **st1** | **Throughput Optimized HDD** → large, sequential, frequently accessed data |
 | **sc1** | **Cold HDD** → large, sequential, infrequently accessed data; lowest-cost option |
+
 HDD volumes are optimized for **large sequential I/O**, not small/random I/O.
 **st1**
 > **Big sequential data + high throughput**

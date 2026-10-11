@@ -17,6 +17,7 @@ EC2 + S3 + IAM + RDS + VPC ...
 **Why it exists**
 Clicking resources together in the console is unrepeatable and undocumented. A CloudFormation template is a declarative description of the resources you want. CloudFormation creates them, tracks them as a **stack**, updates them when the template changes, and — crucially — **deletes them all when the stack is deleted**. That lifecycle coupling is the source of several exam questions.
 **Template sections**
+
 | Section | What it is | Example |
 | --- | --- | --- |
 | **`AWSTemplateFormatVersion`** | Template version. Almost always the same value | `"2010-09-09"` |
@@ -28,7 +29,9 @@ Clicking resources together in the console is unrepeatable and undocumented. A C
 | **`Transform`** | Preprocess the template — mostly **AWS SAM** | Expand SAM resources into CloudFormation |
 | **`Resources`** ⭐ | **The only required section.** What to create | EC2, S3, Lambda, DynamoDB |
 | **`Outputs`** | Values returned after deployment | EC2 public IP, bucket name |
+
 **Where conditions can be applied** — a detail that gets asked directly:
+
 | Section | Purpose | `Condition` allowed? |
 | --- | --- | --- |
 | Parameters | User inputs | ❌ No |
@@ -36,6 +39,7 @@ Clicking resources together in the console is unrepeatable and undocumented. A C
 | Conditions | Define the logic itself | N/A |
 | **Resources** | Create resources | ✅ **Yes** |
 | **Outputs** | Return values | ✅ **Yes** |
+
 **Parameters vs Mappings vs Parameter Store**
 All three supply values, and the difference is *who knows the value and when*.
 - **Parameters** — the **deployer** supplies it at deploy time. “Which instance type do you want?”
@@ -60,6 +64,7 @@ MapName → TopLevelKey → SecondLevelKey → Value
 ```
 **Always three arguments.** Mappings are static, defined in the template, and unsuitable for secrets or frequently changing values.
 **Intrinsic functions**
+
 | Function | Returns |
 | --- | --- |
 | **`!Ref`** | The value of a parameter, or the primary identifier of a resource |
@@ -70,6 +75,7 @@ MapName → TopLevelKey → SecondLevelKey → Value
 | **`!GetAZs`** | The Availability Zones in a Region |
 | **`!Join`** / **`!Select`** / **`!Split`** | String and list manipulation |
 | **`!If`** / **`!Equals`** / **`!Not`** | Condition logic |
+
 **`!Ref`** returns the resource's default/reference value, while **`!GetAtt`** returns a specific attribute of the resource, such as its ARN or DNS name
 **`!Sub`** → **substitutes variables into a string**.
 ```plain text
@@ -150,11 +156,13 @@ Because a stack represents a desired state, someone changing a resource by hand 
 - Reports `IN_SYNC`, `MODIFIED`, `DELETED`, or `NOT_CHECKED`.
 - Triggered by: a resource changed outside CloudFormation.
 Drift answers a narrow, specific question, and it is easy to confuse with two neighbours:
+
 | Tool | The question it answers |
 | --- | --- |
 | **CloudFormation Drift Detection** | *“Does this resource still match my template?”* |
 | **AWS Config** | *“Is this resource configured according to my organisation’s rules?”* |
 | **CloudTrail** | *“Who changed it, when, and from where?”* |
+
 Worked example — someone manually edits a Lambda IAM role that CloudFormation created:
 - Is it different from the template? → **Drift Detection**
 - Does it violate a security rule? → **AWS Config**

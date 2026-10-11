@@ -36,11 +36,13 @@ Why this design: the large data never crosses the network to KMS, throughput is 
 - `GenerateDataKeyWithoutPlaintext` → encrypted key only, for a service that will decrypt later
 - The **AWS Encryption SDK** implements the whole pattern for you
 **Key types**
+
 | Type | Managed by | Rotation | Key policy | Cost |
 | --- | --- | --- | --- | --- |
 | **AWS owned** | AWS, shared across accounts | AWS | Not visible | Free |
 | **AWS managed** (`aws/s3`, `aws/lambda`) | AWS, one per account per service | Automatic, yearly | Not editable | Free |
 | **Customer managed** | **You** | Optional, yearly or on demand | **You edit it** | Monthly + per-request |
+
 Choose a customer managed key when you need to control the policy, audit usage in detail, rotate on your own schedule, or disable/delete the key.
 
 **Key policies — the part that surprises people**
@@ -96,6 +98,7 @@ Use CloudHSM when you need:
 - Existing/on-premises HSM integration
 - Compliance requirements requiring customer control
 **CloudHSM vs KMS**
+
 |    | CloudHSM | KMS |
 | --- | --- | --- |
 | Hardware | Dedicated HSM | AWS-managed HSM infrastructure |
@@ -103,6 +106,7 @@ Use CloudHSM when you need:
 | Key management | Customer controlled | AWS managed |
 | Ease of use | More complex | Easier |
 | Typical use | Strict compliance / custom crypto | General AWS encryption |
+
 **Exam memory**
 **“Dedicated HSM” → CloudHSM**
 **“Exclusive control of HSM/keys” → CloudHSM**

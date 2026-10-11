@@ -6,6 +6,7 @@ Step Functions moves the *coordination* out of your code into a declarative stat
 **State types**
 Workflows are defined in **Amazon States Language (ASL)**, a JSON document.
 A **state machine is the entire workflow**; these are **state types inside a state machine**.
+
 | State | Purpose |
 | --- | --- |
 | **Task** | Do work — Lambda, ECS, DynamoDB, SNS, SQS, or any AWS SDK call |
@@ -15,8 +16,10 @@ A **state machine is the entire workflow**; these are **state types inside a sta
 | **Wait** | Pause for a duration or until a timestamp |
 | **Pass** | Pass input through, or inject fixed data |
 | **Succeed** / **Fail** | Terminate the execution |
+
 **Standard vs Express**
 The choice follows from duration and volume.
+
 |    | **Standard** | **Express** |
 | --- | --- | --- |
 | Max duration | **1 year** | **5 minutes** |
@@ -26,6 +29,7 @@ The choice follows from duration and volume.
 | Pricing | Per **state transition** | Per **invocation + duration** |
 | `.waitForTaskToken` | ✅ | ❌ |
 | Best for | Long, auditable, non-idempotent business processes | High-volume, short, idempotent event processing |
+
 Anything longer than 5 minutes, or requiring exactly-once, or requiring human approval, must be **Standard**.
 **Error handling — the main reason to use it**
 ```json
@@ -45,11 +49,13 @@ Anything longer than 5 minutes, or requiring exactly-once, or requiring human ap
 Predefined errors: `States.ALL`, `States.TaskFailed`, `States.Timeout`, `States.Permissions`, `States.DataLimitExceeded`.
 Getting this behaviour without Step Functions means writing retry loops and try/catch into every function — which is exactly the “retry logic without writing code” question.
 **Service integration patterns**
+
 | Pattern | Suffix | Behaviour |
 | --- | --- | --- |
 | **Request Response** | (none) | Call and continue immediately |
 | **Run a Job** | `.sync` | Call and **wait for completion** — ECS task, Batch job, EMR step |
 | **Wait for Callback** | `.waitForTaskToken` | Pause indefinitely until an external system calls `SendTaskSuccess` |
+
 `.waitForTaskToken` is how **human approval** works: the workflow emits a task token (typically into an email or a queue), then waits. Days later, a person clicks approve, something calls `SendTaskSuccess` with the token, and the workflow resumes. Standard workflows only, because Express caps out at 5 minutes.
 ### Overall
 ```plain text
@@ -205,6 +211,7 @@ SendTaskFailure
 Step Functions knows the Activity failed and can handle it with its workflow error handling.
 ---
 # APIs
+
 | API | Who calls it? | Purpose |
 | --- | --- | --- |
 | `CreateActivity` | Developer/setup | Create the Activity |
@@ -212,6 +219,7 @@ Step Functions knows the Activity failed and can handle it with its workflow err
 | `SendTaskHeartbeat` | **Worker** | “I'm still working” |
 | `SendTaskSuccess` | **Worker** | “I finished successfully” |
 | `SendTaskFailure` | **Worker** | “I failed” |
+
 ## Complete example
 Imagine a hospital appointment system needs a worker to generate a complicated insurance report.
 ```plain text

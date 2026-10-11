@@ -15,12 +15,14 @@ Table
 Partition key alone = a simple key. Partition key + sort key = a composite key, and items sharing a partition key are stored together, sorted.
 **Capacity units — derive them, don’t memorise them**
 Reads and writes are metered in fixed-size blocks. Only four facts are needed:
+
 | Operation | Cost |
 | --- | --- |
 | **1 WCU** | one write of up to **1 KB** per second |
 | **1 RCU** | one **strongly consistent** read of up to **4 KB** per second |
 | **1 RCU** | **two eventually consistent** reads of up to 4 KB per second |
 | **Transactional** | **2×** the normal cost, read or write |
+
 **Always round item size UP to the next whole block.** A 6 KB item is two 4 KB read blocks, not one and a half.
 **Why reads are cheaper than writes per byte:** a write must be replicated to multiple copies before acknowledgement; a read can be served from one. And **why eventual consistency halves the cost:** DynamoDB replicates to three copies, so an eventually consistent read can be served by any one of them, while a strongly consistent read must consult the leader.
 Worked example — reads:
@@ -76,12 +78,14 @@ No LastEvaluatedKey in the response → you have everything
 The subtlety worth understanding: the 1 MB cap applies **before** `FilterExpression`. So a heavily filtered query can legitimately return **zero items while still including a ****`LastEvaluatedKey`**. That is not an error and not an empty result — you must keep paging. Developers who assume “no items means done” silently lose data, and the exam knows it.
 `Limit` caps the item *count*; the 1 MB cap still applies on top of it.
 ## Mental Model
+
 | Option | What it controls |
 | --- | --- |
 | `--max-items` | ✅ Total items returned by the CLI |
 | `--page-size` | Number of items requested per API call |
 | `--limit` | Number of items DynamoDB evaluates per Scan request |
 | `--starting-token` | Resume pagination from a previous response |
+
 ### AWS Exam Tip
 If the question says:
 > **"paginate the results"** and **"minimize the number of items returned in the CLI's output"**
@@ -91,6 +95,7 @@ the keyword is **CLI output**, so the correct answer is:
 Both let you query by something other than the table’s partition key. The difference comes from *where the index physically lives*.
 An **LSI** shares the table’s partition key, so its data lives in the same partitions as the table. Because the partitioning is identical, the index can be read with strong consistency — but it also means the index must exist when the partitions are created, which is why an **LSI can only be created at table creation time and can never be deleted**.
 A **GSI** uses a different partition key, so it is a **separate, independently partitioned structure** that DynamoDB keeps in sync asynchronously. That asynchronous replication is exactly why **GSI reads are only ever eventually consistent** — and why a GSI can be added or removed at any time.
+
 |    | **LSI** (Local) | **GSI** (Global) |
 | --- | --- | --- |
 | Created | **Table creation ONLY** | **Any time** |
@@ -101,6 +106,7 @@ A **GSI** uses a different partition key, so it is a **separate, independently p
 | Throughput | Shares the table’s | **Its own RCU/WCU** |
 | Strongly consistent reads | ✅ Yes | ❌ **No — eventual only** |
 | Size limit | 10 GB per partition key value | None |
+
 **The GSI throttling chain** — a favourite troubleshooting question. A GSI has its own capacity. **Independent amount of RCU and WCU**
 Every write to the base table also writes to the GSI. If the GSI is out of capacity, DynamoDB cannot complete the replicated write, so **writes to the base table start failing too**. The symptom is “base table writes are throttled but the table has plenty of capacity”; the cause is the GSI.
 **Projections** — an index only contains the attributes you project into it: `KEYS_ONLY`, `INCLUDE` (named extras), or `ALL`. Reading an attribute that isn’t projected forces a fetch back to the base table, costing extra capacity and latency. Under-projecting to save storage and then paying for fetches is a real trap.
@@ -128,12 +134,14 @@ Note what is *not* the answer: increasing capacity does nothing for lost updates
 **Atomic counters** — `SET viewCount = viewCount + :inc` is always applied to the current server-side value, so concurrent increments never lose each other.
 But it is **not idempotent**: a retried request increments twice. So it is right for view counts and likes, and wrong for anything where an accidental double-application matters (money, inventory). For those, use a conditional write keyed on a request ID.
 **Batch and transaction APIs**
+
 | API | Limits | Behaviour |
 | --- | --- | --- |
 | **`BatchGetItem`** | 100 items / 16 MB | Parallel reads, possibly across tables. Returns `UnprocessedKeys`. |
 | **`BatchWriteItem`** | 25 items / 16 MB | `PutItem` + `DeleteItem` only. **No ****`UpdateItem`****. No conditions.** Returns `UnprocessedItems`. |
 | **`TransactWriteItems`** | 100 items / 4 MB | All-or-nothing ACID. Supports `ConditionCheck`. **2× WCU.** |
 | **`TransactGetItems`** | 100 items / 4 MB | Consistent snapshot. **2× RCU.** |
+
 **Batch operations are not atomic.** They are a convenience for issuing many independent requests in one call, so individual items can fail while others succeed. Those failures come back in **`UnprocessedItems`** / **`UnprocessedKeys`**, and **it is your job to retry them with exponential backoff**. Code that ignores the field appears to work and silently loses data — a well-worn exam scenario.
 Transactions *are* atomic, which is why they cost double: DynamoDB must do a two-phase commit across partitions.
 **TTL**
@@ -148,6 +156,7 @@ Why it’s useful and how it behaves:
 **On-demand** — pay per request, scales instantly, no planning. Right for unpredictable or spiky traffic and for new applications where you don’t know the pattern yet. Roughly 5–7× the cost of well-tuned provisioned capacity, which is the trade.
 You can switch modes once every 24 hours.
 **Diagnosing ****`ProvisionedThroughputExceededException`**
+
 | Cause | How you recognise it | Fix |
 | --- | --- | --- |
 | Total capacity genuinely too low | Consumed ≈ provisioned | Raise capacity, enable auto scaling, or switch to on-demand |
@@ -155,11 +164,13 @@ You can switch modes once every 24 hours.
 | GSI out of capacity | Base table writes throttled for no apparent reason | Raise the **GSI’s** capacity |
 | Read-heavy burst | Reads dominate, same items repeatedly | **DAX** or ElastiCache |
 | Client sending faster than the table can absorb | Bursty client | **Exponential backoff with jitter** (the AWS SDKs do this automatically) |
+
 The “throttled while average utilisation is low” signature is the key insight: capacity is provisioned per *table* but consumed per *partition*. If all your traffic hits one partition key, that partition’s share of the capacity is the real ceiling.
 **Burst capacity** is the other reason a table sometimes absorbs more than it was provisioned for. DynamoDB retains **up to 5 minutes (300 seconds) of unused read and write capacity** and spends it on short spikes. This is why a table can survive a brief burst above its provisioned rate and then start throttling when the saved-up capacity runs out — the failure looks sudden and unexplained, but the burst reserve was simply exhausted. It is a best-effort reserve, so you cannot design around it.
 **Adaptive capacity** shifts capacity toward busy partitions automatically and can isolate frequently accessed items. It reduces hot-key throttling but does not eliminate it, so “rely on adaptive capacity” is not a fix for a badly chosen key.
 **A good partition key** has high cardinality and even access distribution. `userId` is usually good; `country` or `status` is usually terrible.
 **Everything else, one line each**
+
 | Feature | What to know |
 | --- | --- |
 | **Max item size** | **400 KB.** Store large objects in S3 and keep the S3 key in the item |
@@ -170,14 +181,17 @@ The “throttled while average utilisation is low” signature is the key insigh
 | **On-demand backup** | Full backup, no performance impact |
 | **`ReturnConsumedCapacity`** | Ask the API what a request cost — the practical way to debug throttling |
 | **Reserved words** | Use `ExpressionAttributeNames` (`#name`) when an attribute name collides with a reserved word |
+
 ### DynamoDB Write/Read Response Parameters
 ### `ReturnConsumedCapacity`
 Tells DynamoDB to return **how much capacity the operation used**.
+
 | Value | Returns |
 | --- | --- |
 | `NONE` | Nothing |
 | `TOTAL` | Total capacity consumed |
 | `INDEXES` | Total capacity **+ table/index breakdown** |
+
 **Exam memory:**
 ```plain text
 Need capacity → ReturnConsumedCapacity
@@ -187,6 +201,7 @@ Only total → TOTAL
 ### `ReturnValues`
 Tells DynamoDB **which item values to return after an operation**.
 Common values:
+
 | Value | Meaning |
 | --- | --- |
 | `NONE` | Return nothing |
@@ -194,6 +209,7 @@ Common values:
 | `UPDATED_OLD` | Return attributes that were changed, **before** the write |
 | `ALL_NEW` | Return the entire item **after** the write |
 | `UPDATED_NEW` | Return attributes that were changed, **after** the write |
+
 **Recall check — DynamoDB**
 - **NoSQL, low latency, high throughput, serverless database** → DynamoDB
 - **WCU block = 1 KB. RCU block = 4 KB.**
@@ -300,6 +316,7 @@ The export can use:
 If using a KMS key, the KMS key must be in the **same Region as the destination S3 bucket**.
 #### Export vs On-Demand Backup
 This is a common exam trap.
+
 |    | **Export to S3** | **On-demand backup** |
 | --- | --- | --- |
 | Destination | **S3** | DynamoDB-managed backup |
@@ -307,6 +324,7 @@ This is a common exam trap.
 | Can download S3 data? | **Yes** | No |
 | Uses RCUs? | **No** | No |
 | PITR required? | **Yes** | No |
+
 So if the question says:
 > **"Get DynamoDB data into S3"**
 think:

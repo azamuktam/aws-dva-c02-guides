@@ -32,12 +32,14 @@ x-amz-server-side-encryption-customer-key-MD5:    <base64 MD5 of the key>
 Requires HTTPS, since the key travels in the request.
 **Client-side encryption**
 You encrypt before uploading. S3 never sees plaintext and never sees your key. Maximum control, maximum responsibility — you own key management, rotation, and the encryption process.
+
 | Type | Key management | Header / marker |
 | --- | --- | --- |
 | **SSE-S3** | AWS manages everything | `AES256` |
 | **SSE-KMS** | KMS key, you control policy and rotation | `aws:kms` |
 | **SSE-C** | You supply the key on every request | Customer key headers |
 | **Client-side** | You encrypt before upload | None — S3 sees ciphertext |
+
 **Enforcing encryption**
 Encryption being *available* doesn’t mean it’s *used*. To require it, use an **S3 bucket policy with a ****`Deny`** that rejects any `PutObject` lacking the correct header.
 The canonical question: *“Every upload must use SSE-S3, and uploads without encryption must be rejected.”*

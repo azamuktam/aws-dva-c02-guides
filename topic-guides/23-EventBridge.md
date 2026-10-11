@@ -57,6 +57,7 @@ This content-based matching on the payload is the core capability that distingui
 - **EventBridge Pipes** — point-to-point wiring: source → *filter* → *enrich* → target, with no Lambda glue code. The answer to “connect a DynamoDB stream to an API with light transformation, without writing a function”.
 - **EventBridge Scheduler** — a dedicated, higher-scale scheduling service supporting one-time and recurring schedules with time zones.
 **EventBridge vs SNS vs SQS**
+
 |    | **EventBridge** | **SNS** | **SQS** |
 | --- | --- | --- | --- |
 | Model | Event **router** | Pub/sub **fan-out** | **Queue** |
@@ -68,6 +69,7 @@ This content-based matching on the payload is the core capability that distingui
 | Throughput / latency | Good | **Highest / lowest latency** | Very high |
 | Ordering | ❌ | FIFO topics | FIFO queues |
 | AWS service events | ✅ Native | ❌ | ❌ |
+
 **Recall check — EventBridge**
 - **Route events on fields inside the payload** → EventBridge
 - **Add consumers without changing the producer** → EventBridge

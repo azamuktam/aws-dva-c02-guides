@@ -1,4 +1,5 @@
 ## AWS CloudWatch
+
 | Field | Simple meaning |
 | --- | --- |
 | **namespace** | Who am I calling? `aws` or `remote` |
@@ -12,6 +13,7 @@
 | **metadata** | Extra data stored for debugging; not indexed |
 | **subsegments** | Smaller downstream operations inside this subsegment |
 | **precursor_ids** | IDs of earlier related subsegments |
+
 **Metric:** A measurement tracked over time, such as CPU usage.
 **Namespace:** Who am I calling? `aws` or `remote`
 **Dimensions:** Identify what the metric belongs to, such as an EC2 instance ID.
@@ -69,6 +71,7 @@ Interactive and ad-hoc — not a streaming mechanism. Use it to *investigate*; u
 - Dashboards can be shared publicly or with specific people via a link, without giving them console access.
 An alarm stuck in `INSUFFICIENT_DATA` means no datapoints are arriving — either the metric isn’t being published, or the “treat missing data” setting is wrong for a sparse metric.
 **Metrics worth recognising by name**
+
 | Service | Metric | What it tells you |
 | --- | --- | --- |
 | **Lambda** | `Invocations`, `Duration`, `Errors` | Basic health |
@@ -87,6 +90,7 @@ An alarm stuck in `INSUFFICIENT_DATA` means no datapoints are arriving — eithe
 | **Kinesis** | `GetRecords.IteratorAgeMilliseconds` | Consumer lag |
 | **Kinesis** | `WriteProvisionedThroughputExceeded` | Hot shard or too few shards |
 | **ECS** | `CPUUtilization`, `MemoryUtilization` | Service load |
+
 **The ****`Latency`**** vs ****`IntegrationLatency`**** pair is worth understanding rather than memorising.** `IntegrationLatency` is the time API Gateway spent waiting for your backend. `Latency` is the total time the client experienced. So:
 - Both high → the **backend** is slow.
 - `Latency` high, `IntegrationLatency` low → the extra time was spent **in API Gateway** (authorizer, mapping template, throttling queue), not in your code.

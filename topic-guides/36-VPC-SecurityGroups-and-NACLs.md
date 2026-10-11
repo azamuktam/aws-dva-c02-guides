@@ -98,6 +98,7 @@ The practical developer relevance: a Lambda in a private subnet needing S3 can u
 This distinction produces one of the most reliable troubleshooting questions on the exam.
 **Security Group** — attached to an **instance/ENI**. **Stateful**: if you allow traffic in, the response is automatically allowed out. Allow rules **only** — you cannot express a deny. Default: all inbound denied, all outbound allowed. All rules are evaluated together.
 **Network ACL** — attached to a **subnet**. **Stateless**: it has no memory of connections, so you must allow the inbound traffic **and** the outbound response explicitly. Supports **both allow and deny** rules, evaluated by **rule number, lowest first**, stopping at the first match.
+
 | Feature | **Security Group** | **Network ACL** |
 | --- | --- | --- |
 | Level | Instance / ENI | **Subnet** |
@@ -106,6 +107,7 @@ This distinction produces one of the most reliable troubleshooting questions on 
 | Return traffic | Automatic | **Must be allowed manually** |
 | Rule order | All evaluated together | **Lowest number first**, first match wins |
 | Main use | Primary instance protection | Additional subnet-level layer, blocking specific IPs |
+
 The two diagnostic consequences:
 - **You need to block a specific IP address** → only a **NACL** can do it, because security groups have no deny.
 - **Inbound works but responses never arrive** → the NACL’s **outbound** rules are blocking the return traffic. A security group would have handled it automatically. This symptom points at a NACL every time.
@@ -118,15 +120,18 @@ action=REJECT  srcaddr=10.0.1.5  dstport=443
 Can be enabled at the **VPC, subnet, or ENI** level, and delivered to CloudWatch Logs, S3, or Kinesis Data Firehose.
 This is the tool that answers “why is this connection being blocked?” — a REJECT tells you a security group or NACL denied it, and the ports involved tell you which rule to look at.
 **The observability comparison**
+
 | Tool | Records |
 | --- | --- |
 | **VPC Flow Logs** | Network traffic metadata (accepted/rejected) |
 | **CloudTrail** | **AWS API calls** — who did what |
 | **CloudWatch Logs** | Application and service logs |
 | **AWS Config** | Resource configuration state and compliance |
+
 **AWS Config** tracks the **configuration and compliance state of AWS resources**, while **CloudTrail** records **who did what and when through API calls**.
 **AWS Direct Connect** provides a dedicated network connection between** your on-premises network and AWS**, bypassing the public internet
 **Recall check — VPC and network security**
+
 | Component | Simple purpose |
 | --- | --- |
 | **Internet Gateway (IGW)** | Public resources ↔ Internet |
@@ -138,6 +143,7 @@ This is the tool that answers “why is this connection being blocked?” — a 
 | **VPN Gateway** | VPC ↔ on-premises through VPN |
 | **Direct Connect** | Dedicated private connection from on-premises → AWS |
 | **ENI** | Network interface connecting a resource to a VPC |
+
 - **Private network in AWS** → VPC
 - **Separate IP ranges within a VPC** → subnets
 - **Internet access from a public subnet** → Internet Gateway (+ route + public IP)

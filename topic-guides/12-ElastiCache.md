@@ -145,6 +145,7 @@ Cluster
 - **Memcached → Cluster → Nodes only**
 - **More nodes = More memory + Better scalability + Higher availability**
 **Redis vs Memcached**
+
 | Feature | **Redis** | **Memcached** |
 | --- | --- | --- |
 | Persistence / snapshots | ✅ | ❌ |
@@ -154,15 +155,18 @@ Cluster
 | Scale out | Cluster mode (sharding) | Add nodes, client-side sharding |
 | Backup and restore | ✅ | ❌ |
 | Best for | **Sessions**, leaderboards, HA caching, pub/sub | Simple, large, disposable cache |
+
 The reason **Redis wins session questions** is durability: a session lost to a node failure logs a user out. Memcached has no replication or persistence, so a node loss loses those sessions. Redis has both.
 **Session management — the full picture**
 The problem: with multiple application servers behind a load balancer, a user’s second request may hit a different server than the first. If session state lives on the server, that user appears logged out.
+
 | Approach | Session storage | Assessment |
 | --- | --- | --- |
 | **ElastiCache Redis** | ✅ Central, shared, replicated | **The correct answer.** Any server can serve any request |
 | **ElastiCache Memcached** | ⚠️ Central but not durable | Fine for disposable cache, risky for sessions |
 | **Sticky sessions (session affinity)** | ✅ On one specific server | Works, but **less scalable** — and when that instance dies, its users lose their sessions |
 | **CloudFront** | ❌ None | A CDN caches content; it does not store application session state |
+
 **Sticky sessions** are worth understanding rather than dismissing: the load balancer pins a user to one instance with a cookie. It’s the zero-code option and appears as a plausible answer. It loses whenever the question mentions scalability, instance failure, or “don’t store sessions on the instances”.
 **Recall check — ElastiCache**
 - **Shared session storage after migrating to multiple servers** → ElastiCache Redis

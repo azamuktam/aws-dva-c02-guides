@@ -43,6 +43,7 @@ Common uses:
 - Federated users
 - Applications that need temporary AWS access
 **The APIs**
+
 | API | Use |
 | --- | --- |
 | **`AssumeRole`** | Same-account or **cross-account** role assumption |
@@ -51,6 +52,7 @@ Common uses:
 | **`GetSessionToken`** | MFA-protected temporary credentials for an IAM user |
 | **`GetFederationToken`** | Temporary credentials for a non-IAM user |
 | **`GetCallerIdentity`** | “Who am I?” — requires no permissions, invaluable for debugging |
+
 **Cross-account access — the two-sided requirement**
 This is the single most testable STS fact, and it follows directly from the trust-policy/permissions-policy split.
 **Both sides must agree:**

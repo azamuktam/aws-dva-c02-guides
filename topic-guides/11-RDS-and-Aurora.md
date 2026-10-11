@@ -185,12 +185,14 @@ Use when: high availability, automatic failover, disaster recovery.
 - Uses **one endpoint (DNS)**.
 - During failover, AWS updates the endpoint to the standby.
 - **No connection string change** is required.
+
 | Need | Answer | Why |
 | --- | --- | --- |
 | More read capacity | **Read Replicas** | Readable copies, simplest change |
 | Survive an AZ failure | **Multi-AZ** | Automatic failover, standby not readable |
 | Eliminate repeated queries entirely | **ElastiCache** | Fastest, but you own the cache logic |
 | Least code change for read scaling | **Read Replicas** | Just a second endpoint |
+
 **IAM database authentication**
 Instead of a stored password, the application requests a short-lived **IAM authentication token** and uses that to connect.
 ```plain text
@@ -202,11 +204,13 @@ Connect using the token instead of a password
 ```
 The value: **there is no password to store, leak, or rotate.** Supported by **MySQL and PostgreSQL** on RDS/Aurora.
 Important boundary: it **does not rotate an existing database password** — it removes the need for one. If a question says “the existing password must be rotated automatically”, that’s Secrets Manager, not IAM DB auth.
+
 | Approach | Stores a secret? | Rotation |
 | --- | --- | --- |
 | **Secrets Manager** | ✅ Yes | ✅ Automatic, with built-in RDS support |
 | **Parameter Store ****`SecureString`** | ✅ Yes | ❌ No |
 | **IAM DB authentication** | ❌ **No password exists** | N/A — tokens are short-lived by design |
+
 **RDS proxy: **
 - connection pooling and reuse.
 - Many application connections → **RDS Proxy** → fewer DB connections.

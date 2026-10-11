@@ -2,6 +2,7 @@
 **Why it exists**
 DNS translates names into destinations. Route 53 is AWS’s DNS service, and it does two things beyond ordinary DNS: it has **native awareness of AWS resources** (alias records), and it can make **routing decisions** based on health, latency, geography, or weight.
 **Record types — and the one restriction that matters**
+
 | Record | Points to | Example |
 | --- | --- | --- |
 | **A** | An IPv4 address | `example.com → 192.0.2.1` |
@@ -9,6 +10,7 @@ DNS translates names into destinations. Route 53 is AWS’s DNS service, and it 
 | **CNAME** | **Another hostname** | `www.mydomain.com → yourapp.3rdparty.com` |
 | **Alias** | **An AWS resource** | `example.com → ALB` |
 | **PTR** | Reverse lookup, IP → hostname | Mail servers, reverse DNS |
+
 **The CNAME restriction:** a CNAME **cannot be used at the zone apex** (the root domain).
 ```plain text
 mydomain.com        ❌ CNAME not allowed
@@ -27,6 +29,7 @@ www.mydomain.com  →  yourapp.3rdparty.com
 ```
 ✅ **CNAME** — the target is another hostname, not an AWS resource.
 **Route 53 Routing policies — choose by the criterion**
+
 | Policy | Routes based on | Use when |
 | --- | --- | --- |
 | **Simple** | Nothing — one destination | A single resource serves the domain |
@@ -36,6 +39,7 @@ www.mydomain.com  →  yourapp.3rdparty.com
 | **Latency** | Measured network latency | Resources in several Regions, users should get the fastest |
 | **Multivalue answer** | Random selection among healthy records | Simple client-side load spreading, up to **8** healthy records |
 | **Weighted** | Percentages you assign | Canary releases, A/B testing, gradual migration |
+
 Note the geolocation/geoproximity distinction: **geolocation** cares where the *user* is; **geoproximity** cares where the *resources* are and lets you bias traffic between them.
 **Recall check — Route 53**
 - **Point a domain at an AWS resource (ALB, CloudFront, API Gateway, S3 website)** → **Alias**

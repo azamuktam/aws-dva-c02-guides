@@ -28,6 +28,7 @@ Everything below that — **Why it exists**, **How it works**, **Important point
 # PART 0 — HOW TO THINK ABOUT THIS EXAM
 **What the exam is actually testing**
 **Official structure**
+
 |    |    |
 | --- | --- |
 | Questions | 65 total — **50 scored**, 15 unscored and unmarked |
@@ -38,14 +39,17 @@ Everything below that — **Why it exists**, **How it works**, **Important point
 | Cost | 150 USD (varies by country) |
 | Validity | 3 years |
 | Retake | 14-day wait after a failure, no annual cap |
+
 Unanswered questions score as incorrect and there is no guessing penalty. **Never leave a blank.**
 **Domain weights**
+
 | Domain | Weight |
 | --- | --- |
 | 1. Development with AWS Services | **32%** |
 | 2. Security | **26%** |
 | 3. Deployment | **24%** |
 | 4. Troubleshooting and Optimization | **18%** |
+
 Security being second-largest is the single most useful thing to know about this exam. Most candidates over-prepare Domain 1 and lose the exam in Domain 2.
 **The five questions behind almost every question**
 Once you stop pattern-matching keywords, you notice the exam only asks a handful of things in different costumes:
@@ -60,6 +64,7 @@ Once you stop pattern-matching keywords, you notice the exam only asks a handful
 **Least privilege, least effort, least code — in that order.** Security questions prefer the narrowest permission. Everything else prefers the fewest moving parts.
 **The scope boundary — what NOT to study**
 The official in-scope service list is the authority. These are in scope:
+
 | Category | Services |
 | --- | --- |
 | **Compute** | EC2, Elastic Beanstalk, Lambda |
@@ -72,6 +77,7 @@ The official in-scope service list is the authority. These are in scope:
 | **Management & Governance** | AppConfig, CDK, CloudFormation, CloudTrail, CloudWatch, CLI, Systems Manager |
 | **Networking & Content Delivery** | API Gateway, CloudFront, ELB, Route 53, VPC |
 | **Security, Identity & Compliance** | Cognito, IAM, KMS, Secrets Manager, STS, WAF |
+
 **Job tasks explicitly out of scope for you as a candidate:** designing architectures, designing CI/CD pipelines from scratch, administering IAM users and groups, administering servers and operating systems, designing VPC networking. You need to *use* these, not design them.
 **Services in your notes that are NOT on the in-scope list:** EMR, Redshift, AWS Config, Security Hub, Inspector, GuardDuty, Trusted Advisor, Service Catalog, AWS Marketplace, ACM, Serverless Application Repository, and EC2 purchasing options (Spot/RI/Savings Plans/Dedicated Hosts).
 I have **kept all of them** in Part 7 of this document, because they still appear as **wrong answers**. Knowing why Inspector is not the answer to a code-review question is worth as much as knowing what Q Developer does. But do not spend study *hours* there.

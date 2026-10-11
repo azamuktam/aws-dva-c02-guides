@@ -85,10 +85,16 @@ Each guide covers one service or topic and ends with two exam-practice sections:
 | 40 | [Part 7A — In-Scope Services](40-Part-7A-In-Scope-Services.md) |
 | 41 | [Part 7B — Distractor Services](41-Part-7B-Distractor-Services.md) |
 
+## Gap fill & extras
+
+| # | Guide |
+|---|---|
+| 42 | [Gap-Fill & Extra One-Liners](42-Gap-Fill-and-Extras.md) |
+
 ## Part 8 & study guide
 
 | # | Guide |
 |---|---|
-| 42 | [PART 8 — The Reflex List](42-PART-8-The-Reflex-List.md) |
-| 43 | [How to study from this](43-How-To-Study-From-This.md) |
+| 43 | [PART 8 — The Reflex List](43-PART-8-The-Reflex-List.md) |
+| 44 | [How to study from this](44-How-To-Study-From-This.md) |
 

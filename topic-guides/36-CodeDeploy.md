@@ -317,28 +317,251 @@ Once you see that traffic shifting is always "point the router somewhere else", 
 
 # Question patterns
 
-> Where are deployment lifecycle hooks for EC2 defined?
-> → **appspec.yml (BeforeInstall, AfterInstall, ApplicationStart…)**
+> A managed service that automates deploying applications to EC2, Lambda, or ECS. Which service?
+> → **AWS CodeDeploy**
 
-> Zero downtime by deploying to a new fleet and switching traffic. Which strategy?
+> Where are the deployment instructions (what to deploy and which scripts to run) defined?
+> → **appspec.yml**
+
+> Where must appspec.yml be placed for an EC2 deployment?
+> → **At the root of the deployment bundle**
+
+> Which compute platform requires the CodeDeploy agent?
+> → **EC2 and on-premises**
+
+> Do Lambda and ECS deployments require the CodeDeploy agent?
+> → **No**
+
+> Which file formats can appspec use for Lambda and ECS?
+> → **YAML or JSON**
+
+> Can appspec be JSON for EC2/on-premises?
+> → **No — EC2/on-premises appspec is YAML only**
+
+> For an ECS deployment, which appspec resources property identifies the task definition?
+> → **TaskDefinition**
+
+> Which ECS appspec resource property names the container that receives the new task definition?
+> → **ContainerName**
+
+> Which ECS appspec resource property is the port exposed by that container?
+> → **ContainerPort**
+
+> List the EC2/on-premises lifecycle hooks in order.
+> → **ApplicationStop → DownloadBundle → BeforeInstall → Install → AfterInstall → ApplicationStart → ValidateService**
+
+> Which EC2 lifecycle events are reserved for the agent and cannot run scripts?
+> → **DownloadBundle and Install**
+
+> Which is the last chance to fail an EC2 deployment?
+> → **ValidateService**
+
+> Which hook configures the application or changes file permissions?
+> → **AfterInstall**
+
+> Which hook typically restarts services stopped during ApplicationStop?
+> → **ApplicationStart**
+
+> Which EC2 hook stops the application before files are copied?
+> → **ApplicationStop**
+
+> From which revision does ApplicationStop run?
+> → **The previously deployed revision**
+
+> A bad ApplicationStop script causes what?
+> → **It blocks all future deployments until fixed in the deployed revision or forced**
+
+> Lambda deployments have how many lifecycle hooks, and which?
+> → **Two: BeforeAllowTraffic and AfterAllowTraffic**
+
+> Run integration tests against the new Lambda version before any production traffic. Which hook?
+> → **BeforeAllowTraffic**
+
+> Verify behavior after traffic is live on a Lambda deployment. Which hook?
+> → **AfterAllowTraffic**
+
+> Which lifecycle hook does not exist for Lambda deployments?
+> → **ValidateService (a common distractor)**
+
+> Lambda lifecycle hooks are implemented as what?
+> → **Lambda functions, not shell scripts**
+
+> How must a Lambda hook report its result?
+> → **PutLifecycleEventHookExecutionStatus (Succeeded or Failed)**
+
+> What happens if a Lambda hook never reports its status?
+> → **The deployment hangs and then fails**
+
+> Put the ECS lifecycle hooks in order.
+> → **BeforeInstall → AfterInstall → AfterAllowTestTraffic → BeforeAllowTraffic → AfterAllowTraffic**
+
+> Which ECS hook validates against a test listener before production traffic?
+> → **AfterAllowTestTraffic**
+
+> ECS deployments with CodeDeploy are always which deployment type?
 > → **Blue/green**
 
-> Deploy to 10% of instances every minute. Which configuration?
-> → **CodeDeployDefault.Linear10PercentEvery1Minute**
+> What does ECS blue/green require?
+> → **An ALB with a production listener (and optionally a test listener)**
 
-> Automatically return to the previous version on failure. Which feature?
-> → **Automatic rollback**
+> Which setting answers "where does the new version run"?
+> → **Deployment type**
 
-> Serverless deployments with traffic shifting. Which combination?
-> → **CodeDeploy + Lambda (via SAM/Serverless framework)**
+> Which setting answers "how fast does the switch happen"?
+> → **Deployment configuration**
+
+> What are the deployment type options?
+> → **In-place (EC2/on-prem only) or Blue/green**
+
+> Which deployment configurations apply to EC2/on-premises?
+> → **OneAtATime / HalfAtATime / AllAtOnce (or custom by count/percentage)**
+
+> Which deployment configurations apply to Lambda and ECS?
+> → **AllAtOnce / Canary / Linear**
+
+> Can you use Canary or Linear on an EC2 deployment?
+> → **No — they exist only for Lambda and ECS**
+
+> Can you use an in-place deployment on Lambda?
+> → **No — Lambda is always blue/green**
+
+> Describe a Canary deployment configuration.
+> → **Two shifts: a small percentage, a wait, then the remainder (e.g., 10% → wait 5 min → 90%)**
+
+> Describe a Linear deployment configuration.
+> → **Equal increments on a repeating interval (e.g., 10% → wait → 20% → wait → 30% → ...)**
+
+> What does CodeDeployDefault.HalfAtATime do on EC2?
+> → **Deploys roughly 50% of instances at a time (moves instances, not traffic)**
+
+> What does CodeDeployDefault.AllAtOnce do?
+> → **Switches everything immediately**
+
+> Give the naming pattern for a Lambda canary configuration.
+> → **CodeDeployDefault.LambdaCanary10Percent5Minutes**
+
+> Give the naming pattern for a Lambda linear configuration.
+> → **CodeDeployDefault.LambdaLinear10PercentEvery1Minute**
+
+> How does Lambda traffic shifting actually work?
+> → **CodeDeploy adjusts alias weighted routing on a schedule according to the canary or linear config**
+
+> What makes the old Lambda version available for rollback?
+> → **Versions (immutable snapshots)**
+
+> What stable pointer do clients use that CodeDeploy shifts?
+> → **A Lambda alias**
+
+> What triggers automatic rollback?
+> → **Deployment failure or a CloudWatch alarm entering ALARM state**
+
+> Mechanically, how does rollback work?
+> → **It redeploys the previous revision as a new deployment — it is not an undo**
+
+> What is the difference between in-place and blue/green on EC2?
+> → **In-place updates existing instances (capacity dips, slower rollback); blue/green provisions new instances and shifts the load balancer (requires an ALB, fast rollback)**
+
+> Which EC2 deployment type requires an ALB?
+> → **Blue/green**
+
+> On which protocol and port does the CodeDeploy agent communicate with CodeDeploy?
+> → **HTTPS over port 443**
+
+> What physically moves traffic for a Lambda deployment?
+> → **Alias weighted routing, adjusted by CodeDeploy**
+
+> What physically moves traffic for an ECS deployment?
+> → **An ALB listener switching between two target groups**
+
+> What physically moves traffic for EC2 blue/green?
+> → **An ALB switching between two Auto Scaling Groups**
+
+> Which Beanstalk mechanism uses a second Auto Scaling Group plus load balancer weights?
+> → **Immutable / traffic splitting**
+
+> Which Beanstalk blue/green mechanism swaps between two environments?
+> → **Route 53 CNAME swap**
+
+> What is the fastest rollback for a Lambda deployment?
+> → **Move the alias back a version**
+
+> What is the fastest possible rollback in Elastic Beanstalk?
+> → **Blue/green CNAME swap**
+
+> After a deploy, EC2 burst balances are lost. Which strategy caused this?
+> → **Immutable / traffic splitting (new instances created)**
+
+> Which strategy has the lowest risk and fastest rollback but the highest cost during deploy?
+> → **Immutable (Beanstalk) / Blue/green (CodeDeploy)**
+
+> Which strategy is fastest but risks brief downtime and is fine mostly for dev?
+> → **All at once**
+
+> Which strategy balances speed and availability but lets capacity dip in the batch being updated?
+> → **Rolling / in-place batches**
+
+> Which strategy keeps full capacity during the deployment by adding a batch first?
+> → **Rolling with additional batch**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
-| Hooks | **appspec.yml** |
-| In-place | **same fleet, rolling updates** |
-| Blue/green | **new fleet + traffic shift** |
-| Canary | **LambdaCanary10Percent5Minutes** |
-| One at a time | **OneAtATime** |
-| Validation | **lifecycle hooks + health checks** |
+| Deployment instructions | **appspec.yml** |
+| appspec location | **Root of the bundle** |
+| EC2/on-prem appspec format | **YAML only** |
+| Lambda/ECS appspec format | **YAML or JSON** |
+| Agent required | **EC2 / on-premises only** |
+| Agent protocol | **HTTPS over port 443** |
+| ECS resources: task def | **TaskDefinition** |
+| ECS resources: container | **ContainerName** |
+| ECS resources: port | **ContainerPort** |
+| EC2 hook order | **ApplicationStop → DownloadBundle → BeforeInstall → Install → AfterInstall → ApplicationStart → ValidateService** |
+| Agent-only hooks | **DownloadBundle, Install** |
+| Last chance to fail EC2 | **ValidateService** |
+| Configure / chmod | **AfterInstall** |
+| Restart services | **ApplicationStart** |
+| Stop app before copy | **ApplicationStop** |
+| ApplicationStop revision | **Previously deployed revision** |
+| Bad ApplicationStop | **Blocks all future deployments** |
+| Lambda hooks | **BeforeAllowTraffic, AfterAllowTraffic** |
+| Lambda integration tests pre-traffic | **BeforeAllowTraffic** |
+| Lambda post-traffic verify | **AfterAllowTraffic** |
+| Lambda nonexistent hook | **ValidateService** |
+| Lambda hook type | **Lambda functions** |
+| Lambda hook report call | **PutLifecycleEventHookExecutionStatus** |
+| Hook never reports | **Hangs then fails** |
+| ECS hook order | **BeforeInstall → AfterInstall → AfterAllowTestTraffic → BeforeAllowTraffic → AfterAllowTraffic** |
+| ECS test listener hook | **AfterAllowTestTraffic** |
+| ECS deployment type | **Always blue/green** |
+| ECS requirement | **ALB with production listener (optional test listener)** |
+| Where new version runs | **Deployment type** |
+| How fast it switches | **Deployment configuration** |
+| EC2 deployment types | **In-place or Blue/green** |
+| EC2 configurations | **OneAtATime / HalfAtATime / AllAtOnce** |
+| Lambda/ECS configurations | **AllAtOnce / Canary / Linear** |
+| Canary on EC2 | **Does not exist** |
+| In-place on Lambda | **Does not exist** |
+| Canary | **Two shifts (10% → wait → 90%)** |
+| Linear | **Equal increments on a timer** |
+| Lambda canary example | **CodeDeployDefault.LambdaCanary10Percent5Minutes** |
+| Lambda linear example | **CodeDeployDefault.LambdaLinear10PercentEvery1Minute** |
+| Lambda traffic shift mechanism | **Alias weighted routing** |
+| Rollback source | **Lambda versions (immutable)** |
+| Stable client pointer | **Lambda alias** |
+| Automatic rollback trigger | **Failed deployment or CloudWatch ALARM** |
+| Rollback mechanism | **Redeploy previous revision (not an undo)** |
+| In-place | **Same fleet, capacity dips** |
+| Blue/green | **New fleet + traffic shift, needs ALB** |
+| ECS traffic mechanism | **ALB listener across two target groups** |
+| EC2 blue/green mechanism | **ALB across two Auto Scaling Groups** |
+| Beanstalk immutable mechanism | **Second ASG + LB weights** |
+| Beanstalk blue/green mechanism | **Route 53 CNAME swap** |
+| Fastest Lambda rollback | **Move the alias back** |
+| Burst balance lost | **Immutable / traffic splitting** |
+| Lowest risk / highest deploy cost | **Immutable / Blue/green** |
+| Fastest, risky | **All at once** |
+| Capacity dips | **Rolling / in-place batches** |
+| Full capacity during deploy | **Rolling with additional batch** |
+| Percent of real users on new version | **Canary / Linear / Traffic splitting** |
+| Last deployment hook (EC2) | **ValidateService** |

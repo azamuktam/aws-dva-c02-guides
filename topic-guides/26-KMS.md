@@ -158,25 +158,133 @@ Use CloudHSM when you need:
 
 # Question patterns
 
-> Encrypt application data without sending the data to KMS. Which pattern?
-> → **Envelope encryption — call GenerateDataKey and encrypt locally**
+> Which service holds keys in HSMs, never releases key material, and logs use to CloudTrail?
+> → **AWS KMS**
 
-> A key must be rotated automatically once a year. Which feature?
-> → **KMS automatic key rotation (AWS-generated key material)**
+> What is the maximum data size the KMS Encrypt API accepts?
+> → **4 KB**
 
-> A single-tenant hardware security module is required for compliance. Which service?
+> Can the 4 KB Encrypt limit be raised by a quota increase?
+> → **No — it is a fixed maximum**
+
+> How do you encrypt data larger than 4 KB with KMS?
+> → **Envelope encryption using GenerateDataKey**
+
+> What two things does GenerateDataKey return?
+> → **The plaintext data key and the encrypted data key**
+
+> For large data, do you send the data to KMS or encrypt it locally?
+> → **Encrypt locally with the plaintext data key — the data never goes to KMS**
+
+> What do you do with the plaintext data key after encrypting?
+> → **Discard it from memory**
+
+> What do you store alongside the encrypted data?
+> → **The encrypted data key**
+
+> How does the Decrypt API know which key to use?
+> → **The ciphertext blob carries the key ID, so you don't name the key**
+
+> Which API returns only the encrypted data key, for a service that will decrypt later?
+> → **GenerateDataKeyWithoutPlaintext**
+
+> What library implements the envelope-encryption pattern for you?
+> → **The AWS Encryption SDK**
+
+> What is the maximum Lambda environment variable size?
+> → **4 KB**
+
+> Large data in Lambda should use which approach?
+> → **A file with envelope encryption**
+
+> Which key type is free, shared across accounts, and not visible to you?
+> → **AWS owned key**
+
+> Which key type is named aws/s3 or aws/lambda, rotates yearly, and is not editable?
+> → **AWS managed key**
+
+> Which key type lets you edit the key policy and rotate on your own schedule?
+> → **Customer managed key**
+
+> Is a key policy required on every KMS key?
+> → **Yes — every key has one**
+
+> A user has kms:Decrypt in their IAM policy but still gets AccessDenied. What do you check?
+> → **The key policy**
+
+> What does the default KMS key policy grant?
+> → **Full access to the account root, which lets IAM policies take effect**
+
+> A large S3 upload with SSE-KMS returns AccessDenied. Which permission is likely missing?
+> → **kms:Decrypt**
+
+> Which two permissions may an SSE-KMS multipart upload require?
+> → **kms:GenerateDataKey and kms:Decrypt**
+
+> You need to switch which key is used without changing application code. Which feature?
+> → **A KMS alias (alias/my-key)**
+
+> You need temporary, programmatic permission delegation on a key (e.g. for an AWS service). Which mechanism?
+> → **KMS grants**
+
+> What is the default symmetric key algorithm, and does it leave KMS?
+> → **AES-256; the key material never leaves KMS**
+
+> Which key type exposes a public key for encryption or signature verification outside AWS?
+> → **Asymmetric keys**
+
+> Encrypted data must be usable in another Region. Which key type?
+> → **A multi-Region key**
+
+> Why choose SSE-KMS over SSE-S3?
+> → **Every KMS API call is logged in CloudTrail (audit trail)**
+
+> How do you encrypt a CloudWatch log group, and what does it cover?
+> → **AssociateKmsKey with a symmetric key; it encrypts only newly ingested logs**
+
+> Which service provides dedicated single-tenant HSM hardware that you control?
 > → **AWS CloudHSM**
 
-> Give another account limited, revocable use of a key without editing the key policy. Which mechanism?
-> → **KMS grants**
+> Which FIPS validation level does CloudHSM meet?
+> → **FIPS 140-2 Level 3**
+
+> CloudHSM vs KMS — which is easier and AWS-managed?
+> → **KMS**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
-| Envelope encryption | **GenerateDataKey** |
-| Auto rotation | **annual (AWS-generated material)** |
+| Encryption keys | **KMS** |
+| Encrypt API max | **4 KB (not raisable)** |
+| Data > 4 KB | **Envelope encryption / GenerateDataKey** |
+| GenerateDataKey returns | **Plaintext + encrypted data key** |
+| Encrypt large data | **Locally with the data key** |
+| Store with ciphertext | **The encrypted data key** |
+| Decrypt finds key via | **Key ID in the ciphertext** |
+| Encrypted key only | **GenerateDataKeyWithoutPlaintext** |
+| Full pattern implemented | **AWS Encryption SDK** |
+| Lambda large data | **File + envelope encryption** |
+| Lambda env var max | **4 KB** |
+| AWS owned key | **Free, not visible** |
+| AWS managed key | **aws/s3, yearly rotation, not editable** |
+| Customer managed key | **You edit policy/rotate; monthly + per-request cost** |
+| Key policy required | **Yes** |
+| AccessDenied despite IAM Allow | **Check the key policy** |
+| Default key policy | **Account root full access** |
+| SSE-KMS multipart | **kms:GenerateDataKey + kms:Decrypt** |
+| Swap keys without code | **Alias** |
+| Temporary permission delegation | **Grants** |
+| Symmetric | **AES-256, never leaves KMS** |
+| Asymmetric | **Public key exposed** |
+| Cross-Region data | **Multi-Region key** |
+| Audit | **CloudTrail (every KMS API call)** |
+| SSE-KMS vs SSE-S3 | **Audit trail** |
+| CloudWatch log group | **AssociateKmsKey (symmetric, new logs only)** |
 | Dedicated HSM | **CloudHSM** |
-| Temporary permissions | **grants** |
-| Audit | **CloudTrail (KMS events)** |
-| Limit KMS calls | **envelope encryption / S3 Bucket Key** |
+| CloudHSM validation | **FIPS 140-2 Level 3** |
+| CloudHSM control | **Customer controls HSM and keys** |
+| Easy AWS-managed keys | **KMS** |
+| Envelope encryption benefit | **Data never crosses network; key never leaves KMS** |
+| No key management | **SSE-S3 / AWS managed key** |
+| Terminology | **"KMS key", not "CMK"** |

@@ -593,33 +593,265 @@ DynamoDB is fast (single-digit milliseconds) but not *memory* fast. For read-hea
 > A 6 KB item is read with strongly consistent reads. How many RCU does one read consume?
 > → **2 RCU (6 KB rounds up to 8 KB = two 4 KB blocks)**
 
-> The application needs a new query pattern on a different attribute without rewriting the table. Which feature?
+> A 3 KB item is written 50 times per second. How many WCU are required?
+> → **150 WCU (3 KB = three 1 KB blocks × 50 writes)**
+
+> How many RCU does a 6 KB eventually consistent read consume?
+> → **1 RCU (6 KB rounds up to 8 KB = two blocks, then halved for eventual consistency)**
+
+> How does a strongly consistent read change the cost versus an eventually consistent read?
+> → **It doubles it — strongly consistent reads cost the full 4 KB-block RCU count**
+
+> What is the maximum item size in DynamoDB?
+> → **400 KB (store larger objects in S3 and keep the S3 key in the item)**
+
+> How much data does one WCU cover?
+> → **One write of up to 1 KB per second**
+
+> Why is a read cheaper per byte than a write?
+> → **A write must be replicated to multiple copies before acknowledgement; a read can be served from one**
+
+> A workload is read-heavy and hits the same items repeatedly, needing microsecond latency with minimal code change. What goes in front?
+> → **DAX (strongly consistent reads bypass it entirely)**
+
+> The application needs a new query pattern on a non-key attribute without rewriting the table. Which feature?
 > → **Global Secondary Index (GSI)**
 
-> DynamoDB reads must be single-digit milliseconds without changing application code. Which service?
-> → **DynamoDB Accelerator (DAX)**
+> An index must support strongly consistent reads. Which index type?
+> → **LSI (a GSI is only ever eventually consistent)**
 
-> Items must be available in multiple Regions with active-active replication. Which feature?
-> → **DynamoDB Global Tables**
+> An index must query using a different partition key. Which type?
+> → **GSI**
 
-> Code must react to every item change. Which feature?
-> → **DynamoDB Streams (with a Lambda event source mapping)**
+> A production table needs a new index added after table creation. Which type is possible?
+> → **GSI (an LSI can only be created at table creation and can never be deleted)**
 
-> An update must only apply if the item has not changed since it was read. Which mechanism?
-> → **Conditional writes (optimistic locking)**
+> How many LSIs and GSIs can a table have?
+> → **5 LSIs; 20 GSIs (soft limit)**
 
-> Traffic is unpredictable. Which capacity mode?
+> Base table writes are throttled even though the table shows spare capacity. What is the likely cause?
+> → **The GSI's own capacity is exhausted, which back-pressures the base-table write**
+
+> A GSI query returns fewer attributes than expected. Why?
+> → **Those attributes were not projected into the index (KEYS_ONLY/INCLUDE), forcing a fetch to the base table**
+
+> Query results are fewer than expected but include LastEvaluatedKey. What must you do?
+> → **Keep paginating — pass LastEvaluatedKey back as ExclusiveStartKey**
+
+> A heavily filtered Query returns zero items but still includes a LastEvaluatedKey. What does that mean?
+> → **Not an error — the 1 MB cap applied before the filter; keep paging or you silently lose data**
+
+> What is the maximum size of a single Query or Scan response?
+> → **1 MB (before FilterExpression is applied)**
+
+> What does Limit cap in a Scan?
+> → **The number of items DynamoDB evaluates; the 1 MB cap still applies on top**
+
+> A CLI scan must minimize the number of items returned in the CLI's output while paginating. Which parameter?
+> → **--max-items**
+
+> Which CLI parameter sets how many items are requested per API call?
+> → **--page-size**
+
+> Which CLI parameter controls how many items DynamoDB evaluates per Scan request?
+> → **--limit**
+
+> Which CLI parameter resumes pagination from a previous response?
+> → **--starting-token**
+
+> A filter is added to a scan to reduce results. What happens to consumed capacity?
+> → **Nothing — FilterExpression runs after the read, so capacity is unchanged**
+
+> Does ProjectionExpression reduce consumed capacity?
+> → **No — it reduces network transfer only; capacity is billed on the full item size read from disk**
+
+> A whole table must be read faster across workers. Which feature, and what does it cost?
+> → **Parallel Scan (Segment + TotalSegments) — it uses more capacity, not less**
+
+> You need the most recent item first from a Query. How?
+> → **ScanIndexForward: false with Limit: 1 (default ScanIndexForward is true = ascending)**
+
+> What does ScanIndexForward control?
+> → **Sort-key order for a Query (true = ascending/old→new, false = descending/new→old)**
+
+> An update must apply only if the item hasn't changed since it was read. Which mechanism?
+> → **Conditional writes with optimistic locking (version attribute + ConditionExpression)**
+
+> Which error is raised when a ConditionExpression is not satisfied?
+> → **ConditionalCheckFailedException**
+
+> Which condition expression inserts an item only if it does not already exist?
+> → **attribute_not_exists(<key>)**
+
+> A page-view counter must never lose concurrent increments. Which technique?
+> → **An atomic counter (SET x = x + :inc) — applied to the current server-side value**
+
+> An exactly-once increment is required (e.g., payments). What must you use instead of an atomic counter?
+> → **A conditional write keyed on a request ID — atomic counters are not idempotent**
+
+> Items are silently missing after a batch write. What did the code fail to handle?
+> → **UnprocessedItems (retry them with exponential backoff)**
+
+> Which DynamoDB API provides all-or-nothing ACID across items or tables?
+> → **TransactWriteItems (2× WCU; supports ConditionCheck)**
+
+> Can BatchWriteItem perform updates or use conditions?
+> → **No — Put and Delete only, no Update, no conditions**
+
+> What are the item limits for BatchGetItem and BatchWriteItem?
+> → **BatchGetItem 100 items / 16 MB; BatchWriteItem 25 items / 16 MB**
+
+> What are the limits for TransactWriteItems and TransactGetItems?
+> → **100 items / 4 MB each (2× WCU / 2× RCU; transactions need a two-phase commit)**
+
+> Data must auto-expire at no cost. Which feature, and what timestamp format?
+> → **TTL with a Unix epoch timestamp in seconds (not milliseconds; no WCU; up to 48 h delay)**
+
+> Expired or deleted items must be archived to S3. Which combination?
+> → **TTL + DynamoDB Streams (REMOVE records) + Lambda → S3**
+
+> Traffic is unpredictable or spiky with no capacity planning. Which capacity mode?
 > → **On-demand**
+
+> Traffic is steady and predictable and cost must be minimized. Which mode?
+> → **Provisioned with auto scaling**
+
+> How often can you switch between provisioned and on-demand capacity modes?
+> → **Once every 24 hours**
+
+> Reads are throttled while average table utilisation is low. What is the cause?
+> → **A hot partition from a poorly chosen partition key**
+
+> A table absorbs a brief spike above its provisioned rate and then suddenly throttles. Why?
+> → **Burst capacity — up to 300 seconds of unused capacity is saved and spent on the spike**
+
+> What makes a good partition key?
+> → **High cardinality with evenly distributed access (userId is good; country/status is bad)**
+
+> How should throttled requests be retried?
+> → **Exponential backoff with jitter (the AWS SDKs do this automatically)**
+
+> How do you find out how much capacity a specific request consumed?
+> → **ReturnConsumedCapacity (INDEXES gives table + index breakdown; TOTAL gives the total only)**
+
+> Which stream view type gives both the value before and after a change?
+> → **NEW_AND_OLD_IMAGES**
+
+> How long are DynamoDB Streams retained, and what are the event names?
+> → **24 hours; INSERT, MODIFY, REMOVE**
+
+> You need longer stream retention (up to 365 days) or replay. Which option?
+> → **Kinesis Data Streams for DynamoDB**
+
+> DynamoDB data must be exported to S3 without consuming read capacity. Which feature?
+> → **Native DynamoDB Export to S3 (requires PITR; asynchronous; consumes no RCU)**
+
+> What are the DynamoDB export output formats?
+> → **DynamoDB JSON or Amazon Ion**
+
+> Distinguish export to S3 from on-demand backup.
+> → **Export puts downloadable data in S3 (PITR required); on-demand backup is for DynamoDB backup/restore and needs no PITR**
+
+> Data must be in S3 purely to run analytics. What do you use after export?
+> → **Athena / Glue / EMR on the exported S3 data**
+
+> Near-real-time change capture across the table is required. Which mechanism?
+> → **DynamoDB Streams (export is bulk/snapshot, not near-real-time)**
+
+> A developer needs SQL-like syntax against the table. Which feature?
+> → **PartiQL**
+
+> Items must be available in multiple Regions with active-active writes. Which feature?
+> → **Global Tables (requires Streams)**
+
+> Restore to any second in the last 35 days is required. Which feature?
+> → **Point-in-time recovery (PITR)**
+
+> Why choose DAX over ElastiCache for DynamoDB caching?
+> → **DAX is API-compatible with the DynamoDB SDK, so it needs almost no code change**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
+| NoSQL serverless low-latency DB | **DynamoDB** |
 | 1 WCU | **1 KB write/s** |
 | 1 RCU | **4 KB strongly consistent read/s (or 2 eventually consistent)** |
-| New access pattern | **GSI** |
-| Cross-Region | **Global Tables** |
-| In-memory cache | **DAX** |
-| Change events | **Streams** |
-| Optimistic locking | **conditional writes** |
-| Unpredictable load | **on-demand mode** |
+| Eventual consistency | **half the RCUs** |
+| Transactional read/write | **2× the cost** |
+| Item size rounding | **always round UP to the next block** |
+| Efficient lookup | **Query, never Scan** |
+| FilterExpression | **does NOT reduce consumed capacity** |
+| ProjectionExpression | **does NOT reduce consumed capacity** |
+| Query by non-key attribute | **GSI** |
+| Scan too slow | **parallel scan (Segment / TotalSegments)** |
+| Fewer results + LastEvaluatedKey | **paginate with ExclusiveStartKey** |
+| Empty page but LastEvaluatedKey present | **keep paging — not a bug** |
+| New query key on a production table | **GSI (LSI impossible after creation)** |
+| Strongly consistent reads on an index | **LSI** |
+| Same partition key, different sort key | **LSI** |
+| Different partition key | **GSI** |
+| LSI limits | **5 per table, created at table creation only, never deleted** |
+| GSI limits | **20 (soft limit), own RCU/WCU, add/remove any time** |
+| Base table writes throttled for no clear reason | **check GSI capacity** |
+| GSI reads | **always eventually consistent** |
+| Attribute missing from index results | **not projected** |
+| Prevent lost updates | **ConditionExpression on a version attribute (optimistic locking)** |
+| Insert only if not present | **attribute_not_exists** |
+| Concurrent counter increments | **atomic counter (SET x = x + :v)** |
+| Exactly-once increment | **conditional write on a request ID** |
+| Lost-update problem | **do NOT answer "increase capacity"** |
+| Items silently missing after a batch write | **unhandled UnprocessedItems** |
+| All-or-nothing across items/tables | **TransactWriteItems** |
+| BatchWriteItem | **Put/Delete only, no Update, no conditions** |
+| Cheapest bulk write | **BatchWriteItem (transactions cost 2×)** |
+| Auto-delete expired data, free | **TTL (epoch seconds, up to 48 h delay)** |
+| Archive expiring items | **TTL + Streams + Lambda → S3** |
+| Unpredictable traffic | **on-demand** |
+| Steady predictable traffic, lowest cost | **provisioned + auto scaling** |
+| Throttled while average utilisation low | **hot partition / bad partition key** |
+| Good partition key | **high cardinality, evenly distributed** |
+| Retry throttled requests | **exponential backoff with jitter** |
+| Read-heavy, microsecond latency | **DAX** |
+| Item over 400 KB | **object in S3, pointer in DynamoDB** |
+| SQL syntax on DynamoDB | **PartiQL** |
+| Multi-Region active-active | **global tables (requires Streams)** |
+| Restore to any second in the last 35 days | **PITR** |
+| Debug what a request cost | **ReturnConsumedCapacity** |
+| ReturnConsumedCapacity INDEXES | **table + index breakdown** |
+| ReturnValues | **which item values to return after an operation** |
+| 1 MB response cap | **LastEvaluatedKey → ExclusiveStartKey** |
+| Query sort-key order | **ScanIndexForward (true = asc, false = desc)** |
+| CLI min items in output | **--max-items** |
+| CLI items per call | **--page-size** |
+| CLI items evaluated per scan | **--limit** |
+| CLI resume pagination | **--starting-token** |
+| Encryption at rest | **always on (AWS owned/managed, or customer managed key)** |
+| On-demand backup | **full backup, no performance impact** |
+| Reserved words | **use ExpressionAttributeNames (#name)** |
+| Export to S3 requires | **PITR enabled** |
+| Export to S3 consumes RCU? | **No, and no impact on table performance** |
+| Export output format | **DynamoDB JSON or Amazon Ion** |
+| Export destination bucket | **same/different account and Region allowed** |
+| Export encryption | **SSE-S3 or SSE-KMS (KMS key in the destination bucket's Region)** |
+| DynamoDB → S3 bulk/snapshot | **Export to S3 (full or incremental)** |
+| Whole table export | **full export** |
+| Only changes export | **incremental export** |
+| Near-real-time changes | **DynamoDB Streams** |
+| Backup/restore DynamoDB | **on-demand backup / PITR** |
+| Analytics after export | **S3 + Athena/Glue/EMR** |
+| On-demand backup vs export | **backup = recovery; export = data into S3** |
+| Streams retention | **24 hours** |
+| Stream event names | **INSERT, MODIFY, REMOVE** |
+| Value before AND after | **NEW_AND_OLD_IMAGES** |
+| Stream ordering | **per partition key** |
+| Longer stream retention / replay | **Kinesis Data Streams for DynamoDB (up to 365 days)** |
+| DAX strongly consistent reads | **bypass DAX entirely** |
+| DAX code change | **minimal — DynamoDB SDK-compatible** |
+| DAX default TTL | **5 minutes** |
+| DAX cache types | **item cache (GetItem/BatchGetItem) + query cache (Query/Scan)** |
+| DAX writes | **write-through** |
+| Cache user sessions | **ElastiCache Redis, not DAX** |
+| Cache anything other than DynamoDB | **ElastiCache** |
+| DynamoDB partition key hashing | **every operation must identify a partition** |
+| Composite key | **partition key + sort key** |

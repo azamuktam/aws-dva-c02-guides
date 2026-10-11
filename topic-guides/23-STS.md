@@ -133,21 +133,105 @@ Configure only one and you get **`AccessDenied`**. So when a question describes 
 
 # Question patterns
 
-> An application in account A needs temporary credentials to call account B. Which API?
-> → **STS AssumeRole (15 min – 12 h)**
+> What does AWS Security Token Service issue?
+> → **Temporary AWS credentials**
 
-> A mobile app user signs in with Google and needs temporary AWS credentials. Which API?
-> → **AssumeRoleWithWebIdentity (or Cognito identity pools)**
+> What four items make up a set of temporary credentials?
+> → **Access key ID, secret access key, session token, and expiration time**
 
-> Short-term credentials with MFA are needed for sensitive actions. Which API?
-> → **STS GetSessionToken**
+> Which API assumes a role in the same account or a different account?
+> → **AssumeRole**
+
+> Which API handles OIDC / social login (Google, Facebook)?
+> → **AssumeRoleWithWebIdentity**
+
+> Which API handles enterprise federation with Active Directory / SAML 2.0?
+> → **AssumeRoleWithSAML**
+
+> Which API returns MFA-protected temporary credentials for an IAM user?
+> → **GetSessionToken**
+
+> Which API returns temporary credentials for a non-IAM user?
+> → **GetFederationToken**
+
+> Which API answers "Who am I?" and requires no permissions?
+> → **GetCallerIdentity**
+
+> Account A must assume a role in Account B. Which two things must be configured?
+> → **Account B's role trust policy naming A's principal, and A's identity policy allowing sts:AssumeRole**
+
+> Only the role's trust policy is configured but Account A still gets an error. What error?
+> → **AccessDenied — both sides must agree**
+
+> What is the default maximum session duration for AssumeRole?
+> → **1 hour**
+
+> What is the longest configurable AssumeRole session duration?
+> → **12 hours**
+
+> What is the minimum session duration?
+> → **15 minutes**
+
+> Role A assumes Role B (role chaining). What is the maximum session duration?
+> → **1 hour, regardless of settings**
+
+> What protects a third-party SaaS vendor's role from the confused deputy problem?
+> → **A unique ExternalId required in the trust policy**
+
+> Can a session policy passed at assume time widen a role's permissions?
+> → **No — it can only narrow them**
+
+> Issued temporary credentials cannot be deleted. How do you revoke them?
+> → **Attach an inline policy to the role denying all actions where aws:TokenIssueTime is earlier than now**
+
+> Is STS global or regional?
+> → **Global, but it exposes regional endpoints**
+
+> Why use the regional STS endpoint?
+> → **Lower latency and no single global dependency**
+
+> Users sign in with Google/Facebook and need AWS access. What makes the web-identity call for you?
+> → **A Cognito identity pool (calls AssumeRoleWithWebIdentity)**
+
+> An EC2 application uses an IAM role for S3 access. Which service actually issues the credentials?
+> → **AWS STS**
+
+> Which side of cross-account access names the external principal?
+> → **The role owner's trust policy (Account B)**
+
+> What must always be present in temporary credentials that static keys lack?
+> → **A session token**
+
+> Which setting on the role bounds the session duration you can request?
+> → **The role's max session duration**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
-| Cross-account | **AssumeRole** |
-| Web identity | **AssumeRoleWithWebIdentity / Cognito** |
-| MFA credentials | **GetSessionToken** |
+| Temporary credentials | **STS** |
+| Credential set | **Access key ID + secret key + session token + expiration** |
+| Same/cross-account role | **AssumeRole** |
+| Web identity (OIDC/social) | **AssumeRoleWithWebIdentity** |
+| SAML/AD federation | **AssumeRoleWithSAML** |
+| MFA temp creds (IAM user) | **GetSessionToken** |
+| Non-IAM user creds | **GetFederationToken** |
 | Who am I | **GetCallerIdentity** |
-| Duration | **15 min – 12 h** |
+| GetCallerIdentity permissions | **None required** |
+| Cross-account requirements | **Trust policy (owner) + identity policy (caller)** |
+| AccessDenied assuming a role | **Check both policies** |
+| Confused deputy | **ExternalId** |
+| Min session | **15 minutes** |
+| Default session | **1 hour** |
+| Max session | **12 hours** |
+| Role chaining max | **1 hour** |
+| Session policy | **Narrows only, never widens** |
+| Revoke sessions | **Deny by aws:TokenIssueTime** |
+| STS locality | **Global with regional endpoints** |
+| Regional endpoint benefit | **Lower latency / no global dependency** |
+| Social login + AWS access | **Cognito identity pool** |
+| Always in temp creds | **SessionToken** |
+| Trust policy owner side | **Role owner account (Account B)** |
+| Caller side | **Identity policy with sts:AssumeRole** |
+| Middleman issuing creds | **STS** |
+| Bounds requested duration | **The role's max session duration** |

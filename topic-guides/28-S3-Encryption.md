@@ -90,25 +90,133 @@ The mechanism to understand: a bucket policy can inspect request headers via con
 
 # Question patterns
 
-> Every upload must be encrypted, and unencrypted uploads must be rejected. How?
-> → **Bucket policy denying s3:PutObject without x-amz-server-side-encryption**
+> A new bucket must encrypt data at rest with no key management overhead. Which option and header?
+> → **SSE-S3, `x-amz-server-side-encryption: AES256`**
 
-> Encryption with AWS-managed keys and no overhead. Which option?
-> → **SSE-S3 (AES-256)**
+> What is the default server-side encryption for newly created S3 buckets?
+> → **SSE-S3 (AES-256), AWS-managed keys**
 
-> Key usage must be audited through KMS. Which option?
+> Every upload must be encrypted and any unencrypted upload rejected. How is that enforced?
+> → **An S3 bucket policy with a `Deny` that rejects `PutObject` lacking the encryption header**
+
+> How can a bucket policy know whether a request carried the encryption header?
+> → **It evaluates request headers using conditions, so "deny unless present" is expressible as policy**
+
+> Which server-side encryption option requires the request header `aws:kms`?
 > → **SSE-KMS**
 
-> The customer supplies the key on every request. Which option?
+> Key usage must be auditable so you can see who decrypted an object. Which option?
+> → **SSE-KMS (every decrypt is logged in CloudTrail)**
+
+> Beyond encryption, what two capabilities does SSE-KMS add over SSE-S3?
+> → **Key control (your key, rotation schedule, disable) and audit via CloudTrail**
+
+> The KMS key policy acts as what kind of control over the data?
+> → **A second, independent access-control gate**
+
+> No KMS key ID is specified for SSE-KMS. Which key does S3 use?
+> → **The AWS-managed key `aws/s3`**
+
+> You must choose a specific customer-managed KMS key for an upload. Which header?
+> → **`x-amz-server-side-encryption-aws-kms-key-id: <key ARN>`**
+
+> A high-throughput bucket using SSE-KMS is hitting KMS request limits. What reduces the calls?
+> → **S3 Bucket Keys**
+
+> Which encryption option keeps the customer's key out of AWS, so S3 never stores it?
+> → **SSE-C (customer-provided keys)**
+
+> A client must provide the encryption key on every request. Which option?
 > → **SSE-C**
+
+> Which header names the SSE-C algorithm?
+> → **`x-amz-server-side-encryption-customer-algorithm: AES256`**
+
+> What is the required format of an SSE-C key?
+> → **A base64-encoded 256-bit key**
+
+> Which SSE-C header carries the integrity check for the key?
+> → **`x-amz-server-side-encryption-customer-key-MD5` (base64 MD5 of the key)**
+
+> Why must SSE-C always use HTTPS?
+> → **The key travels in the request**
+
+> An SSE-C key is lost. What happens to the data?
+> → **It is unrecoverable — S3 does not store the key**
+
+> An application must encrypt data before it ever reaches S3, with no key exposure to AWS. Which option?
+> → **Client-side encryption**
+
+> Which encryption option means S3 only ever sees ciphertext and no key?
+> → **Client-side encryption**
+
+> For SSE-S3, who creates, stores, and rotates the key?
+> → **AWS, entirely**
+
+> A requirement says "data must be encrypted at rest" with no key control needed. Which minimal option?
+> → **SSE-S3**
+
+> A website on a different domain fails to load files from your S3 bucket, but opening the file URL directly works. What is the problem?
+> → **The bucket's CORS configuration does not allow the other origin**
+
+> What does CORS allow?
+> → **A web application on one origin to request resources on a different origin when the server explicitly allows it**
+
+> Which header marker identifies SSE-S3 in the request?
+> → **`x-amz-server-side-encryption: AES256`**
+
+> Which header marker identifies SSE-KMS in the request?
+> → **`x-amz-server-side-encryption: aws:kms`**
+
+> Traffic to a bucket must be restricted to encrypted connections. Which policy condition?
+> → **`aws:SecureTransport` (deny when false, i.e. HTTP)**
+
+> Which technique underlies SSE-KMS object encryption?
+> → **Envelope encryption with a KMS key**
+
+> You need a customer-managed key with a custom rotation schedule. Which option?
+> → **SSE-KMS with a customer-managed key**
+
+> Which option requires you to own key management, rotation, and the encryption process entirely?
+> → **Client-side encryption**
+
+> Which two encryption options require the customer to supply key material rather than AWS managing it?
+> → **SSE-C and client-side encryption**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
-| Default | **SSE-S3** |
-| Audit keys | **SSE-KMS** |
-| Customer key | **SSE-C** |
+| Default encryption | **SSE-S3** |
+| SSE-S3 header | **`AES256`** |
+| SSE-KMS header | **`aws:kms`** |
+| Audit key usage | **SSE-KMS + CloudTrail** |
+| Customer key per request | **SSE-C** |
 | Encrypt before upload | **client-side encryption** |
 | Reduce KMS cost | **S3 Bucket Key** |
-| HTTPS only | **aws:SecureTransport** |
+| Enforce HTTPS | **`aws:SecureTransport`** |
+| Default KMS key | **`aws/s3`** |
+| Choose KMS key | **`...aws-kms-key-id` header** |
+| SSE-C transport | **HTTPS required** |
+| SSE-C algorithm | **AES256** |
+| SSE-C key format | **base64 256-bit** |
+| SSE-C integrity | **base64 MD5 of key** |
+| Lose SSE-C key | **data unrecoverable** |
+| Enforce encryption | **bucket policy `Deny` on missing header** |
+| Envelope encryption | **SSE-KMS** |
+| Key policy | **second independent gate** |
+| S3 sees ciphertext only | **client-side encryption** |
+| Direct URL works, site fails | **CORS misconfiguration** |
+| CORS meaning | **Cross-Origin Resource Sharing** |
+| High-throughput KMS limit | **SSE-KMS** |
+| Bucket key benefit | **fewer KMS API calls** |
+| Key control + rotation + disable | **SSE-KMS customer-managed key** |
+| AWS manages everything | **SSE-S3** |
+| Who read what | **SSE-KMS + CloudTrail** |
+| Key not stored by S3 | **SSE-C** |
+| Second gate on data | **KMS key policy** |
+| Key rotates automatically | **SSE-S3 / KMS key rotation** |
+| Header inspection in policy | **bucket policy conditions** |
+| Four at-rest options | **SSE-S3, SSE-KMS, SSE-C, client-side** |
+| Requirement with no key control | **SSE-S3** |
+| Customer owns rotation | **client-side encryption** |

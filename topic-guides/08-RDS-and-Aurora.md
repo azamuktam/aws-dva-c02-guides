@@ -409,32 +409,138 @@ Both can encrypt data before it is stored and decrypt it when accessed.
 
 # Question patterns
 
-> An RDS database must fail over automatically to a standby in another AZ. Which feature?
-> → **Multi-AZ deployment**
+> An RDS database must fail over automatically to a standby in another AZ with no connection-string change. Which feature?
+> → **Multi-AZ deployment (synchronous replication; DNS endpoint repoints to the standby)**
 
-> Read queries are overwhelming the primary. How do you add read capacity?
-> → **Read Replicas (up to 15 with Aurora)**
+> Read queries are overwhelming the primary. What is the simplest way to add read capacity?
+> → **Read Replicas (point reads at the replica endpoint, no code logic rewrite; up to 15 with Aurora)**
+
+> Is the Multi-AZ standby instance readable?
+> → **No — it serves nothing and exists only for failover**
+
+> Which RDS replication is synchronous and which is asynchronous?
+> → **Multi-AZ is synchronous (no data loss); Read Replicas are asynchronous (can lag)**
+
+> How many read replicas can an RDS instance and an Aurora cluster have?
+> → **Up to 5 for RDS, up to 15 for Aurora**
+
+> A read-heavy workload must scale with the least development effort. Which option wins?
+> → **Read Replicas — just a second endpoint, versus ElastiCache which needs cache logic**
+
+> Repeated identical queries should be eliminated entirely rather than served faster. Which service?
+> → **ElastiCache (fastest, but you own cache invalidation, misses, and consistency)**
+
+> The application must log in to the database without a stored password. Which feature?
+> → **IAM database authentication (short-lived auth token; supported for MySQL and PostgreSQL on RDS/Aurora)**
+
+> Existing database credentials must be rotated automatically. Which service?
+> → **AWS Secrets Manager — IAM DB auth removes the password need but does not rotate an existing one**
+
+> Does Parameter Store SecureString rotate secrets automatically?
+> → **No — it stores a secret but has no built-in rotation**
+
+> Many Lambda functions open connections to RDS and exhaust the connection limit. What reduces connection churn?
+> → **RDS Proxy (connection pooling and reuse)**
+
+> Which monitoring shows OS/process-level detail such as mysqld process memory and load average?
+> → **Enhanced Monitoring (delivered to CloudWatch Logs)**
+
+> Which metrics does standard RDS monitoring give in CloudWatch?
+> → **Instance/database-level metrics like CPUUtilization, DatabaseConnections, FreeStorageSpace**
+
+> What are the automated backup retention minimum, maximum, and default?
+> → **Minimum 1 day, maximum 35 days, default 7 days**
+
+> Recovery to any second within the retention window is required. Which feature?
+> → **Automated backups with point-in-time recovery (PITR)**
 
 > An existing unencrypted RDS database must be encrypted at rest. How?
 > → **Snapshot → encrypt the snapshot → restore from the encrypted snapshot**
 
-> Only some columns of a SQL Server database must be encrypted. Which mechanism?
+> Which key management backs RDS storage encryption?
+> → **AWS KMS**
+
+> What does RDS storage encryption also protect besides the running database?
+> → **Automated backups, read replicas, and snapshots**
+
+> A SQL Server database must encrypt data at rest using the database engine itself, with no query changes. Which mechanism?
 > → **Transparent Data Encryption (TDE)**
 
-> Many Lambda functions open connections to RDS and exhaust it. What reduces connection churn?
-> → **RDS Proxy**
+> What is the difference between RDS encryption and TDE?
+> → **RDS encryption is AWS-level KMS storage encryption; TDE is a SQL Server database-engine feature**
 
-> Recovery to any second within the retention window is required. Which feature?
-> → **Automated backups (point-in-time recovery)**
+> Which database engines are supported by Aurora?
+> → **Only Aurora MySQL and Aurora PostgreSQL**
+
+> Across how many AZs and how many copies is Aurora storage replicated?
+> → **3 Availability Zones, six copies of the data**
+
+> How large can Aurora storage grow automatically?
+> → **Up to 256 TiB**
+
+> How do standard engines compare to Aurora for performance?
+> → **Aurora is designed for up to 6× the throughput of standard MySQL/PostgreSQL on similar hardware**
+
+> How is read traffic distributed across Aurora Replicas?
+> → **By the Reader Endpoint, which automatically load balances reads**
+
+> How does Aurora failover differ from standard RDS failover?
+> → **Aurora promotes a replica automatically and fails over faster than standard RDS**
+
+> What kind of storage underlies an RDS DB instance, and what underlies Aurora?
+> → **RDS uses EBS-backed volumes per instance; Aurora uses a shared distributed storage layer across AZs**
+
+> Do Aurora read replicas each have their own storage?
+> → **No — all Aurora replicas share the same distributed storage, so adding replicas needs no storage copy**
+
+> Which workloads should choose RDS over Aurora?
+> → **Lower cost, standard business apps, or a need for Oracle, SQL Server, MariaDB, or Db2**
+
+> Which option automatically scales compute for unpredictable workloads?
+> → **Aurora Serverless**
+
+> A workload needs many read replicas, heavy read/write, and fast failover. Which engine?
+> → **Aurora**
+
+> What does AWS manage for you on RDS, and what do you still manage?
+> → **AWS manages provisioning, patching, backups, monitoring, and failover; you manage schema, SQL, indexes, and tuning**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
-| Failover/HA | **Multi-AZ (standby)** |
-| Read scaling | **Read Replicas** |
-| Aurora replicas | **up to 15** |
-| Encrypt existing DB | **snapshot → encrypt → restore** |
-| SQL Server column encryption | **TDE** |
-| Connection pooling | **RDS Proxy** |
+| Failover / HA | **Multi-AZ (standby, synchronous)** |
+| Standby serves reads? | **No — standbys serve nothing** |
+| Read scaling | **Read Replicas (asynchronous)** |
+| Aurora replicas | **up to 15 (RDS up to 5)** |
+| Least code change for read scaling | **Read Replicas** |
+| Eliminate repeated queries | **ElastiCache** |
+| Passwordless DB login | **IAM DB authentication (MySQL/PostgreSQL)** |
+| Rotate existing DB password | **Secrets Manager** |
+| Parameter Store SecureString rotation | **No** |
+| Connection pooling / churn | **RDS Proxy (esp. Lambda)** |
+| Standard RDS monitoring | **CloudWatch instance/database metrics** |
+| Enhanced Monitoring | **OS/process-level, to CloudWatch Logs** |
+| Automated backup retention | **min 1 day, max 35 days, default 7 days** |
 | Point-in-time restore | **automated backups (up to 35 days)** |
+| Encrypt existing DB | **snapshot → encrypt → restore** |
+| RDS encryption | **AWS KMS (at rest)** |
+| RDS encryption also protects | **backups, snapshots, read replicas** |
+| SQL Server engine-level encryption | **TDE** |
+| RDS encryption vs TDE | **AWS storage vs SQL Server engine** |
+| Aurora engines | **Aurora MySQL, Aurora PostgreSQL** |
+| Aurora storage replication | **3 AZs, 6 copies** |
+| Aurora max storage | **256 TiB** |
+| Aurora performance | **up to 6× standard MySQL/PostgreSQL** |
+| Aurora read load balancing | **Reader Endpoint** |
+| Aurora failover | **faster than RDS; replica promoted automatically** |
+| RDS instance storage | **EBS-backed volumes** |
+| Aurora storage | **shared distributed, multi-AZ** |
+| Aurora replica storage | **shared — no copy needed** |
+| RDS engines | **MySQL, PostgreSQL, MariaDB, Oracle, SQL Server, Db2** |
+| Aurora Serverless | **automatic compute scaling** |
+| Choose Aurora when | **high performance, HA, many replicas, fast failover, heavy read/write** |
+| Choose RDS when | **Oracle/SQL Server/MariaDB/Db2, lower cost, standard apps** |
+| AWS manages on RDS | **provisioning, patching, backups, monitoring, failover** |
+| You manage on RDS | **schema, SQL queries, indexes, tuning** |
+| One endpoint during failover | **yes — DNS endpoint updates, no connection change** |

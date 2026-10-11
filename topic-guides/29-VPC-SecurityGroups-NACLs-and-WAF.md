@@ -233,28 +233,176 @@ This is the tool that answers “why is this connection being blocked?” — a 
 
 # Question patterns
 
-> Block malicious IPs and SQL injection at the application layer. Which service?
+> Malicious requests carrying SQL injection and XSS payloads must be blocked before reaching the application. Which service?
 > → **AWS WAF**
 
-> Stateful instance-level firewall that allows return traffic automatically. Which one?
-> → **Security group**
+> You must filter traffic by IP address and port only, with no HTTP-level inspection. Which tools apply?
+> → **A security group or a network ACL — not WAF**
 
-> Stateless subnet-level firewall with explicit allow and deny rules. Which one?
-> → **Network ACL**
+> A single abusive source IP must be throttled at layer 7 after exceeding a request threshold. Which feature?
+> → **A WAF rate-based rule**
 
-> A Lambda function must access RDS privately with no internet exposure. Which setup?
-> → **VPC + private subnets (+ NAT Gateway only if internet egress is needed)**
+> You need protection against volumetric DDoS with no rule writing. Which service handles this?
+> → **AWS Shield (Standard is automatic; Advanced is a paid add-on)**
 
-> Rate-limit requests from a single IP. Which feature?
-> → **WAF rate-based rule**
+> You must apply AWS and vendor-provided threat protections without authoring rules. Which WAF feature?
+> → **Managed rule groups**
+
+> Which resources can AWS WAF attach to?
+> → **CloudFront, Application Load Balancer, API Gateway, AppSync, and Cognito user pools**
+
+> Why is WAF preferable to filtering only at layer 4 for a Lambda-backed API?
+> → **It blocks attacks before reaching the application, so no Lambda invocation or DB connection is consumed**
+
+> What is the IP range of a VPC, for example `10.0.0.0/16`, called?
+> → **The VPC CIDR block**
+
+> A subnet lives in how many Availability Zones?
+> → **Exactly one**
+
+> Does a VPC span Availability Zones while a subnet does not?
+> → **Yes — a VPC spans AZs; each subnet lives in one AZ**
+
+> What primarily determines whether a subnet is public versus private?
+> → **Whether its route table has a route to an Internet Gateway**
+
+> What is required for a resource in a public subnet to reach the internet through an IGW?
+> → **The IGW attached to the VPC, a route `0.0.0.0/0 → IGW`, and a public IP on the resource**
+
+> Private-subnet resources need outbound internet access for software updates. What provides it?
+> → **A NAT Gateway**
+
+> In which subnet does a NAT Gateway live?
+> → **A public subnet**
+
+> Can the internet initiate a connection to a private EC2 through the NAT path?
+> → **No — NAT Gateway allows outbound only and blocks all inbound**
+
+> Private IPv6 resources need outbound-only internet access. Which component?
+> → **An egress-only Internet Gateway**
+
+> Which AWS services does a gateway VPC endpoint support?
+> → **S3 and DynamoDB only**
+
+> What is the cost of a gateway VPC endpoint?
+> → **Free**
+
+> An interface VPC endpoint uses what technology and what pricing model?
+> → **AWS PrivateLink with an ENI, charged hourly**
+
+> A Lambda in a private subnet must reach S3. What is the cheaper, more secure option than a NAT Gateway?
+> → **A gateway VPC endpoint**
+
+> Two VPCs are connected privately, and A peers with B while B peers with C. Can A reach C?
+> → **No — VPC peering has no transitive routing**
+
+> Many VPCs and networks must be connected together centrally. Which component?
+> → **A Transit Gateway**
+
+> On-premises must connect to a VPC over a VPN. Which component?
+> → **A VPN Gateway**
+
+> A dedicated private connection from on-premises to AWS that bypasses the public internet is required. Which service?
+> → **AWS Direct Connect**
+
+> What is an ENI, and which compute uses it when attached to a VPC?
+> → **A virtual network card (private IP, optional public IP, security groups, MAC); used by EC2 and by Lambda when attached to a VPC (created automatically)**
+
+> A security group is attached to what?
+> → **An instance or ENI**
+
+> A network ACL is attached to what?
+> → **A subnet**
+
+> Inbound traffic is allowed but responses never arrive. Which component is blocking the return traffic?
+> → **The NACL's outbound rules (stateless)**
+
+> Why does a security group not have this problem?
+> → **It is stateful — allowed inbound traffic returns automatically**
+
+> You must block a specific IP address. Which component is required?
+> → **A NACL, because security groups have no deny rule**
+
+> What are a security group's default inbound and outbound rules?
+> → **All inbound denied, all outbound allowed**
+
+> Can a security group express a deny rule?
+> → **No — allow rules only**
+
+> How are security-group rules evaluated?
+> → **All rules are evaluated together**
+
+> How are NACL rules evaluated?
+> → **By rule number, lowest first, stopping at the first match**
+
+> Does a NACL support both allow and deny rules?
+> → **Yes**
+
+> You must know why a connection is being blocked. Which tool, and what value do you look for?
+> → **VPC Flow Logs, looking for `REJECT`**
+
+> What does a VPC Flow Log record — payload or metadata?
+> → **Metadata only (source/destination IP, ports, protocol, ACCEPT/REJECT, byte and packet counts), not packet contents**
+
+> At which levels can VPC Flow Logs be enabled, and where can they be delivered?
+> → **VPC, subnet, or ENI; delivered to CloudWatch Logs, S3, or Kinesis Data Firehose**
+
+> You must know who made an AWS API call and when. Which tool?
+> → **AWS CloudTrail**
+
+> You must track whether resources remain compliant with configuration rules over time. Which tool?
+> → **AWS Config**
+
+> Two EC2 instances in the same VPC communicate. Which route entry handles it?
+> → **The `local` route for the VPC CIDR (e.g. `10.0.0.0/16 → local`)**
+
+> High availability for an application's subnets requires what?
+> → **Subnets in multiple Availability Zones**
+
+> A Lambda must access RDS privately with no internet exposure. Which setup?
+> → **VPC with private subnets (a NAT Gateway only if internet egress is also needed)**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
 | Layer 7 filter | **WAF** |
-| Stateful | **security group** |
-| Stateless | **NACL** |
+| Stateful firewall | **security group** |
+| Stateless firewall | **NACL** |
 | Rate limiting | **WAF rate-based rule** |
 | Private service access | **VPC endpoint** |
-| DDoS | **AWS Shield** |
+| DDoS protection | **AWS Shield** |
+| Public ↔ internet | **Internet Gateway** |
+| Private → internet (out) | **NAT Gateway** |
+| Private IPv6 → internet | **egress-only IGW** |
+| VPC ↔ VPC | **VPC peering (no transitive routing)** |
+| Many VPCs | **Transit Gateway** |
+| VPC ↔ on-prem (VPN) | **VPN Gateway** |
+| Dedicated on-prem link | **Direct Connect** |
+| Virtual network card | **ENI** |
+| Subnet AZs | **exactly one** |
+| VPC AZs | **spans multiple** |
+| Public subnet | **route to IGW** |
+| NAT location | **public subnet** |
+| SG attaches to | **instance / ENI** |
+| NACL attaches to | **subnet** |
+| SG rules | **allow only** |
+| NACL rules | **allow and deny** |
+| SG return traffic | **automatic (stateful)** |
+| NACL return traffic | **must allow manually** |
+| SG rule order | **all evaluated together** |
+| NACL rule order | **lowest number first** |
+| Block an IP | **NACL** |
+| Inbound ok, response blocked | **NACL outbound rules** |
+| See blocked traffic | **VPC Flow Logs (REJECT)** |
+| Who called an API | **CloudTrail** |
+| Resource compliance | **AWS Config** |
+| Private S3/DynamoDB access | **gateway endpoint (free)** |
+| Private access to other services | **interface endpoint (PrivateLink)** |
+| Gateway endpoint services | **S3 and DynamoDB** |
+| High availability | **subnets in multiple AZs** |
+| WAF targets | **CloudFront / ALB / API Gateway / AppSync / Cognito** |
+| Flow Log content | **metadata, not payload** |
+| Flow Log destinations | **CloudWatch Logs / S3 / Firehose** |
+| Same-VPC traffic | **`local` route** |
+| WAF block point | **before the application (saves compute)** |

@@ -953,39 +953,273 @@ Origin
 
 # Question patterns
 
-> An application invokes a Lambda function 50 times per second and each invocation runs for 4 seconds. How many concurrent executions must be available?
-> → **200** (50 × 4 — each execution environment handles exactly one request at a time)
+> A web tier invokes a Lambda function 50 times per second and each invocation runs for 100 seconds. How many concurrent executions are required, and what happens?
+> → **5,000 (50 × 100); the default account limit of 1,000 is exceeded so the function is throttled with TooManyRequestsException (HTTP 429)**
 
-> A Lambda function creates a database connection outside the handler and stores a scratch file in /tmp. Between two invocations the file disappears. Why?
-> → **/tmp is per-execution-environment and environments are eventually discarded — it is not durable or shared storage**
+> A Lambda function returns the error TooManyRequestsException and the CloudWatch Throttles metric is climbing. What is the cause?
+> → **The account concurrency limit (default 1,000) has been reached**
 
-> A developer needs a function to run for 20 minutes on every execution. Which solution works?
-> → **Move the workload off Lambda (ECS/Fargate, Step Functions, EC2) — Lambda's maximum timeout is 15 minutes**
+> A function opens a database connection outside the handler and reuses it across invocations. Why does this work?
+> → **Anything outside the handler runs once per execution environment (init phase) and the environment is reused for later invocations**
 
-> A Lambda function processes SQS messages in batches. One bad record causes the whole batch to fail and be retried. How can only the bad record be retried?
-> → **ReportBatchItemFailures (FunctionResponseTypes), optionally with BisectBatchOnFunctionError**
+> A function writes a scratch file to /tmp and a later invocation on a different environment cannot find it. Why?
+> → **/tmp is per-execution-environment and environments are eventually discarded, so it is neither durable nor shared**
 
-> A team needs the first invocation of a new Lambda function to be fast for Java, Python and .NET runtimes. Which feature removes cold-start latency?
-> → **Lambda SnapStart**
+> An application needs storage shared reliably across many concurrent Lambda invocations. What should be used?
+> → **S3, DynamoDB, or EFS — never /tmp or the execution context**
 
-> An asynchronous Lambda invocation fails and is retried the default number of times. Where does the event go after retries are exhausted?
-> → **DLQ or an on-failure destination (SQS/SNS/EventBridge/Lambda); 2 retries by default, configurable 0–2**
+> A Lambda function must run for 20 minutes on every execution. Which service should be used instead?
+> → **Move off Lambda (ECS/Fargate, AWS Batch, Step Functions, or EC2) — Lambda's maximum timeout is 15 minutes (900 s)**
 
-> A Lambda function must reach an RDS database in private subnets. What must be configured?
-> → **Attach the function to the VPC (subnets + security group); the execution role needs VPC permissions (AWSLambdaVPCAccessExecutionRole)**
+> A team must guarantee a critical function always has capacity and cannot be starved by another function's runaway scaling. Which feature?
+> → **Reserved concurrency (a guaranteed slice that also caps the function)**
+
+> A developer must instantly disable a Lambda function without deleting it. What is the simplest way?
+> → **Set reserved concurrency to 0**
+
+> A Lambda function opens too many connections and overloads an RDS database. Which two solutions help?
+> → **Reserved concurrency (caps concurrent environments/connections) or RDS Proxy**
+
+> A team wants the first invocation of a Java, Python, or .NET function to skip cold-start work. Which free feature?
+> → **Lambda SnapStart (restores from a snapshot of the initialised environment)**
+
+> A team needs pre-initialised warm environments so requests never hit the cold-start path. Which feature, and where is it configured?
+> → **Provisioned concurrency, set on a version or alias — never on $LATEST**
+
+> A developer tries to enable provisioned concurrency on $LATEST and it fails. Why?
+> → **Provisioned concurrency can only be attached to a published version or an alias, not $LATEST**
+
+> Clients must not break when new code is deployed. What should the clients point at?
+> → **A Lambda alias (a stable named pointer to an immutable version)**
+
+> A developer must roll back a bad deployment instantly without redeploying. What is the fastest method?
+> → **Move the alias back to the previous version**
+
+> A team wants to send 10% of traffic to a new version and 90% to the old. Which Lambda feature?
+> → **Alias weighted routing (the mechanism CodeDeploy manipulates for canary/linear deployments)**
+
+> Can a Lambda alias point to another alias?
+> → **No — an alias points to a version, never to another alias**
+
+> A change to an environment variable must be captured in a deployable snapshot. What does publishing produce?
+> → **A new immutable numbered version — versions capture configuration as well as code**
+
+> An asynchronous Lambda invocation fails. How many times does Lambda retry by default, and what is the range?
+> → **2 retries by default, configurable 0–2, with backoff**
+
+> An asynchronous event is more than 6 hours old and has retries remaining. What happens?
+> → **It is discarded — MaximumEventAge accepts only 60 seconds to 6 hours**
+
+> Async invocations fail repeatedly and the events must not be lost. What should be configured?
+> → **An on-failure destination (SQS/SNS/EventBridge/Lambda) or a DLQ**
+
+> A team needs notifications for both successful and failed invocations with full request/response context. Which mechanism?
+> → **Destinations (DLQ only handles failures and stores the original event only)**
+
+> A team needs to route failed async invocations to EventBridge. Which mechanism supports that?
+> → **Destinations — DLQ targets are limited to SQS and SNS**
+
+> A Lambda function processes SQS messages and the same message is processed twice. What is the cause?
+> → **The visibility timeout is shorter than the function timeout; the message becomes visible again while still being processed**
+
+> What visibility timeout should be set relative to the function timeout to absorb retries?
+> → **At least 6× the function timeout (and never less than the function timeout)**
+
+> One bad message in an SQS batch causes all the successful messages to be reprocessed. What is the most efficient fix?
+> → **Partial batch response: set FunctionResponseTypes to ReportBatchItemFailures and return only the failed message IDs**
+
+> Why is reducing SQS batch size to 1 not the preferred fix for whole-batch retries?
+> → **It destroys throughput and multiplies invocation cost; ReportBatchItemFailures is more efficient**
+
+> What is the valid SQS event source mapping batch size range, and when is a batching window required?
+> → **1–10,000 messages; a batching window is required above 10**
+
+> A single Event Source Mapping must limit how many concurrent pollers the queue creates. Which setting?
+> → **MaximumConcurrency on the event source mapping**
+
+> Should application code delete successfully processed SQS messages?
+> → **No — Lambda deletes successful messages automatically**
+
+> What does maxReceiveCount control for an SQS-driven Lambda?
+> → **How many times SQS delivers a message to a consumer before moving it to the DLQ**
+
+> A Kinesis-driven Lambda consumer must preserve strict order within a shard. What does that imply about concurrency?
+> → **One concurrent invocation per shard by default; ParallelizationFactor (1–10) increases it at the cost of strict ordering**
+
+> One failing record blocks an entire Kinesis shard forever. What is this called and what are the fixes?
+> → **A poison pill; fix with MaximumRetryAttempts, MaximumRecordAgeInSeconds, BisectBatchOnFunctionError, an OnFailure destination, or ReportBatchItemFailures**
+
+> A developer wants to isolate a bad stream record by repeatedly halving the failing batch. Which setting?
+> → **BisectBatchOnFunctionError**
+
+> A stream consumer is falling behind the producer. Which metric shows this?
+> → **IteratorAge (rising IteratorAge = lag)**
+
+> A stream consumer should process all retained records from the beginning. Which StartingPosition?
+> → **TRIM_HORIZON (LATEST = only new records; AT_TIMESTAMP = from a time)**
+
+> Which source types are poll-based and use an event source mapping?
+> → **SQS, Kinesis Data Streams, DynamoDB Streams, MSK, Amazon MQ, DocumentDB**
+
+> A team wants to share common libraries across many Lambda functions and shrink each deployment package. Which feature?
+> → **Lambda Layers (a .zip mounted at /opt, max 5 per function, counted in the 250 MB unzipped limit)**
+
+> Where does Lambda mount a layer, and is it writable?
+> → **/opt — it is read-only; only /tmp is writable temporary storage**
+
+> A Lambda container image built on a custom or OS-only base image fails to run. What must be included?
+> → **The Runtime Interface Client (RIC)**
+
+> What is the Runtime Interface Emulator (RIE) used for, and is it used in production?
+> → **Testing Lambda container images locally; it is not used in production**
+
+> A team builds a multi-architecture container image for Lambda. What is the problem?
+> → **Lambda container images must support a single architecture (x86_64 or arm64); multi-architecture images are not supported**
+
+> Which two CPU architectures does Lambda support, and how many can one function use?
+> → **x86_64 and arm64 — but one function can use only one architecture**
+
+> A function returns an AccessDenied error calling S3, but the task starts and logs fine. Which role is misconfigured for ECS (analogous Lambda case)?
+> → **The runtime role (task role) used by application code, not the startup/execution role**
+
+> A serverless app must expose a function as an HTTPS endpoint with no API Gateway, and only needs AWS_IAM or NONE auth. Which feature?
+> → **Lambda Function URLs (built-in CORS, supports response streaming)**
+
+> A requirement includes API keys, usage plans, request validation, or WAF. Which option must be used instead of a Function URL?
+> → **API Gateway — Function URLs support none of those**
+
+> Environment variables must be unreadable to other developers with console access. What is required?
+> → **A customer managed KMS key plus the console encryption helpers, decrypting in code with the KMS SDK (default aws/lambda key alone lets console users read the value)**
+
+> Credentials must be rotated automatically. Which service should be used instead of environment variables?
+> → **AWS Secrets Manager**
+
+> What is the total size limit for all Lambda environment variables, and is there a limit on the number of variables?
+> → **4 KB total; there is no limit on the number of variables**
+
+> A deployment package includes a large ML model. Which packaging option supports up to 10 GB?
+> → **A container image (stored in Amazon ECR); direct .zip upload is 50 MB and unzipped packages cap at 250 MB**
+
+> A CPU-bound function is slow but does not need more memory. What single change most likely speeds it up, and could it also reduce cost?
+> → **Increase memory — CPU scales with memory (~1 vCPU near 1,769 MB), and billing is memory × duration so a faster run can cost the same or less**
+
+> What are the Lambda memory and /tmp limits?
+> → **Memory 128 MB–10,240 MB in 1 MB increments; /tmp defaults to 512 MB and configures up to 10,240 MB**
+
+> What are the synchronous and asynchronous invocation payload limits?
+> → **6 MB synchronous, 256 KB asynchronous**
+
+> A retry must not double-charge a customer. What idempotency pattern should be used?
+> → **Client sends a unique request ID; Lambda does a DynamoDB conditional write (attribute_not_exists) and returns the previous result if the write fails**
+
+> Why is DynamoDB the recommended store for Lambda idempotency, rather than ElastiCache or S3?
+> → **It offers an atomic conditional write, scales with Lambda's concurrency, and has single-digit millisecond latency (a cache can evict; S3 has no atomic conditional check)**
+
+> Why is an atomic counter (SET count = count + 1) not idempotent?
+> → **A retry increments it twice; use it for view counts, not for money**
+
+> Requests should be validated with simple logic at the edge before reaching the origin. CloudFront Functions or Lambda@Edge?
+> → **CloudFront Functions — simple, very fast, cheaper, JavaScript, but no network calls**
+
+> A edge function must make external network/API calls and run longer logic. Which should be used?
+> → **Lambda@Edge (Node.js/Python, supports origin triggers and network calls)**
+
+> A custom bearer token or OAuth/SAML flow must gate an API. Which API Gateway feature?
+> → **A Lambda Authorizer (returns ALLOW or DENY based on a custom token)**
+
+> A function has no logs in CloudWatch. What is the likely cause and fix?
+> → **The execution role lacks log permissions; attach AWSLambdaBasicExecutionRole**
+
+> A Lambda function is attached to a VPC's private subnet and now cannot reach the internet. What is the standard fix?
+> → **Add a NAT Gateway in a public subnet (or use a VPC endpoint for AWS services specifically)**
+
+> A question proposes "configure the ENI" to fix a Lambda internet-access issue. Why is that wrong?
+> → **Lambda creates and manages the ENIs automatically; you never create or manage them**
+
+> Lambda must reach RDS in private subnets. What must be configured?
+> → **Attach the function to the VPC (subnets + a security group allowing outbound traffic); the execution role needs VPC permissions (AWSLambdaVPCAccessExecutionRole)**
+
+> A function invokes itself and generates an unexpectedly large bill. What is this and how is it treated?
+> → **Recursive invocation — an anti-pattern; it must be redesigned**
+
+> Which AWS Lambda languages are natively supported, and which notable language is not?
+> → **Java, Python, Node.js, .NET, Ruby, Go, and others are supported; C++ is not supported natively**
+
+> A Lambda function must process a job that takes 60 minutes. What is the correct architecture?
+> → **Not Lambda — use Fargate, AWS Batch, Step Functions, or EC2 (15-minute hard limit)**
+
+> A function needs a private resource (RDS/ElastiCache/internal ALB). Should it be attached to a VPC?
+> → **Yes, only when it genuinely needs private resources; otherwise attaching adds configuration surface for no benefit**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
-| Max timeout | **15 minutes** |
-| Concurrency | **requests/s × duration** |
-| /tmp size | **512 MB**, per environment, not shared |
-| Code outside handler | **runs once per environment (init phase)** |
-| Async retries | **2 by default (0–2)** |
+| Max timeout | **15 minutes (900 s); default 3 s** |
+| Concurrency formula | **requests/s × average duration in seconds** |
+| Default concurrency limit | **1,000 (soft limit)** |
+| Throttle symptom | **TooManyRequestsException / HTTP 429; Throttles metric** |
+| Reserved concurrency | **Guaranteed slice + hard cap; free; set on the function** |
+| Disable a function | **Reserved concurrency = 0** |
+| Too many DB connections | **Reserved concurrency or RDS Proxy** |
+| Cold-start latency fix | **Provisioned concurrency (paid) on a version/alias** |
+| Free cold-start fix | **SnapStart (Java, Python, .NET)** |
+| Provisioned on $LATEST | **Not allowed — use a version or alias** |
+| Code outside handler | **Runs once per environment (init phase); reused** |
+| Execution context | **Environment AWS creates and reuses for later invocations** |
+| Handler best practice | **Separate handler from core logic for unit testing** |
+| Persistent storage | **S3 / DynamoDB / EFS — never /tmp or execution context** |
+| /tmp | **512 MB default, configurable to 10,240 MB; per environment, not durable or shared** |
+| Shared files across invocations | **EFS** |
+| CPU-heavy function | **Increase memory (CPU scales with memory)** |
+| 1 vCPU point | **~1,769 MB** |
+| Memory range | **128 MB – 10,240 MB (1 MB increments)** |
+| Async retries | **2 by default (configurable 0–2)** |
 | MaximumEventAge | **60 s – 6 h** |
-| SQS batch partial failure | **ReportBatchItemFailures** |
-| Cold start fix | **SnapStart / Provisioned Concurrency** |
-| VPC access | **attach subnets + security group** |
+| Async failures not lost | **On-failure destination (or DLQ)** |
+| DLQ targets | **SQS, SNS** |
+| Destination targets | **SQS, SNS, Lambda, EventBridge** |
+| Success notifications | **Destinations, not DLQ** |
 | Payload limit | **6 MB sync / 256 KB async** |
-| Deployment package | **50 MB zipped, 250 MB unzipped** |
+| Sync failure handling | **The caller retries; Lambda does not** |
+| SQS duplicate processing | **Visibility timeout < function timeout** |
+| Visibility timeout rule | **≥ 6× function timeout** |
+| Whole SQS batch retried | **ReportBatchItemFailures (partial batch response)** |
+| SQS batch size | **1–10,000; batching window required above 10** |
+| Store processed request IDs | **DynamoDB** |
+| Atomic "check and save" | **DynamoDB conditional write (attribute_not_exists)** |
+| Atomic counter not idempotent | **Retry double-increments; use for views, not money** |
+| SQS message deletion | **Lambda deletes successful messages automatically** |
+| maxReceiveCount | **Deliveries before an SQS message moves to the DLQ** |
+| Stream concurrency | **One invocation per shard; ParallelizationFactor 1–10** |
+| Stream stuck forever | **Poison pill; max retries / bisect / on-failure destination** |
+| Bisect bad record | **BisectBatchOnFunctionError** |
+| Stream from the beginning | **TRIM_HORIZON** |
+| Rising IteratorAge | **Consumer falling behind producer** |
+| Share libraries / shrink package | **Lambda Layers** |
+| Layer location / limit | **/opt; max 5 per function; counts in 250 MB unzipped** |
+| Reduce package size | **Layers, S3 upload, or container image (10 GB)** |
+| Package sizes | **50 MB zipped direct, 250 MB unzipped, 10 GB container** |
+| Custom Runtime | **You control initialisation and how Lambda gets events** |
+| Container image with custom/OS-only base | **Add the Runtime Interface Client (RIC)** |
+| AWS base image | **RIC already included** |
+| Local image testing | **Runtime Interface Emulator (RIE), not for production** |
+| Container images stored | **Amazon ECR** |
+| Lambda architectures | **x86_64, arm64 — one function uses only one** |
+| Simplest HTTPS endpoint | **Function URL (AWS_IAM or NONE, built-in CORS)** |
+| Need API keys / usage plans / WAF | **API Gateway** |
+| Env vars unreadable by others | **Customer managed KMS key + encryption helpers** |
+| Credentials requiring rotation | **Secrets Manager, not env vars** |
+| Env vars total size | **4 KB (no limit on count)** |
+| Lambda in VPC cannot reach internet | **NAT Gateway (or VPC endpoint for AWS services)** |
+| ENI | **Created automatically by Lambda; never the fix** |
+| Lambda needs RDS | **Attach the function to the VPC** |
+| No CloudWatch logs | **Execution role lacks AWSLambdaBasicExecutionRole** |
+| Job longer than 15 minutes | **Not Lambda (Fargate, Batch, Step Functions, EC2)** |
+| Recursive invocation | **Anti-pattern; runaway invocations and cost** |
+| Simple + fast + cheap at edge | **CloudFront Functions** |
+| Complex edge logic with network access | **Lambda@Edge** |
+| Custom token / OAuth / SAML gate | **Lambda Authorizer** |
+| Async destination triggers | **Success and failure** |
+| EventBridge as failure target | **Destinations only, not DLQ** |
+| Unsupported native language | **C++** |

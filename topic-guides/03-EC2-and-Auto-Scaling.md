@@ -341,37 +341,201 @@ And your previous question:
 
 # Question patterns
 
+> An application must run with full OS-level control on a managed virtual machine. Which AWS compute service?
+> → **Amazon EC2**
+
+> A fleet must replace failed instances automatically without human intervention. Which component?
+> → **Auto Scaling Group — it detects and replaces unhealthy instances automatically**
+
+> A team must create many identical EC2 instances from a single blueprint including AMI, instance type, security group, IAM role, and user data. Which resource?
+> → **A launch template**
+
+> What is an AMI, and why does it boot faster than a plain OS image?
+> → **An Amazon Machine Image — a template containing the OS plus preinstalled application, so the software is already there**
+
+> An Auto Scaling group must keep average CPU utilisation at 50% regardless of load. Which policy?
+> → **A target tracking scaling policy — you specify the metric value you want**
+
+> An application should add 1 instance when CPU exceeds 70% and 5 instances when CPU exceeds 90%. Which policy?
+> → **Step scaling — non-linear responses at different thresholds**
+
+> A workload has a predictable daily peak at 08:00 and low traffic at night. Which scaling approach, and what is its advantage?
+> → **Scheduled scaling — it scales on time so capacity is warmed before traffic arrives**
+
+> Workers pull from an SQS queue and CPU stays low while the backlog grows. What is the correct scaling metric?
+> → **Backlog per instance = ApproximateNumberOfMessagesVisible ÷ number of workers, driven by a target-tracking policy**
+
+> Does the ECS service scheduler perform scaling?
+> → **No — it maintains the desired task count and replaces failed tasks; scaling is done by Application Auto Scaling on top of it**
+
+> A script must install and start software automatically the first time an instance launches. Where does it go?
+> → **EC2 user data — it runs on first boot only with root privileges**
+
+> Does user data run on every boot or only the first?
+> → **Only on the first boot**
+
+> A team needs the fastest possible boot with software preinstalled, versus setup defined in code that is easy to change. Which trade-off?
+> → **Fast scaling favours a custom AMI; frequently changing setup favours user data**
+
+> How does user data differ from AWS Systems Manager for managing instances?
+> → **User data runs at launch; Systems Manager Run Command manages instances that are already running**
+
+> A workload is CPU-heavy (batch processing, media encoding, gaming servers). Which instance family?
+> → **Compute Optimized (C)**
+
+> A workload runs an in-memory database such as Redis or SAP HANA. Which instance family?
+> → **Memory Optimized (R, X, High Memory)**
+
+> A workload needs very fast local SSD/HDD and high IOPS, such as a NoSQL database or OpenSearch. Which family?
+> → **Storage Optimized (I, D, H)**
+
+> A workload needs GPUs or accelerators for ML training or graphics. Which family?
+> → **Accelerated Computing (P, G, Inf, Trn, F)**
+
+> An exam question literally says "High-Performance Computing (HPC)". Which family?
+> → **HPC Optimized (Hpc)**
+
+> A web server with balanced CPU, memory and networking needs a general-purpose instance. Which family?
+> → **General Purpose (M, T)**
+
+> A developer must change whether an EBS volume is deleted when its instance terminates. Which attribute, and can it change while running?
+> → **DeleteOnTermination — it can be changed while the instance is running**
+
+> Changing an instance type from t3.small to t3.large requires what action?
+> → **Stopping the instance first (instance type and certain EBS/root-device changes require a stop)**
+
+> What is the general rule about modifying EC2 attributes while an instance is running?
+> → **Not all attributes are modifiable while running — check the specific attribute**
+
+> An application needs a persistent block disk that survives instance stop/termination and supports high IOPS. Which storage?
+> → **Amazon EBS — network-attached block storage, single AZ, normally one instance**
+
+> A process needs very fast temporary scratch storage that can be lost when the instance stops. Which storage?
+> → **Instance store — physically attached NVMe, ephemeral, lost on stop**
+
+> A workload is steady-state production running for 1–3 years. Which purchasing option is cheapest and most appropriate?
+> → **Reserved Instance (commit to 1 or 3 years)**
+
 > An application can tolerate interruptions and must minimise EC2 cost. Which purchasing option?
 > → **Spot Instances**
 
-> How should an EC2 application obtain credentials to call S3 without long-term access keys?
-> → **An instance profile attached to an IAM role — temporary credentials via the metadata service**
+> A team needs many Spot instances managed automatically across instance types and AZs at the lowest cost. Which feature?
+> → **Spot Fleet**
 
-> An Auto Scaling group must keep average CPU utilisation at 50% regardless of load. Which policy?
-> → **Target tracking scaling policy**
+> A compliance requirement needs an entire physical server with hardware visibility and bring-your-own-licence. Which option?
+> → **Dedicated Host**
+
+> Which purchasing option commits to a $/hour spend while remaining flexible on instance type?
+> → **Savings Plans**
+
+> A team needs a discount across the whole Region and flexibility across AZs. Which RI type?
+> → **Regional RI — it does not reserve capacity**
+
+> A team needs both an RI discount and guaranteed EC2 capacity in a specific AZ. Which RI type?
+> → **Zonal RI — it reserves EC2 capacity in that AZ**
+
+> How does EC2 Capacity Reservation differ from a Reserved Instance?
+> → **Capacity Reservation is a separate feature that reserves capacity but provides no RI-style billing discount**
+
+> How much discounted usage does one Reserved Instance provide per clock-hour?
+> → **Up to 3,600 seconds (1 instance-hour); the total RI-covered usage cannot exceed 1 hour per clock-hour even if shared across instances**
+
+> A new AWS account (under 12 months) runs a t2.micro instance for 35 seconds. How much is charged?
+> → **$0 — the Free Tier provides 750 hours/month of t2.micro and the question tests Free Tier awareness, not per-second billing**
+
+> Which metrics are supported as predefined Auto Scaling target-tracking metrics?
+> → **ASGAverageCPUUtilization, ASGAverageNetworkOut, ALBRequestCountPerTarget**
+
+> Can SQS queue depth (ApproximateNumberOfMessagesVisible) be used directly as a predefined target-tracking metric?
+> → **No — it is not a predefined target-tracking metric; you scale on a custom backlog-per-instance metric instead**
+
+> Which CLI command enables detailed monitoring on an existing instance?
+> → **aws ec2 monitor-instances --instance-ids <id>**
+
+> Which CLI command disables detailed monitoring?
+> → **aws ec2 unmonitor-instances --instance-ids <id>**
+
+> Which CLI command launches a new instance with detailed monitoring enabled?
+> → **aws ec2 run-instances --image-id <ami> --monitoring Enabled=true**
+
+> An EC2 application must call S3 without long-term access keys. How should it obtain credentials?
+> → **Attach an instance profile backed by an IAM role; the SDK gets temporary credentials from the metadata service**
+
+> What is the EC2 instance metadata endpoint IP?
+> → **169.254.169.254**
 
 > An instance is being terminated but must finish uploading logs first. Which feature allows this?
-> → **ASG lifecycle hooks**
+> → **Auto Scaling lifecycle hooks**
 
-> A script must run on every EC2 launch to install the application. Where does it go?
-> → **User data**
+> A key pair was created in us-east-1 and must be used to launch instances in eu-west-1. What should be done?
+> → **Import the same public key into eu-west-1 — key pairs are Regional and cannot be used across Regions directly**
 
-> A key pair created in us-east-1 must be used to launch instances in eu-west-1. What to do?
-> → **Import the same public key into eu-west-1**
+> Are EC2 key pairs global or Regional?
+> → **Regional — a key pair created in one Region cannot be used directly in another**
 
-> A developer must change whether an EBS volume is deleted when its instance terminates. Which call?
-> → **aws ec2 modify-instance-attribute (DeleteOnTermination)**
+> If a private key is lost, can AWS recover it?
+> → **No — AWS stores only the public key, never the private key**
+
+> A company wants employees to log in to AWS using their corporate identity system. Which standard?
+> → **SAML (Security Assertion Markup Language) — federated login / SSO, typically granting access via an IAM role**
+
+> In SAML federation, what is the identity provider (IdP) and what does it send?
+> → **The IdP is the system that knows who the user is (e.g. the company login); it sends a SAML assertion stating identity and access**
+
+> A company's directory is LDAP and does not support SAML. What is the recommended approach?
+> → **Use a custom Identity Broker + AWS STS to obtain temporary credentials**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
-| Credentials on EC2 | **instance profile (role)** |
-| Metadata IP | **169.254.169.254** |
+| Full OS control / virtual machine | **EC2** |
+| Create identical instances | **Launch template** |
+| Replace failed instances automatically | **Auto Scaling Group** |
+| OS image with preinstalled software | **AMI** |
+| Keep CPU at a target percentage | **Target tracking** |
+| Non-linear thresholds | **Step scaling** |
+| Scale before a known peak | **Scheduled scaling** |
+| Scale workers on queue depth | **Backlog per instance + target tracking** |
+| ECS service scheduler | **Keeps tasks running; not a scaling mechanism** |
+| Startup script | **User data (first boot only, root)** |
+| Fastest boot with preinstalled software | **Custom AMI** |
+| Manage already-running servers | **Systems Manager** |
+| Balanced resources | **General Purpose (M, T)** |
+| More CPU | **Compute Optimized (C)** |
+| More RAM / in-memory DB | **Memory Optimized (R, X)** |
+| Fast local storage / high IOPS | **Storage Optimized (I, D, H)** |
+| GPU / AI accelerator | **Accelerated Computing (P, G, Inf, Trn, F)** |
+| "High-Performance Computing" clue | **HPC Optimized (Hpc)** |
+| Modifiable while running | **DeleteOnTermination, some SG/network settings** |
+| Requires stop | **Instance type; certain EBS/root-device changes** |
+| The attribute answer (exam) | **DeleteOnTermination can change while running** |
+| Persistent block disk | **EBS (single AZ, one instance)** |
+| Temporary high-speed storage | **Instance store (ephemeral)** |
 | Cheapest interruptible | **Spot** |
+| Many Spot instances managed | **Spot Fleet** |
 | Steady 1–3 year workload | **Reserved** |
-| Scale on a metric | **target tracking** |
-| Pause before termination | **lifecycle hook** |
-| Startup script | **user data** |
-| Key pair across regions | **import the public key** |
-| Ephemeral local disk | **instance store** |
+| Flexible $/hour commitment | **Savings Plans** |
+| Whole physical server | **Dedicated Host** |
+| Isolation to your account | **Dedicated Instance** |
+| Guaranteed capacity in an AZ | **EC2 Capacity Reservation** |
+| Discount + capacity in an AZ | **Zonal RI** |
+| Discount across Region, no capacity | **Regional RI** |
+| RI discounted usage | **1 instance-hour per clock-hour (3,600 s)** |
+| New account + t2.micro + within limits | **$0 (750 hrs/month Free Tier)** |
+| Target-tracking metrics | **ASGAverageCPUUtilization, ASGAverageNetworkOut, ALBRequestCountPerTarget** |
+| SQS queue depth as target metric | **Not predefined — use a custom metric** |
+| Enable detailed monitoring | **aws ec2 monitor-instances** |
+| Disable detailed monitoring | **aws ec2 unmonitor-instances** |
+| Launch with detailed monitoring | **aws ec2 run-instances --monitoring Enabled=true** |
+| Credentials on EC2 | **Instance profile (IAM role)** |
+| Metadata IP | **169.254.169.254** |
+| Pause before termination | **ASG lifecycle hook** |
+| Key pair across Regions | **Import the same public key** |
+| Key pair scope | **Regional** |
+| Private key lost | **AWS cannot recover it (only public key stored)** |
+| Federated login / SSO standard | **SAML** |
+| IdP sends | **SAML assertion** |
+| LDAP without SAML | **Custom Identity Broker + STS** |
+| Burst balance | **Saved T-family CPU credits for temporary bursts** |
+| Low burst balance | **Cannot sustain above-baseline CPU for long** |

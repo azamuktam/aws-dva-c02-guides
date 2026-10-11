@@ -257,33 +257,164 @@ Web app → **SQS queue** → Worker Environment → process task. Elastic Beans
 
 # Question patterns
 
-> A deployment must have zero downtime and roll out on a fresh set of instances. Which policy?
-> → **Immutable**
+> A team must deploy a conventional web application and have AWS assemble EC2, a load balancer, auto scaling, security groups, and CloudWatch with minimal effort. Which service?
+> → **AWS Elastic Beanstalk (a Platform as a Service)**
 
-> The cheapest deployment policy that briefly stops the service. Which one?
-> → **All at once**
+> Is Elastic Beanstalk a black box that hides the underlying resources?
+> → **No — it creates ordinary EC2 instances, ASGs, and load balancers in your account that you can see and tune**
 
-> Only a small percentage of users should test the new version. Which policy?
-> → **Traffic splitting (canary)**
+> Where are Elastic Beanstalk application versions stored?
+> → **In Amazon S3**
 
-> A team wants to keep the old environment and switch URLs when the new one is ready. Which approach?
-> → **Blue/green via environment swap**
+> What is the difference between an application, an application version, and an environment in Beanstalk?
+> → **The application is the container for versions; a version is a specific uploaded bundle; an environment is the running collection of AWS resources for one version**
+
+> A team needs a lower-cost Beanstalk setup for development and testing. Which environment type?
+> → **A single-instance environment (one EC2, no load balancer, no scaling beyond 1)**
+
+> A production Beanstalk workload needs a load balancer, an Auto Scaling group, and multiple AZs. Which environment type?
+> → **A load-balanced, scalable environment (High Availability)**
+
+> Are "Single instance" and "High availability" official environment type names in the Beanstalk console?
+> → **No — they are configuration presets that create a single-instance or load-balanced scalable environment**
 
 > An Elastic Beanstalk app must process long-running background jobs from a queue. Which setup?
-> → **Worker environment (sqsd) + SQS**
+> → **A worker environment driven by SQS**
 
-> How do you customise the Elastic Beanstalk platform configuration?
-> → **.ebextensions configuration files**
+> In a worker environment, what is sqsd and what does it do?
+> → **The SQS daemon running on each worker instance; it polls the queue and POSTs each message to your application over local HTTP (localhost), deleting the message on a 200 and returning it to the queue on a non-200**
+
+> In a worker environment, does application code talk to SQS directly?
+> → **No — sqsd polls SQS and delivers each message as a local HTTP request; the code just handles the request**
+
+> A worker returns a non-200 response to sqsd. What happens to the message?
+> → **It returns to the queue and eventually lands in the DLQ**
+
+> How are periodic tasks configured in a Beanstalk worker environment?
+> → **A cron.yaml file at the root of the application bundle (e.g. schedule "0 2 * * *")**
+
+> Does cron.yaml work in a web server environment?
+> → **No — it only works in a worker environment; web server environments ignore it**
+
+> A slow task is blocking web requests. What is the standard Beanstalk fix?
+> → **Move the task to a worker environment (web app → SQS → worker) so the web tier stays responsive**
+
+> Which platforms does Elastic Beanstalk support?
+> → **Java, .NET, PHP, Node.js, Python, Ruby, Go, and Docker**
+
+> Which deployment methods does Elastic Beanstalk support?
+> → **AWS Console, EB CLI, and CodePipeline**
+
+> What are the Elastic Beanstalk environment health colours?
+> → **Green (healthy), Yellow (warning), Red (severe)**
+
+> How do you customise the underlying EC2 instances and platform configuration of a Beanstalk environment?
+> → **.ebextensions configuration files (.ebextensions/<something>.config, YAML or JSON)**
+
+> A production RDS database is created inside .ebextensions. Why is this dangerous?
+> → **Resources created by .ebextensions are tied to the environment lifecycle and are deleted when the environment is deleted or rebuilt**
+
+> Where should a database for a Beanstalk application be created, and why?
+> → **Outside Beanstalk as a standalone RDS instance connected via environment variables, so rebuilding the environment does not destroy production data**
+
+> Which temporary resource is acceptable to create inside .ebextensions?
+> → **A recreatable one such as an ElastiCache cluster, since losing it only costs a cache warm-up**
+
+> Which file tells Elastic Beanstalk how to run a Docker container?
+> → **Dockerrun.aws.json**
+
+> Which file tells Elastic Beanstalk how to start the app?
+> → **Procfile**
+
+> Which file excludes files from the deployment bundle?
+> → **.ebignore**
+
+> A deployment must have zero downtime, roll out on a fresh Auto Scaling group, and allow the safest rollback. Which policy?
+> → **Immutable — it builds a brand-new ASG at full capacity and leaves the old ASG untouched until health checks pass**
+
+> Which deployment policy is the fastest but causes brief downtime and is best for dev/test?
+> → **All at once (deploys to every instance simultaneously)**
+
+> Which deployment policy keeps full capacity by launching extra instances first, then removing the old batch?
+> → **Rolling with additional batch**
+
+> Which deployment policy deploys in small batches with no full downtime but temporarily reduced capacity?
+> → **Rolling**
+
+> Only a small percentage of live users should test the new version. Which Beanstalk policy?
+> → **Traffic splitting (Beanstalk's canary)**
+
+> Which policy reintroduces new EC2 instances and therefore loses T-family CPU burst balances?
+> → **Immutable and Traffic splitting (both create brand-new instances)**
+
+> A team wants to keep the old environment live and switch URLs when the new one is ready, with the fastest possible rollback. Which approach?
+> → **Blue/green via environment clone and CNAME (URL) swap**
+
+> In blue/green Beanstalk, what are the blue and green environments?
+> → **Blue is the current live production system; green hosts the updated version for isolated verification and tests**
+
+> What does the EC2 burst balance represent?
+> → **The number of saved T-family CPU credits available for temporary bursts above baseline**
+
+> A burstable instance has a low or zero burst balance. What does that mean?
+> → **It cannot sustain CPU usage above the baseline for long**
+
+> Which CLI command initialises and configures a Beanstalk application locally?
+> → **eb init**
+
+> Which CLI command creates a Beanstalk environment?
+> → **eb create**
+
+> Which CLI command deploys your application to a Beanstalk environment?
+> → **eb deploy**
+
+> Which API call modifies Elastic Beanstalk application metadata/configuration?
+> → **aws elasticbeanstalk update-application**
+
+> How is X-Ray enabled for an Elastic Beanstalk environment?
+> → **Via .ebextensions/xray-daemon.config**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
-| Zero downtime, fresh fleet | **Immutable** |
-| Cheapest, brief downtime | **All at once** |
-| Gradual, keeps capacity | **Rolling** |
-| Test on a subset | **Traffic splitting** |
-| Configuration | **.ebextensions** |
-| Periodic tasks | **cron.yaml** |
-| Worker jobs | **worker environment + SQS** |
-| Swap URLs | **blue/green** |
+| Easiest app deployment / PaaS | **Elastic Beanstalk** |
+| Application versions stored | **S3** |
+| App / version / environment | **Container / uploaded bundle / running resources** |
+| Dev/test environment | **Single-instance (no LB, no scaling)** |
+| Production environment | **Load-balanced, scalable (HA)** |
+| Console presets | **Single instance / High availability (not official type names)** |
+| Web requests | **Web server environment** |
+| Background jobs from a queue | **Worker environment** |
+| Worker queue polling | **sqsd (SQS daemon) over local HTTP** |
+| Worker success signal | **HTTP 200 → message deleted** |
+| Worker failure signal | **Non-200 → message returns, then DLQ** |
+| Periodic tasks | **cron.yaml (worker only)** |
+| Long task blocking web tier | **Move to worker environment + SQS** |
+| Supported platforms | **Java, .NET, PHP, Node.js, Python, Ruby, Go, Docker** |
+| Deployment methods | **Console, EB CLI, CodePipeline** |
+| Environment health colours | **Green / Yellow / Red** |
+| Customise environment | **.ebextensions/*.config** |
+| Persistent DB survival | **Create RDS externally, connect via env vars** |
+| .ebextensions lifecycle | **Resources deleted with the environment** |
+| Recreatable resource in .ebextensions | **ElastiCache (acceptable)** |
+| Docker config file | **Dockerrun.aws.json** |
+| How to start the app | **Procfile** |
+| Exclude files from deploy | **.ebignore** |
+| Environment settings file | **env.yaml** |
+| Fastest / cheapest deployment | **All at once (brief downtime)** |
+| Balance speed and availability | **Rolling** |
+| Keep full capacity | **Rolling with additional batch** |
+| Zero downtime, safest rollback, fresh ASG | **Immutable** |
+| Canary / percentage of users | **Traffic splitting** |
+| Fastest possible rollback | **Blue/green CNAME swap** |
+| Blue environment | **Current live production** |
+| Green environment | **New version verified in isolation** |
+| Burst balances lost | **Immutable / Traffic splitting (new instances)** |
+| Burst balance | **Saved CPU credits for temporary bursts** |
+| Low burst balance | **Cannot sustain above-baseline CPU long** |
+| X-Ray config | **.ebextensions/xray-daemon.config** |
+| eb init | **Initialise/configure app locally** |
+| eb create | **Create an environment** |
+| eb deploy | **Deploy to the environment** |
+| update-application | **Modifies EB application metadata** |

@@ -222,28 +222,193 @@ Note: AWS now also supports **AWS Distro for OpenTelemetry (ADOT)** for Lambda t
 
 # Question patterns
 
-> Trace a request across multiple services. Which service?
+> A distributed application has five possible causes for "the API is slow" and no single log shows the whole path. Which service reconstructs the full request path?
 > → **AWS X-Ray**
 
-> How is trace context propagated between services?
-> → **X-Amzn-Trace-Id header**
+> Which component inside the application code creates trace data and instruments AWS SDK, HTTP, and SQL calls?
+> → **The X-Ray SDK**
 
-> Search traces for user_id = 123. Which construct is indexed?
-> → **Annotations (metadata is not indexed)**
+> Which component receives trace data locally and batches it to the X-Ray service?
+> → **The X-Ray daemon**
 
-> Enable tracing on a Lambda function. What is required?
-> → **Active tracing + AWSXRayDaemonWriteAccess on the execution role**
+> On which port and protocol does the X-Ray daemon listen?
+> → **UDP port 2000**
 
-> Change the sampling rate without redeploying. How?
-> → **Sampling rules in the X-Ray console — the SDK picks them up at runtime**
+> Why does the X-Ray daemon exist between the SDK and the service?
+> → **So the application does not block on network calls to X-Ray**
+
+> A developer runs a container on ECS and needs X-Ray. How should the daemon be deployed?
+> → **As a sidecar container in the task**
+
+> How is tracing enabled for Lambda?
+> → **Enable Active tracing (the Lambda service provides the daemon — no sidecar)**
+
+> Which IAM policy does a Lambda execution role or EC2 instance profile need to send traces?
+> → **`AWSXRayDaemonWriteAccess`**
+
+> X-Ray works locally but no traces appear from EC2. What is the most likely cause?
+> → **The instance profile lacks `AWSXRayDaemonWriteAccess`**
+
+> In the "works locally, fails on EC2" scenario, what are the three things to check in order?
+> → **IAM role with `AWSXRayDaemonWriteAccess`, daemon running, network reachability to X-Ray**
+
+> Why does X-Ray work locally but fail on EC2 if permissions are missing?
+> → **Locally the daemon uses your broad personal credentials; on EC2 it uses the instance profile**
+
+> Which X-Ray construct represents the work done by one service for one request?
+> → **A segment**
+
+> Which X-Ray construct identifies which downstream call (DynamoDB, HTTP, SQL) was slow?
+> → **A subsegment**
+
+> How does a developer filter traces in the console by customer ID?
+> → **Use an annotation (indexed/searchable)**
+
+> What is the difference between annotations and metadata with respect to indexing?
+> → **Annotations are indexed and searchable; metadata is not indexed**
+
+> What is the limit on annotations per trace?
+> → **50 per trace**
+
+> When should metadata be used instead of annotations?
+> → **For debug payloads/request bodies you may read once a trace is found (not searchable)**
+
+> Why does the annotation/metadata distinction exist?
+> → **Indexing costs money and has limits**
+
+> At high request volume, why doesn't X-Ray trace every request?
+> → **Tracing every request is expensive and slow — sampling is used**
+
+> What is X-Ray's default sampling behaviour?
+> → **1 request per second, plus 5% of additional requests**
+
+> If 100,000 requests pass with 10% sampling, how many are traced?
+> → **10,000**
+
+> A team must increase how much is traced without redeploying code. How?
+> → **Change sampling rules in the X-Ray console — the SDK picks them up at runtime**
+
+> Which header propagates trace context between services?
+> → **`X-Amzn-Trace-Id`**
+
+> Which component adds the tracing header on the way in?
+> → **The ALB (the SDK reads and forwards it)**
+
+> In X-Ray, what is a 4xx classified as?
+> → **Error**
+
+> In X-Ray, what is a 5xx classified as?
+> → **Fault**
+
+> In X-Ray, what is a 429 classified as?
+> → **Throttle**
+
+> What do the service map node colours represent?
+> → **Latency, error rate, and fault rate per node (error/fault/throttle)**
+
+> How is X-Ray tracing enabled on API Gateway?
+> → **Per stage**
+
+> Which X-Ray API call returns trace summaries and their trace IDs (used to find traces)?
+> → **`GetTraceSummaries`**
+
+> Which X-Ray API call uses trace IDs to retrieve the full traces including segments and subsegments?
+> → **`BatchGetTraces`**
+
+> Which X-Ray API call returns the service map/graph?
+> → **`GetServiceGraph`**
+
+> Which X-Ray API call returns information about a group (name, ARN, filter expression)?
+> → **`GetGroup`**
+
+> What is the correct sequence to find and then retrieve full traces?
+> → **`GetTraceSummaries` then `BatchGetTraces`**
+
+> What does `ebextensions/xray-daemon.config` do?
+> → **An Elastic Beanstalk config file that enables and runs the X-Ray daemon on EC2 instances**
+
+> A developer needs to reduce tracing overhead and cost. What should they configure?
+> → **Sampling (rules)**
+
+> Which two Lambda environment variables are used to facilitate communication with X-Ray?
+> → **`_X_AMZN_TRACE_ID` and `AWS_XRAY_CONTEXT_MISSING`**
+
+> Which environment variable contains the trace ID and sampling info for the current Lambda invocation?
+> → **`_X_AMZN_TRACE_ID`**
+
+> Which environment variable controls what X-Ray does when trace context is missing?
+> → **`AWS_XRAY_CONTEXT_MISSING`**
+
+> A Lambda sets `AWS_XRAY_CONTEXT_MISSING` by default to which value?
+> → **`LOG_ERROR`**
+
+> What are the common values of `AWS_XRAY_CONTEXT_MISSING`?
+> → **`LOG_ERROR`, `RUNTIME_ERROR`, `IGNORE_ERROR`**
+
+> Which environment variable tells the X-Ray SDK where the daemon is listening?
+> → **`AWS_XRAY_DAEMON_ADDRESS`**
+
+> Which environment variable sets the service/segment name?
+> → **`AWS_XRAY_TRACING_NAME`**
+
+> Which environment variable enables debug-level X-Ray logs?
+> → **`AWS_XRAY_DEBUG_MODE`**
+
+> Which environment variable controls the X-Ray SDK log level?
+> → **`AWS_XRAY_LOG_LEVEL`**
+
+> Which environment variable enables or disables the X-Ray SDK?
+> → **`AWS_XRAY_SDK_ENABLED`**
+
+> Is `AWS_XRAY_DEBUG_MODE` the same as the trace ID?
+> → **No — it enables debug logging, it is not the trace ID**
+
+> A developer wants vendor-neutral tracing that can export to multiple backends. Which AWS option?
+> → **AWS Distro for OpenTelemetry (ADOT)**
+
+> How do ADOT and X-Ray differ in backend support?
+> → **ADOT is OpenTelemetry-based and multi-backend/vendor-neutral; X-Ray is AWS-focused**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
+| Find slow microservice / bottleneck | **X-Ray** |
+| Creates trace data | **X-Ray SDK** |
+| Sends traces from EC2/ECS | **X-Ray daemon** |
+| Daemon port | **UDP 2000 (not TCP)** |
+| ECS daemon | **sidecar container** |
+| Lambda tracing | **Active tracing + `AWSXRayDaemonWriteAccess`** |
+| Works locally, fails on EC2 | **missing IAM role/permissions** |
+| Reduce tracing overhead | **sampling** |
+| Change tracing without redeploy | **sampling rules in console (runtime)** |
+| Default sampling | **1/sec + 5% additional** |
+| Filter traces by business value | **annotation (indexed)** |
+| Debug data not searched | **metadata** |
+| Annotation limit | **50 per trace** |
+| Which downstream call slow | **service map + subsegments** |
+| Trace header | **`X-Amzn-Trace-Id`** |
+| Error | **4xx** |
+| Fault | **5xx** |
+| Throttle | **429** |
+| Segment | **one service's work for one request** |
+| Subsegment | **portion of a segment (downstream call)** |
+| API Gateway tracing | **per stage** |
+| Find trace IDs | **`GetTraceSummaries`** |
+| Get full traces | **`BatchGetTraces`** |
+| Service map/graph | **`GetServiceGraph`** |
+| Group info | **`GetGroup`** |
+| Beanstalk daemon config | **`ebextensions/xray-daemon.config`** |
+| Trace ID variable | **`_X_AMZN_TRACE_ID`** |
+| Missing context variable | **`AWS_XRAY_CONTEXT_MISSING`** |
+| Missing context default | **`LOG_ERROR`** |
+| Missing context values | **`LOG_ERROR`/`RUNTIME_ERROR`/`IGNORE_ERROR`** |
+| Daemon address variable | **`AWS_XRAY_DAEMON_ADDRESS`** |
+| Service name variable | **`AWS_XRAY_TRACING_NAME`** |
+| Debug logs variable | **`AWS_XRAY_DEBUG_MODE`** |
+| Log level variable | **`AWS_XRAY_LOG_LEVEL`** |
+| SDK on/off variable | **`AWS_XRAY_SDK_ENABLED`** |
 | Trace pieces | **segments / subsegments** |
 | Visualisation | **service map** |
-| Header | **X-Amzn-Trace-Id** |
-| Indexed search | **annotations** |
-| Not indexed | **metadata** |
-| Sampling | **central rules, applied at runtime** |
+| Vendor-neutral tracing | **ADOT (OpenTelemetry)** |
+| Multi-backend export | **ADOT / OpenTelemetry** |

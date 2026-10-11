@@ -132,24 +132,91 @@ You usually **don't manually calculate SigV4**. AWS SDKs and CLI handle it for y
 
 # Question patterns
 
-> Requests carry a Cognito JWT that must be validated at the API. Which authorizer?
-> → **Cognito user pool authorizer**
+> An API must be publicly reachable with no authentication at all. Which authorization type?
+> → **NONE**
 
-> A custom header check decides access. Which authorizer?
-> → **Lambda authorizer (token or request type)**
+> Which API Gateway authorization uses IAM credentials and execute-api:Invoke?
+> → **AWS_IAM**
 
-> Another AWS service calls the API using its IAM credentials. Which auth mode?
-> → **IAM authorisation + SigV4 signing**
+> A REST API must be callable cross-account using IAM. What else is required?
+> → **AWS_IAM plus an API Gateway resource policy**
+
+> Which authorization calls a Lambda function to return Allow/Deny?
+> → **A Lambda authorizer**
+
+> A Lambda authorizer receives a single bearer token from the Authorization header. Which type?
+> → **Token-based**
+
+> A Lambda authorizer needs headers, query strings, and stage variables. Which type?
+> → **Request parameter-based**
+
+> Authorization depends mainly on one token. Which Lambda authorizer type?
+> → **Token-based**
+
+> A custom scheme uses a header plus a query string. Which Lambda authorizer type?
+> → **Request parameter-based**
+
+> Users log in and the client sends the resulting JWT. Which authorizer?
+> → **A Cognito user pool authorizer**
+
+> Is AWS_IAM the same thing as STS AssumeRole?
+> → **No — they are different mechanisms**
+
+> What does the AWS_IAM authorization actually check?
+> → **The caller's IAM permission for execute-api:Invoke**
+
+> What does STS AssumeRole provide in this context?
+> → **Temporary credentials for an IAM role**
+
+> What is AWS Signature Version 4?
+> → **A mechanism to sign an AWS API request using AWS credentials (a digital signature)**
+
+> How does a client sign a request to an IAM-authorized API Gateway?
+> → **It creates a SigV4 signature over the request**
+
+> Do you usually calculate SigV4 by hand?
+> → **No — the AWS SDK or CLI signs the request automatically**
 
 > What does a SigV4 signature include so requests cannot be replayed?
-> → **X-Amz-Date (timestamp), credential scope, signed headers and signature**
+> → **X-Amz-Date (timestamp), credential scope, signed headers, and the signature**
+
+> What inputs are used to calculate a SigV4 signature?
+> → **Method, URL, headers, body, credentials, region, service, and timestamp**
+
+> What two things does SigV4 let AWS verify about a request?
+> → **That it has not been modified and that it was signed by valid credentials**
+
+> You need per-client rate limits and entitlements. Which API Gateway feature?
+> → **Usage plans**
+
+> A client tries to send "Authorization: my-password" to an IAM-authorized API. Correct?
+> → **No — with IAM auth the SDK/CLI signs the request with SigV4**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
-| Cognito JWT | **Cognito user pool authorizer** |
-| Custom logic | **Lambda authorizer** |
-| AWS credentials | **IAM + SigV4** |
-| SigV4 contains | **X-Amz-Date, credential scope, signed headers, signature** |
-| Rate/entitlements | **usage plans** |
+| NONE | **Public API** |
+| AWS_IAM | **IAM creds + execute-api:Invoke** |
+| Cross-account REST API | **AWS_IAM + resource policy** |
+| Custom auth logic | **Lambda authorizer** |
+| Token-based | **One token (Authorization header)** |
+| Request parameter-based | **Multiple request params (headers, query, stage vars)** |
+| Cognito user pool authorizer | **Validates the user JWT** |
+| AWS_IAM vs STS | **Different things** |
+| SigV4 | **AWS request signing mechanism** |
+| SigV4 signing | **Automatic via SDK/CLI** |
+| Signature fields | **X-Amz-Date, credential scope, signed headers, signature** |
+| Signature inputs | **Method, URL, headers, body, creds, region, service, timestamp** |
+| Replay protection | **Timestamp (X-Amz-Date)** |
+| API Gateway + IAM auth | **SigV4-signed request** |
+| Rate/entitlements | **Usage plans** |
+| Bearer token | **Token-based authorizer** |
+| Header + query string | **Request parameter-based authorizer** |
+| User login + token | **Cognito user pool authorizer** |
+| execute-api:Invoke | **Permission needed for AWS_IAM** |
+| Public API keyword | **NONE** |
+| Custom Lambda logic keyword | **Lambda authorizer** |
+| IAM role/user keyword | **AWS_IAM** |
+| Lambda input (token type) | **Single token** |
+| Lambda input (request type) | **Multiple request parameters** |

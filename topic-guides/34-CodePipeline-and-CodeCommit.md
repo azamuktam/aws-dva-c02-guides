@@ -75,17 +75,98 @@ Why this and not something else: SQS stores messages but has no human interface;
 
 # Question patterns
 
-> Orchestrate source → build → deploy across services. Which service?
+> Orchestrate source → build → test → deploy across services. Which service?
 > → **AWS CodePipeline**
 
-> A managed private Git repository in AWS. Which service?
+> Host a private Git repository fully managed within AWS. Which service?
 > → **AWS CodeCommit**
 
-> A human must approve before production deployment. Which action?
-> → **Manual approval action**
+> Does CodePipeline compile code or deploy applications itself?
+> → **No — it orchestrates and calls build/deploy tools**
 
-> How do stages pass files to each other?
-> → **Artifacts stored in S3 (the pipeline bucket)**
+> What is the structural hierarchy of a CodePipeline pipeline?
+> → **Pipeline → Stages → Actions**
+
+> Within a single stage, how can actions run?
+> → **In parallel or in sequence**
+
+> Which sources can a CodePipeline source stage use?
+> → **GitHub, S3, ECR, Bitbucket**
+
+> Which build providers can a CodePipeline build stage use?
+> → **CodeBuild or Jenkins**
+
+> Which providers can a CodePipeline deploy stage use?
+> → **CodeDeploy, Elastic Beanstalk, ECS, Lambda, CloudFormation, S3**
+
+> How do files pass between pipeline stages?
+> → **Artifacts stored in an S3 artifact bucket**
+
+> How does each action declare what it consumes and produces?
+> → **Input and output artifacts**
+
+> A pipeline deploys into multiple Regions. What must each Region have?
+> → **Its own artifact bucket**
+
+> Why does each Region need its own artifact bucket in a cross-region pipeline?
+> → **Artifacts must be readable in the Region where the action runs; CodePipeline replicates them**
+
+> What does a cross-account pipeline do to reach the target account?
+> → **The pipeline account assumes a role in the target account**
+
+> Which key type must encrypt the artifact bucket for a cross-account pipeline?
+> → **A customer managed KMS key shared with the other account**
+
+> Why can't the AWS managed KMS key be used for cross-account pipelines?
+> → **The AWS managed key cannot be shared across accounts**
+
+> Which three ways can a pipeline be triggered?
+> → **A source change (webhook or polling), a schedule, or a manual start**
+
+> How do source events reach the pipeline?
+> → **Via EventBridge**
+
+> A human must approve before the production deployment. Which action type?
+> → **CodePipeline manual approval**
+
+> What does a manual approval action do to the pipeline?
+> → **Pauses it until a person approves or rejects**
+
+> How do you notify approvers instead of them watching the console?
+> → **Configure an SNS topic**
+
+> Which IAM permission must approvers have?
+> → **codepipeline:PutApprovalResult**
+
+> What optional details can be attached to a manual approval?
+> → **A review URL and a comment**
+
+> Why not use SQS for a release gate?
+> → **SQS stores messages but has no human interface**
+
+> Why not use Step Functions Wait for a release gate?
+> → **Wait pauses for a duration, not for a decision**
+
+> Which Step Functions feature supports human callbacks in workflows?
+> → **.waitForTaskToken**
+
+> Which CodeCommit authentication methods are supported?
+> → **HTTPS + Git credentials (generated from IAM), SSH + SSH keys, HTTPS + AWS CLI credential helper**
+
+> Where do CodeCommit HTTPS Git credentials come from?
+> → **Generated from IAM**
+
+> Compile code or run unit tests in a pipeline. Which service?
+> → **CodeBuild**
+
+> Deploy a new application version. Which service?
+> → **CodeDeploy**
+
+> Which service connects source, build, and deploy stages without building or deploying itself?
+> → **CodePipeline**
+
+> Is CodeCommit on the current in-scope CodePipeline source list?
+> → **No — it is historically used but no longer on the in-scope list (GitHub, S3, ECR, Bitbucket are)**
 
 # Pocket card
 
@@ -93,6 +174,36 @@ Why this and not something else: SQS stores messages but has no human interface;
 | --- | --- |
 | Orchestration | **CodePipeline** |
 | Git in AWS | **CodeCommit** |
-| Approval | **manual approval stage** |
-| Artifacts | **S3** |
-| Triggers | **webhooks / EventBridge** |
+| Private Git hosting | **CodeCommit (fully managed)** |
+| Pipeline structure | **Pipeline → Stages → Actions** |
+| Parallel or sequential | **Actions within a stage** |
+| Source providers | **GitHub, S3, ECR, Bitbucket** |
+| Build providers | **CodeBuild, Jenkins** |
+| Deploy providers | **CodeDeploy, Beanstalk, ECS, Lambda, CloudFormation, S3** |
+| Between stages | **S3 artifact bucket** |
+| Cross-region | **One artifact bucket per Region** |
+| Cross-region replication | **Done by CodePipeline** |
+| Cross-account | **Assume role in target account** |
+| Cross-account key | **Customer managed KMS key (shared)** |
+| AWS managed key | **Cannot be shared across accounts** |
+| Triggers | **Source change, schedule, manual** |
+| Source events | **EventBridge** |
+| Human approval | **Manual approval action** |
+| Notify approvers | **SNS** |
+| Approver permission | **codepipeline:PutApprovalResult** |
+| Approval extras | **Review URL + comment** |
+| No human interface | **SQS (not for gates)** |
+| Duration, not decision | **Step Functions Wait** |
+| Human callbacks | **Step Functions .waitForTaskToken** |
+| Compile/test | **CodeBuild** |
+| Deploy version | **CodeDeploy** |
+| Artifact declaration | **Input/output artifacts** |
+| CodeCommit HTTPS auth | **IAM-generated Git credentials** |
+| CodeCommit SSH auth | **SSH keys** |
+| CodeCommit helper auth | **AWS CLI credential helper** |
+| CodePipeline builds/deploys? | **No — it orchestrates only** |
+| Webhook vs polling | **Source-change trigger methods** |
+| Automatic pipeline start | **Webhook, schedule, or EventBridge** |
+| Cross-region deploy example | **us-east-1 + eu-west-1 from one pipeline** |
+| Approvers find out | **SNS topic** |
+| Pipeline bucket location | **S3** |

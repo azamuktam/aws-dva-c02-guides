@@ -121,22 +121,125 @@ aws ec2 terminate-instances \
 > An application must call AWS services from its own code. Which interface?
 > → **AWS SDK**
 
-> Verify a CLI change without actually applying it. Which flag?
+> A developer wants to run AWS operations from the terminal. Which tool?
+> → **AWS CLI**
+
+> What is the underlying AWS service interface that everything else calls?
+> → **The AWS API**
+
+> Which layer do the Console, CLI, and SDK all sit on top of?
+> → **The AWS API**
+
+> Change the DeleteOnTermination attribute on an instance from the CLI. Which command?
+> → **aws ec2 modify-instance-attribute**
+
+> Which API call corresponds to the CLI command aws ec2 modify-instance-attribute?
+> → **ModifyInstanceAttribute**
+
+> Keep the EBS volume when the EC2 instance terminates. Which setting?
+> → **DeleteOnTermination = false**
+
+> Delete the EBS volume when the EC2 instance terminates. Which setting?
+> → **DeleteOnTermination = true**
+
+> Store credentials for multiple AWS accounts on one machine. What should you use?
+> → **aws configure --profile <name>**
+
+> Run a single CLI command in a different Region without changing saved configuration. Which option?
+> → **--region**
+
+> Run a Lambda locally with a named profile so it can reach real AWS resources. Which command?
+> → **sam local invoke <Function> --profile <name>**
+
+> Save SAM CLI build and deploy defaults, including parameter_overrides. Which file?
+> → **samconfig.toml**
+
+> Override CloudFormation template parameters at deploy time. Which option?
+> → **--parameter-overrides**
+
+> What is the precedence order for parameter values at deploy?
+> → **Template default < samconfig.toml < --parameter-overrides**
+
+> Which wins if a value is set both in samconfig.toml and via --parameter-overrides?
+> → **--parameter-overrides**
+
+> Where should application configuration (non-secret) live?
+> → **Environment variables**
+
+> A developer puts AWS access keys in environment variables for a release. What is wrong?
+> → **You must never store AWS credentials in environment variables — use roles/profiles**
+
+> Why does a Lambda or EC2 instance "just work" with no credentials configured?
+> → **The instance/task IAM role is found at the end of the credential resolution chain**
+
+> Give the credential resolution order (roughly).
+> → **Explicit parameters → env variables → credentials file/profile → container credentials → instance/task IAM role**
+
+> Check whether an IAM user has permission for an EC2 action without performing it. Which flag?
 > → **--dry-run**
 
-> Keep the EBS volume when the instance terminates. Which setting?
-> → **DeleteOnTermination = false (modify-instance-attribute)**
+> What does a --dry-run result of DryRunOperation mean?
+> → **Permission is allowed**
 
-> Where does the CLI store credentials and configuration?
-> → **~/.aws/credentials and ~/.aws/config (aws configure)**
+> What does a --dry-run result of UnauthorizedOperation mean?
+> → **Permission is denied**
+
+> Where does the AWS CLI store credentials and configuration?
+> → **~/.aws/credentials and ~/.aws/config**
+
+> Fully managed ETL service for preparing data for analytics. Which service?
+> → **AWS Glue**
+
+> Can AWS Glue orchestrate a workflow?
+> → **No**
+
+> Which service runs batch computing jobs and dynamically provisions optimal compute (CPU or memory optimized)?
+> → **AWS Batch**
+
+> Can AWS Batch orchestrate a workflow?
+> → **No**
+
+> Which authentication methods does the CLI/SDK rely on besides explicit keys?
+> → **Named profiles and IAM roles (instance/task roles)**
+
+> A CLI command fails because it targets the wrong Region. Which flag should have been used?
+> → **--region**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
-| Terminal | **CLI** |
-| App code | **SDK** |
-| Underlying | **API** |
+| Terminal operations | **AWS CLI** |
+| App code | **AWS SDK** |
+| Underlying interface | **AWS API** |
+| Console/CLI/SDK call | **The AWS API** |
 | Test a change | **--dry-run** |
+| DryRunOperation | **Allowed** |
+| UnauthorizedOperation | **Denied** |
 | Volume on terminate | **DeleteOnTermination** |
-| Config | **aws configure** |
+| Keep volume | **DeleteOnTermination = false** |
+| Delete volume | **DeleteOnTermination = true** |
+| Modify attribute | **aws ec2 modify-instance-attribute** |
+| Multiple accounts | **aws configure --profile** |
+| One-command Region | **--region** |
+| Local Lambda + AWS access | **sam local invoke --profile** |
+| SAM CLI settings file | **samconfig.toml** |
+| Template overrides | **--parameter-overrides** |
+| Override precedence | **CLI > samconfig.toml > template default** |
+| App configuration | **Environment variables** |
+| Credentials in env vars | **Never — use roles** |
+| Credential chain end | **Instance/task IAM role** |
+| Credentials file | **~/.aws/credentials** |
+| Config file | **~/.aws/config** |
+| Managed ETL | **AWS Glue** |
+| Glue workflow orchestration | **Not supported** |
+| Batch compute jobs | **AWS Batch** |
+| Batch workflow orchestration | **Not supported** |
+| Region override scope | **Single command only** |
+| Named profile use case | **Dev/prod switching on one terminal** |
+| Instance "just works" | **IAM role at end of chain** |
+| Permission check without action | **ec2 --dry-run** |
+| ModifyInstanceAttribute | **EC2 API** |
+| EBS after termination | **Controlled by DeleteOnTermination** |
+| App secrets | **Roles/profiles, never env vars** |
+| Profile syntax | **aws configure --profile production** |

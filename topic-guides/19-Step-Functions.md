@@ -362,25 +362,188 @@ Your worker decides **what command/code to execute**.
 
 # Question patterns
 
-> A workflow must orchestrate Lambda calls, retries and a human approval step. Which service?
+> A workflow must orchestrate several Lambda calls with retries and a human approval step. Which service?
 > → **AWS Step Functions**
 
-> Long-running tasks run on external EC2 workers that report progress. Which feature?
-> → **Step Functions Activities (with heartbeats)**
+> A chain of Lambdas invoking each other is becoming unmaintainable and hides where a run failed. What should replace it?
+> → **Step Functions (orchestrate the state machine externally)**
 
-> Branching, parallel execution and dynamic loops are needed. Which states?
-> → **Choice, Parallel and Map states**
+> A business process can run for days. Standard or Express?
+> → **Standard**
 
-> Millions of short workflows per month at the lowest cost. Which type?
+> Millions of short, idempotent workflows must run per month at the lowest cost. Which type?
 > → **Express workflows**
+
+> Exactly-once execution semantics are required. Which type?
+> → **Standard workflows**
+
+> A workflow must pause until a person clicks approve, possibly days later. Which mechanism?
+> → **`.waitForTaskToken` callback (Standard only)**
+
+> A workflow must call an ECS task or Batch job and wait for it to finish. Which integration pattern?
+> → **Run a Job (`.sync`)**
+
+> Retry and error handling must be added without writing code in every function. Which feature?
+> → **`Retry` / `Catch` in the ASL definition**
+
+> A workflow must branch based on a condition. Which state type?
+> → **Choice state**
+
+> A workflow must loop over every item of an array. Which state type?
+> → **Map state**
+
+> Several steps must run at the same time. Which state type?
+> → **Parallel state**
+
+> A workflow must pause for a duration or until a timestamp. Which state type?
+> → **Wait state**
+
+> More than 256 KB of data must move between states. What do you do?
+> → **store it in S3 and pass the key/pointer**
+
+> In what language are Step Functions workflows defined?
+> → **Amazon States Language (ASL), a JSON document**
+
+> Is a "state machine" the same as a "state type"?
+> → **No — the state machine is the whole workflow; Task/Choice/etc. are state types inside it**
+
+> Which state type performs work such as calling Lambda, ECS, DynamoDB, SNS or SQS?
+> → **Task**
+
+> Which state passes input through or injects fixed data?
+> → **Pass**
+
+> Which states terminate the execution?
+> → **Succeed and Fail**
+
+> What is the maximum duration of a Standard workflow?
+> → **1 year**
+
+> What is the maximum duration of an Express workflow?
+> → **5 minutes**
+
+> What execution semantics do Standard workflows provide?
+> → **exactly-once**
+
+> What execution semantics do Express workflows provide (async)?
+> → **at-least-once**
+
+> What is the approximate start rate of Standard workflows?
+> → **~2,000 per second**
+
+> What is the start rate of Express workflows?
+> → **100,000+ per second**
+
+> How is Standard execution history exposed?
+> → **full history, visible in the console for 90 days**
+
+> How is Express execution history exposed?
+> → **CloudWatch Logs only**
+
+> How are Standard workflows priced?
+> → **per state transition**
+
+> How are Express workflows priced?
+> → **per invocation + duration**
+
+> Which workflow type supports `.waitForTaskToken`?
+> → **Standard only**
+
+> When both are present, which runs first: Retry or Catch?
+> → **Retry runs first; when exhausted, Catch fires**
+
+> Which predefined error matches any error?
+> → **`States.ALL`**
+
+> What does `States.Timeout` represent?
+> → **a state exceeded its timeout**
+
+> How does `.waitForTaskToken` implement human approval end to end?
+> → **the workflow emits a task token to a human, then an external system calls `SendTaskSuccess` with the token to resume**
+
+> Which integration pattern calls and continues immediately?
+> → **Request Response (no suffix)**
+
+> What does Distributed Map do?
+> → **processes millions of S3 objects with very high parallelism**
+
+> What are Step Functions Activities for?
+> → **worker-polled tasks for code running outside AWS (EC2, ECS, on-premises)**
+
+> What is the mental model for an Activity?
+> → **Step Functions gives a job to your own external worker**
+
+> Which API does the worker call to ask for a job?
+> → **`GetActivityTask`**
+
+> What does `SendTaskHeartbeat` mean?
+> → **"I'm still working — don't time me out"**
+
+> Who sends the heartbeat?
+> → **the worker application, not Step Functions automatically**
+
+> Which API reports success?
+> → **`SendTaskSuccess`**
+
+> Which API reports failure?
+> → **`SendTaskFailure`**
+
+> Which API creates the Activity, and who calls it?
+> → **`CreateActivity`, called by the developer/setup tooling**
+
+> What does creating an Activity give your worker?
+> → **an Activity ARN**
+
+> Does Step Functions run your EC2 command automatically when a workflow reaches an Activity?
+> → **No — your worker must poll for and execute the job itself**
+
+> Why can't Express workflows use `.waitForTaskToken`?
+> → **Express has a 5-minute cap, so it cannot wait indefinitely**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
 | Orchestration | **Step Functions** |
-| Human approval | **waitForTaskToken callback** |
-| Worker tasks | **activities** |
-| Parallel | **Parallel / Map states** |
-| Retries | **Retry in the state definition** |
-| High-rate cheap | **Express workflows** |
+| Chain of Lambdas calling each other | **replace with Step Functions** |
+| Human approval | **`.waitForTaskToken` callback (Standard only)** |
+| Wait for a job (ECS/Batch/EMR) | **`.sync` (Run a Job)** |
+| Retries without code | **`Retry` / `Catch` in ASL** |
+| Branch | **Choice state** |
+| Loop over an array | **Map state** |
+| Run steps at once | **Parallel state** |
+| Pause | **Wait state** |
+| Do work | **Task state** |
+| Pass data | **Pass state** |
+| Terminate | **Succeed / Fail states** |
+| Definition language | **Amazon States Language (JSON)** |
+| Standard max duration | **1 year** |
+| Express max duration | **5 minutes** |
+| Standard semantics | **exactly-once** |
+| Express semantics | **at-least-once** |
+| Standard start rate | **~2,000/s** |
+| Express start rate | **100,000+/s** |
+| Standard history | **full, 90 days in console** |
+| Express history | **CloudWatch Logs only** |
+| Standard pricing | **per state transition** |
+| Express pricing | **per invocation + duration** |
+| Retry vs Catch order | **Retry first, then Catch** |
+| Catch all errors | **`States.ALL`** |
+| Predefined errors | **ALL, TaskFailed, Timeout, Permissions, DataLimitExceeded** |
+| Request Response | **call and continue** |
+| Human-approval API | **`SendTaskSuccess` with the task token** |
+| Distributed Map | **millions of S3 objects, high parallelism** |
+| Activities | **worker-polled tasks (EC2/ECS/on-prem)** |
+| Activity model | **SFN gives a job to your worker** |
+| `GetActivityTask` | **worker asks for a job** |
+| `SendTaskHeartbeat` | **still working** |
+| `SendTaskSuccess` | **done** |
+| `SendTaskFailure` | **failed** |
+| `CreateActivity` | **developer/setup creates it** |
+| Heartbeat sender | **the worker, not automatic** |
+| Activity output | **an Activity ARN** |
+| Payload between states | **256 KB max** |
+| Payload over 256 KB | **store in S3, pass the key** |
+| Workflow > 5 min | **Standard** |
+| Exactly-once required | **Standard** |
+| High-volume, short, cheap | **Express** |

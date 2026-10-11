@@ -243,32 +243,158 @@ A **Layer 4** load balancer that distributes traffic based on network connection
 
 # Question patterns
 
-> Requests must be routed to different services based on URL path and host. Which load balancer?
-> → **Application Load Balancer (ALB)**
+> Requests must be routed to different services based on URL path and hostname. Which load balancer?
+> → **Application Load Balancer (ALB), Layer 7**
 
-> The application needs static IP addresses, ultra-low latency and TLS passthrough. Which load balancer?
+> The application needs static IP addresses, ultra-low latency and TCP/TLS passthrough. Which load balancer?
 > → **Network Load Balancer (NLB)**
 
-> Traffic must be inspected by third-party virtual appliances. Which load balancer?
+> Traffic must be inspected inline by third-party virtual appliances such as firewalls or IDS. Which load balancer?
 > → **Gateway Load Balancer (GWLB)**
 
-> The backend app sees the load balancer IP instead of the client IP. How does the app get the client IP?
-> → **X-Forwarded-For header**
+> A legacy, previous-generation load balancer is still referenced. Which one is it?
+> → **Classic Load Balancer (CLB)**
 
-> A user must always be sent to the same backend instance. Which feature?
-> → **Sticky sessions (session affinity)**
+> The backend application sees the load balancer IP instead of the real client IP. How does it get the client IP?
+> → **X-Forwarded-For header (ALB puts the original client IP there)**
 
-> Traffic is uneven across AZs with different instance counts. What fixes it?
-> → **Cross-zone load balancing**
+> A user must always be sent back to the same backend instance so local session state keeps working. Which feature?
+> → **Sticky sessions (session affinity), a target-group attribute**
+
+> Traffic is unevenly distributed because AZs have different instance counts. What fixes it?
+> → **Enable cross-zone load balancing**
+
+> Cross-zone behavior must be described for an ALB. What is the default?
+> → **Always on at the load balancer level and cannot be disabled there (can be overridden per target group)**
+
+> Cross-zone behavior must be described for an NLB. What is the default?
+> → **Disabled by default; each node sends only to targets in its own AZ until enabled**
+
+> Cross-zone behavior for GWLB must be described. What is the default?
+> → **Disabled by default; enable to route across AZs when local targets fail**
+
+> Cross-zone behavior for a CLB created via the console versus via API/CLI. What differs?
+> → **Enabled by default via console; disabled by default via API/CLI**
+
+> Which ALB component is the set of destinations (EC2, ECS tasks, IPs, Lambda)? 
+> → **Target group**
+
+> Which ALB component watches a port such as 80 or 443 and holds the routing rules?
+> → **Listener**
+
+> In what order are ALB listener rules evaluated?
+> → **In priority order**
+
+> A failing EC2 instance must be removed from rotation without human intervention. Which mechanism?
+> → **Health checks on the target group**
+
+> An ALB must route traffic to a Lambda function. Is this supported?
+> → **Yes — Lambda functions can be registered as ALB targets**
+
+> One ALB must front several applications by domain name. Which capability?
+> → **Host-based routing via listener rules (e.g. api. / shop. / admin.)**
+
+> Besides path and hostname, what else can ALB routing rules match on?
+> → **HTTP headers and query strings**
+
+> A single request must be followed across multiple services. Which header does the ALB add?
+> → **X-Amzn-Trace-Id (correlates X-Ray traces)**
+
+> Per-request records for troubleshooting HTTP errors must be retained and queried. Where do they go and how are they queried?
+> → **ALB access logs delivered to S3, queried with Athena**
+
+> Sticky sessions are proposed, but the question also mentions scalability and instance failure. What is the correct answer?
+> → **Shared session storage in ElastiCache Redis — when the instance dies, sticky users lose their sessions**
+
+> Which cookie names are reserved by the ALB and cannot be used for application-based stickiness?
+> → **AWSALB, AWSALBAPP, AWSALBTG**
+
+> Multiple SSL/TLS certificates must be served on a single ALB or NLB listener. Which feature?
+> → **Server Name Indication (SNI)** — the LB picks the cert matching the requested hostname
+
+> Three ECS tasks all use container port 80 but must run on the same EC2 instance. What enables this?
+> → **Dynamic host port mapping (bridge network mode) — ECS assigns a free host port per task**
+
+> Which network mode is required for ECS dynamic host port mapping?
+> → **Bridge network mode**
+
+> Does ALB support ECS dynamic host port mapping?
+> → **Yes — the ALB tracks the EC2 instance plus dynamically assigned host port per task**
+
+> All four Elastic Load Balancer types provide which addressing feature?
+> → **A DNS name**
+
+> Only which load balancer type supports static IP addresses?
+> → **Network Load Balancer (NLB) — including an Elastic IP per AZ**
+
+> Which protocols does NLB support?
+> → **TCP, UDP, TLS, and QUIC**
+
+> An Elastic IP must be assigned per availability zone. Which load balancer?
+> → **Network Load Balancer (NLB)**
+
+> Which load balancer provides very high performance of millions of requests/connections per second?
+> → **Network Load Balancer (NLB)**
+
+> Does NLB preserve the client source IP?
+> → **Yes, in supported configurations**
+
+> Instances must have no public IPs and not be reachable directly from the internet. What architecture?
+> → **Public ALB in public subnets, EC2 instances in private subnets**
+
+> A Layer 7 reason must justify choosing ALB over NLB. What is it?
+> → **Content-based routing is only possible at Layer 7 (HTTP/HTTPS/WebSocket)**
+
+> Which load balancer types terminate at Layer 4, and which straddles Layer 4/7?
+> → **NLB is Layer 4; CLB is Layer 4/7; ALB is Layer 7; GWLB is Layer 3**
+
+> A GWLB must be described in one line. What is it for?
+> → **Deploying security appliances such as firewalls and IDS at Layer 3**
+
+> Does a GWLB provide a static IP?
+> → **No — like ALB it has a DNS name but no static IP; only NLB has static IPs**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
-| Layer 7 routing | **ALB** |
+| Layer 7 HTTP/HTTPS/WebSocket | **ALB** |
+| Layer 4 TCP/UDP/TLS/QUIC | **NLB** |
+| Security appliances (firewall/IDS) at Layer 3 | **GWLB** |
+| Legacy old-generation ELB | **CLB** |
+| Path-based or host-based routing | **ALB listener rules** |
+| Route by headers or query strings | **ALB routing rules** |
+| Rule evaluation order | **priority order** |
+| Client IP to backend | **X-Forwarded-For** |
+| Trace one request across services | **X-Amzn-Trace-Id** |
+| Per-request logs for troubleshooting | **ALB access logs in S3 (query with Athena)** |
+| Same user, same target | **sticky sessions (session affinity)** |
+| Sticky sessions fail under scaling/failure | **ElastiCache Redis shared sessions** |
+| Reserved ALB sticky cookie names | **AWSALB / AWSALBAPP / AWSALBTG** |
+| Multiple certs on one listener | **SNI** |
 | Static IP | **NLB** |
-| Third-party appliances | **GWLB** |
-| Client IP | **X-Forwarded-For** |
-| Same user, same instance | **stickiness** |
-| TLS at the edge | **SSL/TLS offload on the listener** |
-| Host-based routing | **ALB listener rules** |
+| Elastic IP per AZ | **NLB** |
+| Highest performance, millions of connections | **NLB** |
+| Preserve client source IP | **NLB (supported configs)** |
+| Address type all ELBs provide | **DNS name** |
+| Only LB with static IP | **NLB** |
+| Set of destinations | **target group** |
+| Watches a port, holds rules | **listener** |
+| Removes unhealthy targets | **health checks** |
+| Lambda as a target | **ALB target group** |
+| Cross-zone default — ALB | **always on, cannot disable at LB level** |
+| Cross-zone default — NLB | **disabled, enable manually** |
+| Cross-zone default — GWLB | **disabled by default** |
+| Cross-zone default — CLB | **enabled on console, disabled via API/CLI** |
+| Uneven per-instance load across AZs | **enable cross-zone load balancing** |
+| Multiple apps behind one ALB | **host/path routing** |
+| Public LB, private instances | **no public IPs on targets** |
+| Multiple ECS tasks on one host, same container port | **dynamic host port mapping** |
+| ECS mode for dynamic host ports | **bridge network mode** |
+| NLB protocols | **TCP / UDP / TLS / QUIC** |
+| Layer 3 appliance insertion | **GWLB** |
+| GWLB static IP | **no (DNS name only)** |
+| ALB static IP | **no (DNS name only)** |
+| Application-based cookie stickiness support | **ALB** |
+| Health check target failure removal | **automatic via target group** |
+| Layer matching for each LB | **ALB L7 / NLB L4 / GWLB L3 / CLB L4-7** |

@@ -305,29 +305,189 @@ No signal within the timeout → the resource fails and the stack rolls back. Th
 
 # Question patterns
 
-> Declarative infrastructure as code with rollback on failure. Which service?
+> You need declarative infrastructure as code that rolls back automatically on failure. Which service?
 > → **AWS CloudFormation**
 
-> The database must survive stack deletion. Which attribute?
-> → **DeletionPolicy: Retain**
+> What is the only required section of a CloudFormation template?
+> → **`Resources`**
 
-> A value produced by one stack is consumed by another. Which mechanism?
-> → **Outputs/Exports + Fn::ImportValue**
+> A template must accept different values at deploy time to be reusable. Which section?
+> → **`Parameters`**
 
-> Bootstrapping software on a new EC2 instance and signalling success. Which mechanism?
-> → **cfn-init + cfn-signal (CreationPolicy)**
+> An AMI ID must be selected per Region from static data defined in the template. Which mechanism?
+> → **`Mappings` + `Fn::FindInMap`**
 
-> The same template deploys to dev and prod with different values. Which mechanism?
-> → **Parameters**
+> How many arguments does `Fn::FindInMap` take, and what are they?
+> → **Three: MapName, TopLevelKey, SecondLevelKey**
+
+> A resource must be created only in the production environment. Which section decides that?
+> → **`Conditions`**
+
+> In which sections can a `Condition` be applied?
+> → **`Resources` and `Outputs` only (not `Parameters` or `Mappings`)**
+
+> A template line reads `Transform: AWS::Serverless-2016-10-31`. What kind of template is it?
+> → **A SAM template**
+
+> You need the primary identifier of a resource (or a parameter value). Which intrinsic function?
+> → **`!Ref`**
+
+> You need a specific attribute such as a load balancer DNS name or an ARN. Which function?
+> → **`!GetAtt`**
+
+> You need to substitute variables into a string. Which function?
+> → **`!Sub`**
+
+> One stack must consume a value produced by another stack. Which mechanism?
+> → **`Outputs` → `Export` in Stack A, then `Fn::ImportValue` in Stack B**
+
+> Export names must be unique within what scope?
+> → **A Region**
+
+> What happens if the same export name is used twice in one Region?
+> → **The export is rejected (names must be unique per Region)**
+
+> The same infrastructure must be deployed to many accounts and Regions. Which feature?
+> → **CloudFormation StackSets**
+
+> Which permissions models do StackSets support?
+> → **Self-managed (explicit IAM roles) or service-managed via AWS Organizations**
+
+> You want to preview exactly what an update will change before applying it. Which feature?
+> → **Change sets**
+
+> A database must survive stack deletion with its data intact. Which attribute?
+> → **`DeletionPolicy: Retain`**
+
+> What are the valid `DeletionPolicy` values?
+> → **`Retain`, `Snapshot`, `Delete`**
+
+> Someone edited a resource manually in the console. How do you check whether it still matches the template?
+> → **Detect Stack Drift**
+
+> What statuses does drift detection report?
+> → **`IN_SYNC`, `MODIFIED`, `DELETED`, `NOT_CHECKED`**
+
+> You need continuous compliance monitoring against organizational rules, not template comparison. Which service?
+> → **AWS Config**
+
+> You must know who changed a resource, when, and from where. Which service?
+> → **AWS CloudTrail**
+
+> CloudFormation cannot express an operation natively, such as deleting a non-empty S3 bucket. What do you use?
+> → **A custom resource (backed by a Lambda function)**
+
+> You upload a local template file to CloudFormation. Where does CloudFormation get it from to build the stack?
+> → **It automatically uploads the file to an S3 bucket in your account and uses that copy**
+
+> The stack reports success before an application has finished installing on an EC2 instance. What fixes this?
+> → **A `CreationPolicy` that waits for a success signal from `cfn-signal`**
+
+> What happens if the success signal never arrives within the CreationPolicy timeout?
+> → **The resource fails and the stack rolls back**
+
+> Which older, more general mechanism pauses a stack until an external signal arrives?
+> → **`WaitCondition` / `WaitConditionHandle`**
+
+> Which mechanism controls how an Auto Scaling Group is updated (batch size, pause, min in service)?
+> → **`UpdatePolicy`**
+
+> Which helper script retrieves metadata, installs packages, creates files, and starts services?
+> → **`cfn-init`**
+
+> Which helper script reports success or failure back to a CreationPolicy or WaitCondition?
+> → **`cfn-signal`**
+
+> Which helper script detects and reacts to metadata changes on a running instance?
+> → **`cfn-hup`**
+
+> Which helper script retrieves metadata for a resource or a path to a key?
+> → **`cfn-get-metadata`**
+
+> Which pseudo parameter gives the account ID?
+> → **`AWS::AccountId`**
+
+> Which pseudo parameter gives the current Region?
+> → **`AWS::Region`**
+
+> Which pseudo parameter gives the stack name?
+> → **`AWS::StackName`**
+
+> Which pseudo parameter removes a property when used with `Fn::If`?
+> → **`AWS::NoValue`**
+
+> Which pseudo parameter returns the partition, such as `aws` or `aws-cn`?
+> → **`AWS::Partition`**
+
+> CloudFormation must assume a specific role to act on your behalf. Which feature?
+> → **A stack service role**
+
+> You need to protect specific resources from accidental updates. Which feature?
+> → **Stack policies**
+
+> You want to reuse a template as a resource inside another template. Which feature?
+> → **Nested stacks**
+
+> Which AWS services create resources via CloudFormation under the hood?
+> → **AWS SAM, AWS CDK, AWS Service Catalog, Elastic Beanstalk, and StackSets**
+
+> A parameter must accept only a fixed list of instance types. Which property?
+> → **`AllowedValues`**
+
+> A stack output is imported by another stack. Can the exporting stack be deleted?
+> → **No — it cannot delete the output or be deleted while the import exists**
+
+> Which template value distinguishes Parameters, Mappings, and Parameter Store?
+> → **Parameters: deployer supplies at deploy time; Mappings: template already contains it; Parameter Store: value lives outside the template and can change independently**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
 | IaC | **CloudFormation** |
-| Keep resource | **DeletionPolicy: Retain** |
-| Bootstrap | **cfn-init / cfn-signal** |
-| Cross-stack reference | **Fn::ImportValue** |
-| Reuse values | **parameters** |
-| Preview changes | **change sets** |
-| Detect changes | **drift detection** |
+| Required section | **`Resources`** |
+| Deploy-time inputs | **`Parameters`** |
+| Static lookup | **`Mappings`** |
+| Lookup args | **3 (`Fn::FindInMap`)** |
+| Decide existence | **`Conditions`** |
+| Condition scope | **`Resources` and `Outputs` only** |
+| SAM marker | **`Transform: AWS::Serverless-2016-10-31`** |
+| Primary identifier | **`!Ref`** |
+| Resource attribute | **`!GetAtt`** |
+| String substitution | **`!Sub`** |
+| Cross-stack value | **`Export` + `Fn::ImportValue`** |
+| Export uniqueness | **within a Region** |
+| Multi-account/Region | **StackSets** |
+| Preview an update | **change set** |
+| Keep a resource | **`DeletionPolicy: Retain`** |
+| DeletionPolicy values | **`Retain` / `Snapshot` / `Delete`** |
+| Detected manual change | **Detect Stack Drift** |
+| Drift statuses | **`IN_SYNC` / `MODIFIED` / `DELETED` / `NOT_CHECKED`** |
+| Continuous compliance | **AWS Config** |
+| Who changed it | **CloudTrail** |
+| CFN can't express it | **custom resource (Lambda)** |
+| Local template upload | **auto-uploaded to S3 in your account** |
+| Wait for app ready | **`CreationPolicy` + `cfn-signal`** |
+| Signal timeout | **stack rollback** |
+| General external wait | **`WaitCondition` / `WaitConditionHandle`** |
+| ASG update control | **`UpdatePolicy`** |
+| Bootstrap software | **`cfn-init`** |
+| React to metadata change | **`cfn-hup`** |
+| Retrieve metadata | **`cfn-get-metadata`** |
+| Account ID | **`AWS::AccountId`** |
+| Region | **`AWS::Region`** |
+| Stack name | **`AWS::StackName`** |
+| Remove a property | **`AWS::NoValue`** |
+| Partition | **`AWS::Partition`** |
+| Act on your behalf | **stack service role** |
+| Protect from update | **stack policy** |
+| Reuse as a resource | **nested stack** |
+| Explicit ordering | **`DependsOn`** |
+| Uses CFN underneath | **SAM / CDK / Service Catalog / Elastic Beanstalk** |
+| Fixed choices | **`AllowedValues`** |
+| Parameter types | **`String` / `Number` / `CommaDelimitedList` / AWS-specific** |
+| StackSet permissions | **self-managed or service-managed (Organizations)** |
+| Imported output | **can't delete the output or the stack** |
+| Failed create/update | **automatic rollback** |
+| Mappings unsuitable for | **secrets / changing values** |
+| Metadata section | **no resources created** |

@@ -182,24 +182,104 @@ Don't think **"AppSync = replacement for API Gateway."** They solve different AP
 
 # Question patterns
 
-> A mobile app needs a single flexible GraphQL API over several data sources. Which service?
+> A mobile app needs a single flexible GraphQL API over several backend data sources. Which service?
 > → **AWS AppSync**
 
-> Clients must receive real-time updates when data changes. Which feature?
-> → **AppSync subscriptions (WebSockets)**
+> Clients must receive real-time updates when data changes. Which AppSync feature?
+> → **subscriptions (managed WebSockets)**
 
-> Custom logic maps a GraphQL query to data sources. Which mechanism?
-> → **Resolvers (unit/pipeline, VTL)**
+> A mobile app must keep working offline and synchronize changes when connectivity returns. Which service?
+> → **AWS AppSync offline synchronization**
 
-> Which auth options does AppSync support?
-> → **API key, IAM, Cognito user pools, OpenID Connect**
+> What does a resolver connect?
+> → **a GraphQL field to a data source**
+
+> What languages can AppSync resolvers use?
+> → **VTL (Velocity Template Language) or JavaScript**
+
+> Which authorization methods does AppSync support?
+> → **API key, IAM, Cognito User Pools, OIDC, and Lambda authorization**
+
+> Which GraphQL operation reads data?
+> → **query**
+
+> Which GraphQL operation creates, updates or deletes data?
+> → **mutation**
+
+> Which GraphQL operation pushes real-time updates to clients?
+> → **subscription**
+
+> A client must fetch exactly the fields it needs in one request instead of a fixed response. Which service?
+> → **AppSync (GraphQL)**
+
+> Data must be combined from DynamoDB, Lambda and an HTTP API behind one endpoint. Which service?
+> → **AppSync (multiple data sources)**
+
+> Name data sources AppSync can connect to.
+> → **DynamoDB, Lambda, Aurora Serverless, OpenSearch, HTTP endpoints and other supported sources**
+
+> Two users edit the same record concurrently and changes must be merged. Which AppSync capability?
+> → **conflict resolution**
+
+> A collaborative chat or group-study app needs live updates across devices. Which service and feature?
+> → **AppSync (real-time subscriptions)**
+
+> Is AppSync a drop-in replacement for API Gateway?
+> → **No — they solve different API patterns and can be used together**
+
+> A REST API must be exposed. Which service?
+> → **API Gateway**
+
+> An HTTP API must be exposed. Which service?
+> → **API Gateway**
+
+> A custom WebSocket API with your own routes/connections is needed. Which service?
+> → **API Gateway WebSocket**
+
+> API stages and REST-style API management are needed. Which service?
+> → **API Gateway**
+
+> A single API layer must sit over multiple backend services for mobile/web clients. Which service?
+> → **AppSync**
+
+> What does AppSync use to push real-time changes to clients at the transport level?
+> → **managed WebSocket connections**
+
+> Which clue phrase maps to AppSync: "offline changes, synchronize when online"?
+> → **AppSync**
+
+> Which clue phrase maps to AppSync: "client requests only the fields it needs"?
+> → **AppSync**
+
+> Which service provides a managed GraphQL API with real-time and multi-source data?
+> → **AWS AppSync**
+
+> AppSync is used for collaborative/chat apps, live dashboards and notifications. What enables the live updates?
+> → **GraphQL subscriptions**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
 | GraphQL | **AppSync** |
-| Real-time | **subscriptions** |
-| Resolve logic | **VTL resolvers** |
-| Auth | **API key / IAM / Cognito / OIDC** |
-| Performance | **AppSync caching** |
+| Real-time | **subscriptions (WebSockets)** |
+| Resolve logic | **VTL or JavaScript resolvers** |
+| Auth | **API key / IAM / Cognito / OIDC / Lambda** |
+| Read data | **query** |
+| Write data | **mutation** |
+| Live updates | **subscription** |
+| Client picks fields | **AppSync (GraphQL)** |
+| Multiple data sources | **AppSync** |
+| Offline + sync across devices | **AppSync** |
+| Collaborative / chat | **AppSync** |
+| Concurrent edits | **conflict resolution** |
+| Resolver connects | **field → data source** |
+| Data sources | **DynamoDB, Lambda, Aurora Serverless, OpenSearch, HTTP** |
+| REST API | **API Gateway** |
+| HTTP API | **API Gateway** |
+| Custom WebSocket | **API Gateway WebSocket** |
+| API stages / REST mgmt | **API Gateway** |
+| Replacement for API Gateway | **No — different patterns** |
+| Single API over many services | **AppSync** |
+| Live dashboards / notifications | **AppSync subscriptions** |
+| Mental model | **managed GraphQL + real-time + multi-source** |

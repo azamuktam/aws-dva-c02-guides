@@ -145,24 +145,209 @@ Applications depend on packages. Two problems follow: internal libraries need so
 
 # Question patterns
 
-> Where is the build/test configuration for CodeBuild defined?
-> → **buildspec.yml (install, pre_build, build, post_build phases)**
+> A fully managed CI service that compiles code, runs tests, and produces artifacts with no build servers to manage. Which service?
+> → **AWS CodeBuild**
 
-> Where does the build actually run?
-> → **CodeBuild — a managed Docker environment**
+> Where is the CodeBuild build/test configuration defined?
+> → **buildspec.yml**
 
-> Store and share private npm/Maven packages. Which service?
-> → **AWS CodeArtifact (domains + repositories)**
+> Where must buildspec.yml live?
+> → **At the root of the source directory**
 
-> Pass build outputs to the next pipeline stage. Which section?
-> → **artifacts section of buildspec.yml**
+> Can a CodeBuild project override the buildspec location or supply an inline spec?
+> → **Yes**
+
+> Where does a CodeBuild build actually run?
+> → **In a managed, ephemeral container provisioned per build**
+
+> What are the CodeBuild build phases in order?
+> → **install → pre_build → build → post_build**
+
+> In which phase do you set runtime-versions?
+> → **install**
+
+> In which phase do you install dependencies?
+> → **install**
+
+> In which phase would you log in to ECR?
+> → **pre_build**
+
+> In which phase do you compile and test?
+> → **build**
+
+> In which phase do you push the image or upload artifacts?
+> → **post_build**
+
+> Which block runs even when the phase's commands fail?
+> → **finally**
+
+> If the build phase fails, which later phase still runs?
+> → **post_build (so you can publish test reports from a failed build)**
+
+> Password to fetch a secret for a build. Which section do you use?
+> → **env/secrets-manager**
+
+> Which buildspec section pulls values from SSM Parameter Store?
+> → **env/parameter-store**
+
+> Why must secrets never go in env/variables?
+> → **It is plaintext, visible in build logs and the console**
+
+> A build cannot read a secret even though the syntax looks right. What should you check?
+> → **The CodeBuild service role permissions (ssm:GetParameters / secretsmanager:GetSecretValue, plus kms:Decrypt for CMKs)**
+
+> Which IAM permission fetches from Secrets Manager?
+> → **secretsmanager:GetSecretValue**
+
+> Which IAM permission fetches from SSM Parameter Store?
+> → **ssm:GetParameters**
+
+> Which extra permission is needed when a secret is encrypted with a customer managed KMS key?
+> → **kms:Decrypt**
+
+> Pass a value from the build to a later pipeline stage. Which section?
+> → **env/exported-variables**
+
+> Which buildspec section configures test reports, e.g. JUnit XML?
+> → **reports**
+
+> Which file format value is used for JUnit test reports?
+> → **JUNITXML**
+
+> Which buildspec section declares what the build produces?
+> → **artifacts**
+
+> Where do CodeBuild build artifacts go?
+> → **S3, or container images to ECR**
+
+> Can CodeBuild encrypt its output artifacts?
+> → **Yes, using AWS KMS**
+
+> What is the default CodeBuild timeout?
+> → **60 minutes**
+
+> What is the maximum CodeBuild timeout?
+> → **8 hours**
+
+> Builds are slow and keep redownloading dependencies. What is the fix?
+> → **Configure cache (S3 cache or local cache modes)**
+
+> Which local cache modes are available?
+> → **LOCAL_DOCKER_LAYER_CACHE, LOCAL_SOURCE_CACHE, LOCAL_CUSTOM_CACHE**
+
+> What must be enabled to build Docker images?
+> → **Privileged mode**
+
+> A build must reach a private RDS instance for integration tests. What do you configure?
+> → **Run CodeBuild inside the VPC**
+
+> How can you reproduce a CodeBuild build on your own machine?
+> → **The CodeBuild agent (codebuild_build.sh)**
+
+> What shows pass/fail status in a README?
+> → **Build badges**
+
+> Give an example of a CodeBuild automatic environment variable.
+> → **CODEBUILD_BUILD_ID, CODEBUILD_RESOLVED_SOURCE_VERSION, CODEBUILD_SRC_DIR, or AWS_DEFAULT_REGION**
+
+> Can you SSH into a CodeBuild container?
+> → **No — containers are deleted at the end of execution (success or failure)**
+
+> Does a CodeBuild container still exist after the build finishes?
+> → **No, it is deleted at the end of execution**
+
+> A static website is generated from Markdown and deployed to S3. Which combination?
+> → **CodePipeline + CodeBuild + Amazon S3**
+
+> In that pipeline, what does CodeBuild do?
+> → **Runs any command to convert Markdown into static website files**
+
+> A managed private package repository for internal libraries. Which service?
+> → **AWS CodeArtifact**
+
+> Which package formats does CodeArtifact support?
+> → **npm, PyPI, Maven, Gradle, NuGet, SwiftPM, Cargo, generic**
+
+> In CodeArtifact, what contains repositories and shares storage and KMS encryption across them?
+> → **A domain**
+
+> How does CodeArtifact cache and proxy npmjs, PyPI, or Maven Central?
+> → **Via upstream repositories and external connections**
+
+> Why cache public packages in CodeArtifact?
+> → **Builds keep working if the public registry is down, and you get a record of versions consumed**
+
+> Which command returns a CodeArtifact authorization token, and how long is it valid?
+> → **aws codeartifact get-authorization-token — valid up to 12 hours**
+
+> Which command configures your package manager automatically?
+> → **aws codeartifact login**
+
+> Several teams must share internal libraries across accounts. What do you use?
+> → **CodeArtifact + resource policies**
+
+> How can publishing a new package version trigger a pipeline?
+> → **CodeArtifact EventBridge events**
+
+> Where does CodeArtifact slot into CodeBuild?
+> → **As the dependency source during the install phase**
+
+> What is the CodeArtifact authorization token maximum lifetime?
+> → **Up to 12 hours**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
 | Build config | **buildspec.yml** |
-| Phases | **install / pre_build / build / post_build** |
-| Packages | **CodeArtifact** |
-| Auth | **CodeArtifact tokens** |
+| buildspec location | **Source root** |
+| Phase order | **install → pre_build → build → post_build** |
+| runtime-versions | **install phase only** |
+| Install dependencies | **install** |
+| Log in to ECR | **pre_build** |
+| Compile and test | **build** |
+| Push image / upload | **post_build** |
+| Runs on failure | **finally** |
+| Runs if build fails | **post_build** |
+| Secret from Secrets Manager | **env/secrets-manager** |
+| Secret from SSM | **env/parameter-store** |
+| Never secrets here | **env/variables (plaintext)** |
+| Secret read failure | **CodeBuild service role** |
+| Secrets Manager permission | **secretsmanager:GetSecretValue** |
+| SSM permission | **ssm:GetParameters** |
+| CMK permission | **kms:Decrypt** |
+| Pass value to next stage | **env/exported-variables** |
 | Test reports | **reports section** |
+| JUnit format | **JUNITXML** |
+| Output declaration | **artifacts section** |
+| Where artifacts go | **S3 (or images to ECR)** |
+| Artifact encryption | **AWS KMS** |
+| Default timeout | **60 minutes** |
+| Max timeout | **8 hours** |
+| Slow builds | **Configure cache** |
+| Cache modes | **LOCAL_DOCKER_LAYER_CACHE, LOCAL_SOURCE_CACHE, LOCAL_CUSTOM_CACHE** |
+| S3 cache | **Remote build cache option** |
+| Build Docker images | **Privileged mode** |
+| Reach private RDS | **Run CodeBuild in the VPC** |
+| Local build | **CodeBuild agent (codebuild_build.sh)** |
+| Build status in README | **Build badges** |
+| Auto var: build id | **CODEBUILD_BUILD_ID** |
+| Auto var: commit | **CODEBUILD_RESOLVED_SOURCE_VERSION** |
+| Auto var: source dir | **CODEBUILD_SRC_DIR** |
+| Auto var: region | **AWS_DEFAULT_REGION** |
+| Container after build | **Deleted (no SSH)** |
+| Static site pipeline | **CodePipeline + CodeBuild + S3** |
+| Avoid managing Jenkins | **CodeBuild** |
+| Private package repo | **CodeArtifact** |
+| Package formats | **npm, PyPI, Maven, Gradle, NuGet, SwiftPM, Cargo, generic** |
+| Domain contains | **Repositories (shared storage + KMS)** |
+| Cache public packages | **Upstream repository / external connection** |
+| Auth token lifetime | **Up to 12 hours** |
+| Get token | **aws codeartifact get-authorization-token** |
+| Configure package manager | **aws codeartifact login** |
+| Cross-account library sharing | **Resource policies** |
+| Package published event | **EventBridge** |
+| CodeBuild dependency source | **CodeArtifact in install phase** |
+| Approved dependencies only | **CodeArtifact as the single registry** |
+| Managed CI service | **CodeBuild** |
+| Buildspec supplies | **Commands to run + artifacts to produce** |

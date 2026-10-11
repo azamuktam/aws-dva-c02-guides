@@ -89,21 +89,141 @@ Run `cdk deploy` to deploy the generated CloudFormation stacks and create/update
 
 # Question patterns
 
-> Infrastructure defined in TypeScript/Python and deployed as CloudFormation. Which service?
+> Infrastructure must be defined in TypeScript or Python and deployed as CloudFormation. Which service?
 > → **AWS CDK**
 
-> Preview changes between the deployed stack and the code. Which command?
+> A team wants infrastructure-as-code with loops, functions, types, and IDE autocomplete instead of YAML. Which tool?
+> → **AWS CDK**
+
+> Which programming languages does AWS CDK support?
+> → **TypeScript, Python, Java, C#, Go**
+
+> Convert CDK code into a CloudFormation template. Which command?
+> → **cdk synth**
+
+> Generate the CloudFormation template from CDK code without deploying. Which command?
+> → **cdk synth**
+
+> Create or update the AWS resources defined in CDK code. Which command?
+> → **cdk deploy**
+
+> Preview the difference between the deployed stack and the current CDK code before deploying. Which command?
 > → **cdk diff**
 
-> Generate the CloudFormation template from CDK code. Which command?
-> → **cdk synth**
+> Create a new CDK application from an AWS-provided template. Which command?
+> → **cdk init**
+
+> Prepare an AWS account and Region for CDK by creating the staging bucket and roles. Which command?
+> → **cdk bootstrap**
+
+> Delete a CDK stack. Which command?
+> → **cdk destroy**
+
+> What is the correct order of the CDK workflow?
+> → **init → add resources → (build) → synth → deploy**
+
+> CDK generates what artifact before resources are created?
+> → **A CloudFormation template**
+
+> What does CDK use internally to deploy and manage resources?
+> → **CloudFormation**
+
+> Which CloudFormation capabilities do you retain when using CDK?
+> → **Stacks, rollback, drift detection, and change sets**
+
+> Is the build step in the CDK workflow mandatory?
+> → **No — it is optional and language-dependent**
+
+> A reusable cloud component in CDK is called what?
+> → **A construct**
+
+> Which construct level maps one-to-one to a CloudFormation resource such as CfnBucket?
+> → **L1**
+
+> Which construct level provides curated defaults and helper methods, such as Bucket?
+> → **L2**
+
+> Which construct level represents an entire architecture in one object, such as ApplicationLoadBalancedFargateService?
+> → **L3 / patterns**
+
+> What is another name for the L3 construct level?
+> → **Patterns**
+
+> A CDK object that maps to a CloudFormation stack is called what?
+> → **A stack**
+
+> The top-level CDK container that holds one or more stacks is called what?
+> → **An app**
+
+> Why does CDK exist instead of writing raw CloudFormation YAML?
+> → **YAML has no loops, functions, types, IDE autocomplete, or unit tests**
+
+> Which lets you express logic like "one subnet per AZ" or "twelve identical microservices" cleanly?
+> → **AWS CDK (a real programming language)**
+
+> In the CDK pipeline, what is produced by cdk synth?
+> → **A CloudFormation template**
+
+> In the CDK pipeline, what step actually creates the AWS resources?
+> → **cdk deploy (via the generated CloudFormation stack)**
+
+> How would you unit-test CDK infrastructure code?
+> → **CDK assertions**
+
+> Which command shows code-versus-deployed differences before applying a change?
+> → **cdk diff**
+
+> Which command compares the code against what is already deployed?
+> → **cdk diff**
+
+> A user needs to deploy the same CDK app to a new account and gets a bootstrap-related error. What is the fix?
+> → **Run cdk bootstrap to create the staging bucket and roles**
+
+> Which CDK command creates the application skeleton from a template?
+> → **cdk init**
+
+> How many stacks can a CDK app contain?
+> → **One or more**
+
+> A validation error cites a CfnBucket resource. Which construct level is in use?
+> → **L1**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
-| IaC in code | **CDK** |
-| Preview | **cdk diff** |
-| Output | **CloudFormation templates** |
+| IaC in a real language (Python/TS) | **AWS CDK** |
+| CloudFormation generated from code | **AWS CDK** |
+| cdk synth | **Generate the CloudFormation template** |
+| cdk deploy | **Create/update AWS resources** |
+| cdk diff | **Preview changes vs deployed** |
+| cdk init | **Create CDK app from template** |
+| cdk bootstrap | **Prepare account/Region (staging bucket + roles)** |
+| cdk destroy | **Delete the stack** |
+| CDK workflow | **init → add resources → synth → deploy** |
+| CDK runs on | **CloudFormation internally** |
+| Reusable cloud component | **Construct** |
+| L1 | **One-to-one CFN resource (CfnBucket)** |
+| L2 | **Curated defaults + helpers (Bucket)** |
+| L3 / patterns | **Whole architecture (ALB Fargate service)** |
+| Maps to CFN stack | **Stack** |
+| Top-level container | **App** |
+| Supported languages | **TypeScript, Python, Java, C#, Go** |
+| Build step | **Optional / language-dependent** |
 | Test infrastructure | **CDK assertions** |
-| Constructs | **L1 (CFN), L2 (curated), L3 (patterns)** |
+| Why not YAML | **No loops, functions, types, autocomplete, tests** |
+| Kept from CloudFormation | **Stacks, rollback, drift detection, change sets** |
+| cdk synth output | **CloudFormation template** |
+| Staging bucket + roles | **Created by cdk bootstrap** |
+| One subnet per AZ | **CDK loop (real logic)** |
+| Twelve identical services | **CDK (parameterized constructs)** |
+| Construct levels | **L1, L2, L3** |
+| App contains | **One or more stacks** |
+| Before deploying | **cdk diff** |
+| Access multiple accounts | **Named profiles (aws configure)** |
+| Generated artifact | **CloudFormation template** |
+| Preview without applying | **cdk diff (no changes made)** |
+| Delete resources | **cdk destroy** |
+| Fresh account setup | **cdk bootstrap** |
+| Real programming language IaC | **CDK** |
+| CloudFormation from code | **CDK** |

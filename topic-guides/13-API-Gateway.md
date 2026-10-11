@@ -345,33 +345,218 @@ Also remember: **Postman/curl generally won't enforce CORS like a browser does.*
 
 # Question patterns
 
-> A synchronous API takes 40 seconds end to end and times out. Why and how to fix?
-> → **API Gateway hard timeout is 29 seconds — move to asynchronous processing (SQS, Step Functions, async invocation)**
+> A Lambda function needs a URL, authentication, throttling, caching and versioning without writing that logic. What provides it?
+> → **API Gateway (the managed front door)**
 
-> Different customers need different rate limits and entitlements. Which feature?
-> → **Usage plans with API keys**
+> Which three API types does API Gateway offer, and what is each designed for?
+> → **REST (full-featured), HTTP (cheap/low-latency proxies), WebSocket (bidirectional, persistent)**
 
-> Custom authorisation logic must run before requests reach the backend. Which feature?
-> → **Lambda authorizer (token or request type)**
+> A requirement mentions caching, API keys, usage plans, request validation or canary releases. Which API type must it be?
+> → **REST API — HTTP APIs don't have those features**
 
-> Responses are identical for many requests. Which feature reduces backend load?
-> → **Stage-level response caching**
+> The goal is lowest cost and latency with no advanced features for a simple Lambda/HTTP proxy. Which API type?
+> → **HTTP API (about 70% cheaper, lower latency)**
 
-> The API must be reachable only from inside the VPC. Which configuration?
-> → **Private API Gateway + resource policy + VPC endpoint**
+> A chat app or live dashboard needs the server to push data to clients without polling. Which API type?
+> → **WebSocket API**
 
-> A browser app on another domain gets CORS errors. What must the API send?
-> → **CORS headers (Access-Control-Allow-Origin, and handle the OPTIONS preflight)**
+> What are the three special routes of a WebSocket API?
+> → **$connect, $disconnect, $default**
+
+> How does a WebSocket API server push a message to a client?
+> → **The @connections API using the stored connection ID**
+
+> A WebSocket API dispatches by a route selection expression over what?
+> → **The message body (routes, not resources)**
+
+> Which authorizer does an HTTP API support for OIDC/OAuth token validation that REST supports differently?
+> → **JWT authorizer (REST uses Cognito User Pool authorizer)**
+
+> A method change was made but doesn't appear in production. What is the fix?
+> → **CreateDeployment (publishes an immutable snapshot; changes are inert until deployed)**
+
+> Developers must test a new API version without affecting existing customers. What is the answer?
+> → **Create a development stage and point developers at it — not a second API or a canary**
+
+> One API definition must point at different backends per environment without redeploying different code. What feature?
+> → **Stage variables**
+
+> A dev stage must invoke a specific Lambda version through an alias. How is this wired?
+> → **Stage variables select the Lambda alias (dev stage → dev alias)**
+
+> What is the relationship between an API, a deployment and a stage?
+> → **Deployment = immutable config snapshot; stage = named environment pointing at a deployment with a public URL**
+
+> Lambda returns the full dataset but the API must return only some fields or a different format. What is the answer?
+> → **API Gateway mapping template (VTL) — a presentation problem, not a Lambda code change**
+
+> Mapping templates are written in which language?
+> → **VTL (Velocity Template Language)**
+
+> Which integration type is required for mapping templates?
+> → **A non-proxy (custom) integration — proxy passes everything through untouched**
+
+> Which integration type corresponds to Lambda Proxy?
+> → **AWS_PROXY**
+
+> Which integration type corresponds to a Lambda Custom (non-proxy) integration?
+> → **AWS**
+
+> Which integration type passes request/response through to an HTTP backend untouched?
+> → **HTTP_PROXY**
+
+> Which integration type returns a configured response with no backend at all?
+> → **MOCK**
+
+> A request must go straight to SQS with no Lambda. Which integration type?
+> → **AWS service integration (the "least code" option when no logic is needed)**
+
+> Which authorization mechanism signs requests with AWS Signature v4 for IAM users, roles and services?
+> → **IAM authorization**
+
+> Custom authentication logic, a third-party identity provider, or a token you validate yourself. Which authorizer?
+> → **Lambda authorizer (returns an IAM policy; results cacheable)**
+
+> App users sign in and JWT validation is fully managed. Which authorizer?
+> → **Cognito User Pool authorizer (validates signature, expiry, claims — no code)**
+
+> Clients must be identified and metered with tiered plans. Which feature?
+> → **API keys + usage plans**
+
+> Is an API key authentication or authorization?
+> → **Neither by itself — it is identification only (a handle to count and throttle against)**
+
+> A newly created API key returns 403 Forbidden. What is wrong and what is the fix?
+> → **The key was never linked to a usage plan; fix with CreateUsagePlanKey**
+
+> Which API call bulk-imports API keys, and what does it not do?
+> → **ImportApiKeys; it does not associate them with usage plans**
+
+> Which API call changes quota/throttle settings rather than associating keys?
+> → **UpdateUsagePlan**
+
+> Which API call publishes configuration changes to a stage?
+> → **CreateDeployment**
+
+> A client must force an API Gateway cache refresh. Which header and permission are needed?
+> → **Cache-Control: max-age=0 plus execute-api:InvalidateCache permission**
+
+> What happens if cache invalidation is left unauthenticated?
+> → **Any caller can flush your cache at will — the classic exam twist**
+
+> With caching enabled, different users start seeing each other's data. Why?
+> → **Cache key parameters weren't designated, so the shared cache key matched too broadly**
+
+> What is the default API Gateway cache key, and what can you add?
+> → **The full request path; you can explicitly designate query strings, headers or path parameters**
+
+> What is the configurable API Gateway cache size range?
+> → **0.5 GB to 237 GB, configured per stage**
+
+> At what scope is API Gateway caching configured, and can methods opt out?
+> → **At the stage level; individual methods can override or opt out**
+
+> Which error code means throttling (account, stage, or usage plan quota)?
+> → **429 Too Many Requests**
+
+> Which error code means the Lambda returned a malformed proxy response (or crashed)?
+> → **502 Bad Gateway**
+
+> Which error code means the integration exceeded the timeout, and what is the default?
+> → **504 Gateway Timeout; 29 seconds by default for REST APIs**
+
+> Which error code means authorizer denied, WAF blocked, or an API key not linked to a usage plan?
+> → **403 Forbidden**
+
+> Which error code means missing or invalid authentication?
+> → **401 Unauthorized**
+
+> Which error code means the backend/service is unavailable or has no healthy capacity?
+> → **503 Service Unavailable (e.g. no healthy targets behind an ALB)**
+
+> What is the default account-level API Gateway throttle?
+> → **10,000 requests/second with a 5,000 burst; stage and method limits sit inside that**
+
+> Malformed requests must be rejected before paying for a Lambda invocation. Which feature?
+> → **Request validation using a JSON Schema model**
+
+> Which HTTP method handles the CORS preflight, and what integration is typical?
+> → **OPTIONS, typically backed by a Mock integration**
+
+> What does CORS actually protect against, and what does it not provide?
+> → **Browser cross-origin enforcement; it provides no authentication or authorization**
+
+> An API must be reachable only from inside a VPC. Which configuration?
+> → **Private API + resource policy + interface VPC endpoint**
+
+> A custom domain over HTTPS needs a certificate. Which service, and which Region for edge-optimised endpoints?
+> → **ACM certificate; it must be in us-east-1 for edge-optimised endpoints**
+
+> An ALB health check for an API-backed target times out. What should be checked?
+> → **Security Groups, NACLs, port, and the health-check path; the EC2 SG must allow the ALB SG on the health-check/listener port**
+
+> A synchronous request takes 40 seconds end to end and times out. Why, and what is the fix?
+> → **API Gateway's 29-second hard timeout — move to asynchronous processing (SQS, Step Functions, async invocation)**
+
+> A small percentage of production traffic must go to a new deployment. Which feature?
+> → **Canary release on the stage (REST API)**
+
+> Tracing must be enabled for an API. Where is it turned on?
+> → **X-Ray, enabled per stage**
+
+> API Gateway can generate client SDKs from what?
+> → **Your API definition (SDK generation)**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
-| Hard timeout | **29 seconds** |
-| Rate limits per key | **usage plans** |
-| Cache | **stage cache** |
-| Custom auth | **Lambda authorizer** |
-| Third-party key | **API keys** |
-| Private | **private endpoint + resource policy** |
-| WebSockets | **WebSocket API** |
-| Cheaper serverless HTTP | **HTTP API** |
+| Managed front door for Lambda | **API Gateway** |
+| Caching / API keys / usage plans / validation / canary | **REST API** |
+| Cheapest, lowest-latency simple proxy | **HTTP API** |
+| Bidirectional, server push, no polling | **WebSocket API** |
+| WebSocket special routes | **$connect / $disconnect / $default** |
+| Server push over WebSocket | **@connections API + connection ID** |
+| HTTP API JWT validation | **JWT authorizer** |
+| Change not visible in production | **CreateDeployment** |
+| Version side by side with prod untouched | **dev stage** |
+| Different backend per environment | **stage variables** |
+| Select a Lambda alias per stage | **stage variables** |
+| Reshape/filter response fields | **mapping template (VTL)** |
+| Mapping template requires | **non-proxy (custom) integration** |
+| Mapping template language | **VTL (Velocity Template Language)** |
+| Lambda Proxy integration | **AWS_PROXY** |
+| Lambda Custom integration | **AWS** |
+| HTTP Proxy integration | **HTTP_PROXY** |
+| Mock (no backend) | **MOCK** |
+| Call SQS/DynamoDB with no Lambda | **AWS service integration** |
+| SigV4 signing for AWS identities | **IAM authorization** |
+| Custom auth / third-party IdP | **Lambda authorizer** |
+| Managed app-user JWT | **Cognito User Pool authorizer** |
+| Identification + metering + tiers | **API keys + usage plans** |
+| New API key returns 403 | **not linked to a usage plan → CreateUsagePlanKey** |
+| Bulk import keys | **ImportApiKeys** |
+| Change quota/throttle | **UpdateUsagePlan** |
+| Force cache refresh | **Cache-Control: max-age=0 + execute-api:InvalidateCache** |
+| Invalidation left open | **anyone can flush the cache** |
+| Cache key default | **full request path** |
+| Different users see each other's data | **cache key parameters not set** |
+| Cache size | **0.5 GB–237 GB, per stage** |
+| Caching scope | **stage level (methods can opt out)** |
+| 429 | **throttling** |
+| 502 | **malformed Lambda proxy response** |
+| 504 | **integration timeout (29 s default)** |
+| 403 | **authorizer/WAF/unlinked API key** |
+| 401 | **missing/invalid authentication** |
+| 503 | **service unavailable / no healthy backend** |
+| Account-level throttle | **10,000 rps, 5,000 burst** |
+| Reject bad requests pre-Lambda | **request validation (JSON Schema)** |
+| CORS preflight | **OPTIONS (Mock integration)** |
+| CORS provides | **browser policy only, not auth** |
+| VPC-only API | **private API + resource policy + VPC endpoint** |
+| Custom domain cert | **ACM, us-east-1 for edge-optimised** |
+| Percentage traffic to new deployment | **canary release on stage** |
+| Tracing | **X-Ray per stage** |
+| Auth happens when | **before the backend is invoked** |
+| API key is | **identification, not authorization** |
+| ELB health-check timeout fix | **check SG, NACL, port, health-check path** |

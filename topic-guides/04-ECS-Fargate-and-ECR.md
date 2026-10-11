@@ -317,32 +317,161 @@ AWS describes the task definition as the application blueprint, while the servic
 
 # Question patterns
 
-> An ECS task cannot pull a private image from ECR. Which role must grant permission?
-> → **Task execution role**
+> A team needs to store and version private Docker container images inside AWS, integrated with IAM. Which service?
+> → **Amazon ECR (Elastic Container Registry)**
 
-> Which role gives the running application permission to call AWS services?
-> → **Task role**
+> A service orchestrates and runs Docker containers across a cluster of hosts. Which service?
+> → **Amazon ECS (Elastic Container Service)**
 
-> Multiple ECS tasks on one EC2 instance expose the same container port behind an ALB. What solves the conflict?
-> → **Dynamic host port mapping**
+> A developer containerises a Fargate application and is charged only for the vCPU and memory the tasks request. Which launch type?
+> → **Fargate — serverless compute for containers, per vCPU and GB requested**
 
-> A team wants containers with no servers to manage. Which launch type?
+> A team needs serverless containers with no EC2 hosts to manage. Which launch type?
 > → **Fargate**
 
-> Where are container images stored and how are they scanned for vulnerabilities?
-> → **Amazon ECR; ECR basic/enhanced scanning or Inspector**
+> A workload needs host access, GPUs, custom AMIs, or denser bin-packing economics. Which launch type?
+> → **ECS on EC2**
 
-> Custom placement rules such as spread across AZs or binpack by memory. Which mechanism?
-> → **Task placement strategies/constraints**
+> A team needs Kubernetes rather than the ECS orchestrator. Which service?
+> → **Amazon EKS**
+
+> A developer terminates the EC2 instance hosting an ECS task, but the container instance still appears in the cluster. Why?
+> → **ECS keeps the container-instance registration until it is deregistered**
+
+> An EC2 instance running ECS was terminated while in the STOPPED state and still shows as an active container instance. What must be done?
+> → **Deregister the container instance from the ECS cluster (ECS auto-deregisters only RUNNING container instances)**
+
+> Is terminating an EC2 instance the same as removing the ECS container-instance registration?
+> → **No — ECS keeps the registration until it is deregistered; only a RUNNING instance is auto-deregistered**
+
+> A team wants to minimise the number of EC2 instances and cost by packing tasks tightly. Which placement strategy?
+> → **binpack (by cpu or memory)**
+
+> A team wants tasks distributed evenly across instances or AZs for high availability. Which placement strategy?
+> → **spread**
+
+> Placement should be arbitrary with no ordering requirement. Which strategy?
+> → **random**
+
+> A rule must prevent two tasks from running on the same instance. Which mechanism?
+> → **A placement constraint (distinctInstance)**
+
+> New EC2 instances keep joining the old ECS cluster after a CloudFormation parameter change. What is the cause?
+> → **The ECS agent uses ECS_CLUSTER in EC2 user data / /etc/ecs/ecs.config, which was not updated**
+
+> How do you fix new instances joining the wrong ECS cluster in CloudFormation?
+> → **Pass the CloudFormation cluster parameter into user data (ECS_CLUSTER=${ClusterName})**
+
+> A team must filter or group container instances by attributes such as AZ or instance type. Which ECS feature?
+> → **Cluster Query Language (CQL), e.g. attribute:ecs.availability-zone == us-east-1a**
+
+> Which ECS mechanism states where a task is allowed or not allowed to run?
+> → **Task placement constraints (e.g. memberOf(attribute:ecs.instance-type == t3.large))**
+
+> Which ECS mechanism decides how tasks are distributed among eligible instances?
+> → **Task placement strategies (spread, binpack, random)**
+
+> Several tasks must each expose container port 80 on the same EC2 instance behind an ALB. What solves the port conflict?
+> → **Dynamic host port mapping — ECS assigns an available host port per task (bridge network mode)**
+
+> Which network mode is required for dynamic host port mapping?
+> → **bridge**
+
+> In dynamic host port mapping, how do three tasks on one instance avoid colliding on container port 80?
+> → **ECS maps each to a different host port (e.g. 32768, 32769, 32770)**
+
+> An ECS task fails with CannotPullContainerError and no logs appear at all. Which role must grant permission?
+> → **The task execution role (it pulls the image and writes logs before your code runs)**
+
+> Which role gives the running application permission to call AWS services like S3 or DynamoDB?
+> → **The task role**
+
+> A task starts fine and logs appear, but the application gets AccessDenied calling S3. Which role is missing permissions?
+> → **The task role (runtime permissions for your code)**
+
+> Which managed policy is typically attached to the ECS task execution role?
+> → **AmazonECSTaskExecutionRolePolicy**
+
+> Which role is used by the ECS agent / Fargate to inject values from the secrets block?
+> → **The task execution role**
+
+> On the EC2 launch type, which additional role does the host's ECS container agent use?
+> → **The EC2 instance profile — Fargate has no instance profile**
+
+> How do credentials reach a container, and what endpoint is used?
+> → **Through the task metadata endpoint 169.254.170.2, which the AWS SDKs discover automatically**
+
+> Should access keys ever be stored in an ECS task definition?
+> → **No — use IAM roles; credentials arrive via the task metadata endpoint**
+
+> Fargate tasks need shared, persistent storage across Availability Zones. Which service?
+> → **Amazon EFS (EBS is single-AZ and normally one instance — the wrong answer for shared)**
+
+> What happens to ephemeral task storage when a task stops?
+> → **It disappears — use EFS for anything durable or shared**
+
+> How long is an ECR login token valid?
+> → **12 hours (aws ecr get-login-password | docker login --username AWS --password-stdin <registry>)**
+
+> A team must stop old images accumulating in ECR forever. Which feature?
+> → **ECR lifecycle policies**
+
+> A team must find CVEs in container images. Which feature?
+> → **ECR image scanning (basic, or enhanced via Amazon Inspector)**
+
+> Which ECS component defines how containers run — image, CPU/memory, ports, volumes, environment variables, IAM roles?
+> → **The task definition (the blueprint)**
+
+> Which ECS component keeps the desired number of tasks running and replaces failed tasks?
+> → **The service scheduler**
+
+> Which ECS component is the EC2 infrastructure where tasks run on the EC2 launch type?
+> → **The container instance (the machine)**
+
+> Which ECS component runs on the container instance and communicates with ECS to start/stop tasks?
+> → **The container agent**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
-| Pull image | **task execution role** |
-| App permissions | **task role** |
+| Store images | **ECR (Docker Hub for AWS)** |
+| Run/manage containers | **ECS** |
 | Serverless containers | **Fargate** |
-| Port conflicts | **dynamic host port mapping** |
-| Image registry | **ECR** |
-| Scan images | **ECR scan / Inspector** |
-| Custom placement | **placement strategies (binpack, spread)** |
+| Kubernetes | **EKS** |
+| Host access / GPU / custom AMI | **ECS on EC2** |
+| Fargate billing | **Per vCPU and GB requested** |
+| EC2 launch billing | **Per EC2 instance, used or not** |
+| Terminated EC2 still in cluster | **Deregister the container instance** |
+| Deleted STOPPED instance | **Not auto-deregistered** |
+| Deleted RUNNING instance | **Auto-deregistered** |
+| Pack tasks together | **binpack (cpu or memory)** |
+| Distribute tasks apart | **spread (instanceId / AZ)** |
+| Place tasks arbitrarily | **random** |
+| Rule for where a task may run | **Placement constraint (distinctInstance)** |
+| Query container instances by attributes | **Cluster Query Language (CQL)** |
+| How tasks are distributed | **Placement strategies** |
+| Groups of related tasks | **Task groups** |
+| Cluster join config | **ECS_CLUSTER in user data / /etc/ecs/ecs.config** |
+| CloudFormation cluster fix | **Pass parameter into user data (ECS_CLUSTER=${ClusterName})** |
+| Port conflicts on one host | **Dynamic host port mapping** |
+| Dynamic port network mode | **bridge** |
+| Pull image | **Task execution role** |
+| Write logs / inject secrets at startup | **Task execution role** |
+| Execution role managed policy | **AmazonECSTaskExecutionRolePolicy** |
+| App permissions | **Task role** |
+| CannotPullContainerError / no logs | **Task execution role** |
+| AccessDenied at runtime | **Task role** |
+| Host agent role (EC2 launch type) | **EC2 instance profile** |
+| Credentials in container | **Task metadata endpoint 169.254.170.2** |
+| Credentials in task definition | **Never — use roles** |
+| Persistent shared storage (Fargate) | **EFS** |
+| Single-AZ block storage | **EBS (wrong for shared across AZs)** |
+| Temporary container storage | **Ephemeral task storage (lost on stop)** |
+| ECR login token | **Valid 12 hours** |
+| Stop old images accumulating | **ECR lifecycle policy** |
+| Find image vulnerabilities | **ECR scanning / Inspector** |
+| Container blueprint | **Task definition** |
+| Keeps tasks running | **Service scheduler** |
+| The machine (EC2 launch type) | **Container instance** |
+| Talks to ECS from the host | **Container agent** |

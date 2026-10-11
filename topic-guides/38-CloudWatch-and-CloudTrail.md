@@ -299,28 +299,301 @@ Worked example — someone changes a Lambda IAM role:
 
 # Question patterns
 
-> Publish application metrics such as request counts. How?
-> → **CloudWatch custom metrics (PutMetricData)**
+> A developer needs to publish an application-specific metric such as number of orders processed. Which API operation should the code call?
+> → **`PutMetricData` (custom metric)**
 
-> Alert when a metric crosses a threshold and notify a team. Which feature?
-> → **CloudWatch Alarm → SNS**
+> A custom metric must have 1-second resolution. What must be set when publishing?
+> → **`StorageResolution: 1`**
 
-> Who made which API call and when? Which service?
-> → **AWS CloudTrail**
+> A team wants to segment a custom metric per customer and per environment. What should they attach?
+> → **Dimensions**
 
-> Query application logs across all streams. Which feature?
+> An alarm must fire when multiple underlying metrics breach together. Which feature builds the alarm expression?
+> → **Metric math**
+
+> A developer wants an alarm that fires only when behaviour deviates from an automatically learned expected band. Which feature?
+> → **Anomaly detection**
+
+> A team wants to test that an alarm's SNS action works without waiting for a real breach. What can they call?
+> → **`SetAlarmState` to temporarily force the alarm to ALARM/OK/INSUFFICIENT_DATA**
+
+> How long is high-resolution (1-second) CloudWatch metric data retained?
+> → **3 hours**
+
+> How long is 1-minute CloudWatch metric data retained?
+> → **15 days**
+
+> How long is 5-minute CloudWatch metric data retained?
+> → **63 days**
+
+> How long is 1-hour CloudWatch metric data retained?
+> → **15 months**
+
+> An EC2 instance's memory usage and disk space are missing from CloudWatch. What should the developer do?
+> → **Install the CloudWatch Agent to collect OS-level metrics as custom metrics**
+
+> Why are memory and disk-space metrics not available for EC2 by default?
+> → **AWS monitors EC2 from outside and cannot see OS-level memory/disk usage**
+
+> A developer is told memory metrics are missing and considers enabling detailed monitoring. Why is that wrong?
+> → **Detailed monitoring = more frequent data, not more metric types; use the CloudWatch Agent**
+
+> Basic EC2 monitoring publishes metrics at what interval?
+> → **Every 5 minutes**
+
+> Detailed EC2 monitoring publishes metrics at what interval?
+> → **Every 1 minute**
+
+> Which IAM managed policy lets the CloudWatch Agent on an EC2 instance publish metrics and logs?
+> → **`CloudWatchAgentServerPolicy`**
+
+> Which managed policy is needed to install, configure, and manage the CloudWatch Agent, including Systems Manager/Parameter Store access?
+> → **`CloudWatchAgentAdminPolicy`**
+
+> A developer must raise an alarm when a specific string appears in log data. What must they create first?
+> → **A metric filter (then an alarm on the emitted metric)**
+
+> A metric filter is created for ERROR lines but returns no data for events written the previous day. Why?
+> → **Metric filters are not retroactive — they only apply to events arriving after creation**
+
+> The team needs to stream matching log events in near real time to Lambda, Kinesis Data Streams, Firehose, or OpenSearch. Which feature?
+> → **Subscription filters**
+
+> A developer needs to interactively search and aggregate logs with a query language. Which feature?
 > → **CloudWatch Logs Insights**
 
-> Audit object-level S3 access. Which setting?
+> Is Logs Insights a streaming mechanism or an investigation tool?
+> → **Investigation tool — use subscription filters to pipe logs onward**
+
+> Log storage costs keep rising because logs never expire. What should be set, and where?
+> → **Set retention (1 day to 10 years) on the log group**
+
+> What is the default retention for a CloudWatch log group?
+> → **Never expire**
+
+> A team wants the cheapest long-term archive of logs. What should they do?
+> → **Export logs to S3**
+
+> A Lambda function produces no logs at all. What is the most likely cause?
+> → **The execution role is missing `logs:*` permissions (AWSLambdaBasicExecutionRole)**
+
+> Which managed policy grants exactly `logs:CreateLogGroup`, `logs:CreateLogStream`, and `logs:PutLogEvents`?
+> → **`AWSLambdaBasicExecutionRole`**
+
+> Logs are grouped as which hierarchy?
+> → **Log group → log stream → log events**
+
+> A developer wants to publish custom metrics from Lambda without any API call or added latency. Which approach?
+> → **Embedded Metric Format (EMF) — write structured JSON to logs**
+
+> Why is EMF better than `PutMetricData` for Lambda metrics?
+> → **No API call, no added latency, cannot fail independently of the log write**
+
+> An alarm shows `INSUFFICIENT_DATA`. What does this mean?
+> → **No datapoints are arriving, or the "treat missing data" setting mis-handles a sparse metric**
+
+> A metric is published sparsely (only when traffic occurs). Which alarm setting controls how missing points are treated?
+> → **"Treat missing data as" (`missing`, `notBreaching`, `breaching`, `ignore`)**
+
+> A team is drowning in alert noise and only wants to page when latency AND error rate are both bad. Which feature?
+> → **Composite alarms (AND/OR combinations)**
+
+> Which CloudWatch feature is the trigger for CodeDeploy automatic rollback?
+> → **Alarms**
+
+> A developer wants one dashboard showing metrics from multiple Regions. What should they use?
+> → **CloudWatch Dashboards (can display multiple Regions on one dashboard)**
+
+> A central team must view metrics, logs, and traces across many AWS accounts without switching roles. Which feature?
+> → **CloudWatch cross-account observability (monitoring account + linked source accounts)**
+
+> What is the wrong answer to the central cross-account observability requirement?
+> → **Replicating metrics with custom code**
+
+> API Gateway `Latency` is high but `IntegrationLatency` is low. Where is the delay?
+> → **In API Gateway (authorizer, mapping template, throttling), not the backend**
+
+> API Gateway `Latency` and `IntegrationLatency` are both high. Where is the problem?
+> → **The backend**
+
+> Which API Gateway metric measures backend-only time?
+> → **`IntegrationLatency`**
+
+> Lambda `Throttles` is greater than zero. What is happening and what should be done?
+> → **Concurrency limit hit (429) — raise concurrency**
+
+> Which Lambda metric indicates a stream consumer is falling behind?
+> → **`IteratorAge`**
+
+> Which Lambda metric counts failures to write to the DLQ?
+> → **`DeadLetterErrors`**
+
+> A worker fleet should scale on queue depth. Which SQS metric?
+> → **`ApproximateNumberOfMessagesVisible`**
+
+> An SQS queue looks short but messages are old. Which metric, and what does it reveal?
+> → **`ApproximateAgeOfOldestMessage` — consumers are too slow**
+
+> Which Kinesis metric measures consumer lag?
+> → **`GetRecords.IteratorAgeMilliseconds`**
+
+> Which Kinesis metric indicates a hot shard or too few shards?
+> → **`WriteProvisionedThroughputExceeded`**
+
+> Which DynamoDB metrics point to capacity problems?
+> → **`ThrottledRequests`, `ConsumedReadCapacityUnits`**
+
+> What is the minimum resolution of a high-resolution CloudWatch custom metric?
+> → **1 second**
+
+> What period values can a high-resolution alarm use?
+> → **10, 20, or 30 seconds**
+
+> What period values can a regular alarm use?
+> → **60 seconds or any multiple of 60**
+
+> An alarm uses Period = 1 minute, Evaluation Periods = 3, Datapoints to Alarm = 3. What does this require?
+> → **All 3 of the latest 3 data points must breach (3 consecutive)**
+
+> An alarm uses Evaluation Periods = 3 and Datapoints to Alarm = 2. What does this require?
+> → **At least 2 of the latest 3 data points must breach — not necessarily consecutive**
+
+> An alarm sets Period = 3 minutes. Does that mean "check 3 data points"?
+> → **No — it means each data point covers 3 minutes**
+
+> Which three states can a CloudWatch alarm be in?
+> → **`OK`, `ALARM`, `INSUFFICIENT_DATA`**
+
+> Which alarm actions can CloudWatch trigger?
+> → **SNS notification, Auto Scaling policy, EC2 action (stop/terminate/reboot/recover), Systems Manager action**
+
+> Which AWS service records who made an API call to AWS, when, and from where?
+> → **AWS CloudTrail**
+
+> A security team needs to know which user changed an IAM role. Which service?
+> → **CloudTrail**
+
+> How long does CloudTrail Event History retain management events for free, with no trail?
+> → **90 days**
+
+> A developer must analyze CloudTrail logs stored in S3 with SQL for events older than 90 days. Which service?
+> → **Amazon Athena**
+
+> S3 object-level access and Lambda invocation logging are not captured by default. What must be enabled?
 > → **CloudTrail data events**
+
+> Which CloudTrail event type (management vs data) is logged by default?
+> → **Management events (control-plane operations)**
+
+> A developer wants to alarm on specific API activity. What is the correct pipeline?
+> → **CloudTrail → CloudWatch Logs → metric filter → alarm**
+
+> How can a team retain API audit logs long-term?
+> → **Create a Trail that delivers to S3 (optionally CloudWatch Logs)**
+
+> Which CloudTrail feature detects unusual API call rates or error rates against a normal baseline?
+> → **CloudTrail Insights**
+
+> Which CloudTrail feature proves log files were not tampered with?
+> → **Log file validation**
+
+> Someone changes a Lambda IAM role. Which service identifies who made the change?
+> → **CloudTrail**
+
+> Someone changes a Lambda IAM role. Which service checks whether it now violates a rule?
+> → **AWS Config**
+
+> Someone changes a Lambda IAM role. Which service checks whether it still matches the CloudFormation template?
+> → **CloudFormation Drift Detection**
+
+> Which CloudTrail sources of API activity are logged?
+> → **Console, CLI, SDK, and AWS services acting on your behalf**
+
+> What does CloudWatch tell you versus CloudTrail?
+> → **CloudWatch = what your application did; CloudTrail = what was done to AWS itself**
+
+> Which tool answers "is the number too high or too low"?
+> → **CloudWatch Metrics**
+
+> Which tool answers "what did the application say"?
+> → **CloudWatch Logs**
+
+> Which tool answers "which step in the chain was slow or failed"?
+> → **X-Ray**
+
+> Which tool answers "who made this change to AWS itself"?
+> → **CloudTrail**
+
+> What is the simple flow linking these CloudWatch concepts?
+> → **Metric → Alarm detects problem → Event triggers action**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
-| Metrics | **CloudWatch** |
-| Alerts | **CloudWatch Alarms** |
-| API audit | **CloudTrail** |
-| Log search | **Logs Insights** |
-| Object-level access | **CloudTrail data events** |
-| React to events | **EventBridge** |
+| Metric | **a value measured over time (e.g. CPU)** |
+| Namespace | **who am I calling — `aws` or `remote`** |
+| Dimensions | **identify what the metric belongs to (e.g. instance ID)** |
+| Standard resolution | **1 minute** |
+| High resolution | **1 second** |
+| Basic EC2 monitoring | **every 5 minutes** |
+| Detailed EC2 monitoring | **every 1 minute** |
+| Detailed monitoring | **more frequent data, NOT more metric types** |
+| Missing memory/disk metrics | **install CloudWatch Agent** |
+| Wrong answer for memory | **"enable detailed monitoring"** |
+| Agent publish policy | **`CloudWatchAgentServerPolicy`** |
+| Agent admin policy | **`CloudWatchAgentAdminPolicy`** |
+| Publish custom metric | **`PutMetricData`** |
+| 1-second custom metric | **`StorageResolution: 1`** |
+| Segment metrics | **dimensions** |
+| Combine metrics | **metric math** |
+| Expected band | **anomaly detection** |
+| Force alarm for testing | **`SetAlarmState`** |
+| Retention 1s | **3 hours** |
+| Retention 1m | **15 days** |
+| Retention 5m | **63 days** |
+| Retention 1h | **15 months** |
+| Log hierarchy | **log group → log stream → log events** |
+| Default log retention | **never expire** |
+| Log cost fix | **set retention on the log group** |
+| Archive logs cheaply | **export to S3** |
+| Alarm on log content | **metric filter + alarm** |
+| Metric filters | **not retroactive** |
+| Stream logs out | **subscription filter** |
+| Search/aggregate logs | **Logs Insights** |
+| Lambda metrics no API call | **EMF** |
+| Lambda missing logs | **execution role lacks `logs:*`** |
+| Lambda logs policy | **`AWSLambdaBasicExecutionRole`** |
+| Live stream logs | **Live Tail** |
+| Alarm states | **`OK`, `ALARM`, `INSUFFICIENT_DATA`** |
+| Alarm actions | **SNS, Auto Scaling, EC2 action, Systems Manager** |
+| Missing data setting | **`missing`/`notBreaching`/`breaching`/`ignore`** |
+| Reduce alert noise | **composite alarm** |
+| Auto rollback trigger | **alarm + CodeDeploy** |
+| Multi-Region view | **dashboard** |
+| Central cross-account view | **cross-account observability (monitoring account)** |
+| Alarm `INSUFFICIENT_DATA` | **no data / wrong treat-missing-data** |
+| Latency high, IntegrationLatency low | **problem is API Gateway** |
+| IntegrationLatency high | **backend is slow** |
+| Lambda `Throttles` | **concurrency limit (429)** |
+| Lambda `IteratorAge` | **stream consumer behind** |
+| Scale on queue depth | **`ApproximateNumberOfMessagesVisible`** |
+| Old messages in short queue | **`ApproximateAgeOfOldestMessage`** |
+| Kinesis lag | **`GetRecords.IteratorAgeMilliseconds`** |
+| High-res alarm periods | **10/20/30 seconds** |
+| Regular alarm periods | **60s or multiple of 60** |
+| 3 consecutive | **3 / 3** |
+| 2 of 3 | **2 / 3** |
+| Period | **size of each data point** |
+| Evaluation Periods | **how many data points to look at** |
+| Datapoints to Alarm | **how many must breach** |
+| Who changed it | **CloudTrail** |
+| Compliance/config history | **AWS Config** |
+| Matches template | **Drift Detection** |
+| CloudTrail Event History | **90 days, management events, free** |
+| Query CloudTrail in S3 | **Athena** |
+| S3 object / Lambda logging | **CloudTrail data events** |
+| Unusual API activity | **CloudTrail Insights** |
+| Tamper-proof logs | **log file validation** |
+| Alarm on API activity | **Trail → CloudWatch Logs → metric filter → alarm** |
+| Metric vs Alarm vs Event | **value / watches metric / notification of a change** |

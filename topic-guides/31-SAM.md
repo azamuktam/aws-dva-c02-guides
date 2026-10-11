@@ -113,24 +113,135 @@ After packaging, use the **packaged template** with `aws cloudformation deploy`.
 
 # Question patterns
 
-> Serverless infrastructure as code with less boilerplate than raw CloudFormation. Which service?
-> → **AWS SAM (Transform: AWS::Serverless)**
+> Serverless infrastructure as code with far less boilerplate than raw CloudFormation. Which service?
+> → **AWS SAM (Serverless Application Model)**
 
-> Test a Lambda function locally before deploying. Which command?
-> → **sam local invoke**
+> Which `Transform` line identifies a SAM template?
+> → **`Transform: 'AWS::Serverless-2016-10-31'`**
 
-> Package the app and deploy it in one flow. Which commands?
-> → **sam build && sam deploy**
+> Is `Transform` a template section or a parameter?
+> → **A template section (not a parameter)**
 
-> Run API Gateway locally with SAM. Which command?
-> → **sam local start-api**
+> What does a SAM template compile into before deployment?
+> → **A standard CloudFormation template, which then creates the resources**
+
+> Which SAM resource type expands into a Lambda function plus its role, permissions, and event sources?
+> → **`AWS::Serverless::Function`**
+
+> Which SAM resource type expands into API Gateway?
+> → **`AWS::Serverless::Api`**
+
+> Which SAM resource type expands into an API Gateway HTTP API?
+> → **`AWS::Serverless::HttpApi`**
+
+> Which SAM resource type expands into a DynamoDB table?
+> → **`AWS::Serverless::SimpleTable`**
+
+> Which SAM resource type expands into a Step Functions state machine?
+> → **`AWS::Serverless::StateMachine`**
+
+> Which SAM resource type expands into a Lambda layer?
+> → **`AWS::Serverless::LayerVersion`**
+
+> Which SAM resource type embeds a nested serverless application?
+> → **`AWS::Serverless::Application`**
+
+> You want to test a single Lambda function locally in Docker. Which command?
+> → **`sam local invoke`**
+
+> You want to run API Gateway plus Lambda locally end to end. Which command?
+> → **`sam local start-api`**
+
+> You want a local Lambda endpoint for SDK integration testing. Which command?
+> → **`sam local start-lambda`**
+
+> Which command builds the application and resolves dependencies before deploying?
+> → **`sam build`**
+
+> Which command checks that the SAM template is well-formed?
+> → **`sam validate`**
+
+> Which command uploads artifacts to S3 and produces a deployable template?
+> → **`sam package`**
+
+> Which command creates or updates the CloudFormation stack?
+> → **`sam deploy`**
+
+> Which command shares a reusable layer or application via the Serverless Application Repository?
+> → **`sam publish`**
+
+> Which command tails CloudWatch Logs for a function?
+> → **`sam logs`**
+
+> Which command performs rapid iterative deploys during development?
+> → **`sam sync`**
+
+> Which command creates a new application from a template?
+> → **`sam init`**
+
+> What does `CodeUri` tell SAM?
+> → **Where the Lambda source code is (e.g. a local folder)**
+
+> Local Lambda code must become deployable. What is the flow?
+> → **Package the local code, upload it to S3, and generate a packaged template with the S3 location**
+
+> After packaging, which service deploys the packaged template?
+> → **`aws cloudformation deploy` (or `sam deploy`)**
+
+> Canary or gradual Lambda deployments are configured declaratively with SAM using what?
+> → **Built-in CodeDeploy integration**
+
+> What are SAM globals used for?
+> → **Sharing settings across multiple functions**
+
+> A workload needs YAML/JSON templates for any AWS resource. Which service?
+> → **CloudFormation**
+
+> Infrastructure as code written in a programming language that synthesises to CloudFormation. Which tool?
+> → **AWS CDK**
+
+> You want to deploy an application where AWS assembles the infrastructure for you. Which service?
+> → **Elastic Beanstalk**
+
+> Which statement best describes SAM's relationship to CloudFormation?
+> → **SAM is a serverless-optimised layer on top of CloudFormation — everything about stacks, parameters, outputs, and rollback still applies**
+
+> You normally do not edit `CodeUri` after packaging. Why?
+> → **The generated packaged template already contains the S3 location of the uploaded code**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
-| Transform | **AWS::Serverless** |
-| Local Lambda | **sam local invoke** |
-| Deploy | **sam deploy** |
+| Transform | **`AWS::Serverless-2016-10-31`** |
 | Compiles to | **CloudFormation** |
+| Local single Lambda | **`sam local invoke`** |
+| Local REST API | **`sam local start-api`** |
+| Local SDK endpoint | **`sam local start-lambda`** |
+| Build | **`sam build`** |
+| Validate | **`sam validate`** |
+| Package | **`sam package`** |
+| Deploy | **`sam deploy`** |
+| Publish to SAR | **`sam publish`** |
+| Tail logs | **`sam logs`** |
+| Rapid deploy | **`sam sync`** |
+| New project | **`sam init`** |
+| Source location | **`CodeUri`** |
+| Function type | **`AWS::Serverless::Function`** |
+| API type | **`AWS::Serverless::Api`** |
+| HTTP API type | **`AWS::Serverless::HttpApi`** |
+| Table type | **`AWS::Serverless::SimpleTable`** |
+| State machine type | **`AWS::Serverless::StateMachine`** |
+| Layer type | **`AWS::Serverless::LayerVersion`** |
+| Nested app type | **`AWS::Serverless::Application`** |
+| Shared settings | **globals** |
+| Canary deploy | **CodeDeploy integration** |
+| Underneath | **CloudFormation** |
+| Transform kind | **template section, not parameter** |
+| Packaging | **local code → upload to S3 → packaged template** |
+| Deploy step | **creates/updates the CloudFormation stack** |
 | Tracing | **SAM CLI integrates X-Ray** |
+| General IaC | **CloudFormation (YAML/JSON)** |
+| Programming-language IaC | **CDK** |
+| App deploy, AWS builds infra | **Elastic Beanstalk** |
+| Edit CodeUri after package | **no — packaged template holds the S3 location** |

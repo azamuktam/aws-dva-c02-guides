@@ -130,29 +130,179 @@ So: cleaning up after a test and never needing the queue again → `DeleteQueue`
 
 # Question patterns
 
-> Messages must be processed exactly once and in order. Which queue type and what is required?
-> → **SQS FIFO (message group ID + deduplication ID)**
+> Component B is slow or down and it's making component A slow or fail. What breaks the coupling?
+> → **SQS — A writes a message and moves on; B reads when it can**
 
-> A consumer crashes while processing; the message is visible again and processed twice. What controls re-delivery?
-> → **Visibility timeout — set it longer than the processing time**
+> What is the default visibility timeout?
+> → **30 seconds (range 0 to 12 hours)**
+
+> A message is processed twice because a second consumer picked it up mid-work. What is the cause?
+> → **The visibility timeout was shorter than the processing time, so the message became visible again**
+
+> A consumer needs more time while still processing. Which call extends the hold?
+> → **ChangeMessageVisibility**
+
+> What is the rule relating visibility timeout to processing time (and with Lambda)?
+> → **Visibility timeout ≥ processing time; with Lambda, visibility timeout ≥ function timeout, and AWS recommends 6× to absorb retries**
+
+> Can a queue's type (Standard vs FIFO) be changed after creation? What must you do?
+> → **No — in-flight the type cannot change; create a new queue (a CreateQueue decision)**
+
+> Messages must be processed exactly once and in order. Which queue type and what is required?
+> → **SQS FIFO with MessageGroupId + MessageDeduplicationId**
+
+> Maximum throughput with a standard queue versus FIFO?
+> → **Standard is effectively unlimited; FIFO is 300 msg/s, or 3,000 with batching (much higher for high-throughput FIFO)**
+
+> How does FIFO scale to parallelism while keeping order?
+> → **Use many MessageGroupId values — same group is strictly ordered, different groups process in parallel**
+
+> How long is the FIFO deduplication window?
+> → **5 minutes**
+
+> Who creates the deduplication ID under content-based deduplication, and what is it based on?
+> → **SQS; it hashes the message body (no explicit ID needed)**
+
+> Under MessageDeduplicationId, who provides the ID?
+> → **You provide any ID you choose**
 
 > Bad messages keep failing and block the queue. Which feature isolates them?
-> → **Dead-letter queue (DLQ) with a redrive policy**
+> → **Dead-letter queue (DLQ) via a redrive policy with maxReceiveCount**
 
-> Consumers receive many empty responses, wasting requests. What reduces this?
-> → **Long polling**
+> What does the redrive policy set?
+> → **maxReceiveCount — after that many receives without deletion, SQS moves the message to the DLQ**
+
+> A standard queue's DLQ can be standard or FIFO — true or false?
+> → **False — DLQ type must match the source queue**
+
+> What is the DLQ type-matching rule?
+> → **FIFO → FIFO DLQ; Standard → Standard DLQ; cross-matching is not allowed**
+
+> After fixing a bug, messages must be moved from the DLQ back to the source queue. Which feature?
+> → **DLQ redrive**
+
+> Consumers receive many empty responses, wasting requests and money. What reduces this?
+> → **Long polling (ReceiveMessageWaitTimeSeconds, up to 20 seconds)**
+
+> What is the maximum long polling wait, and are there downsides?
+> → **20 seconds; there is no downside — enable it**
 
 > New messages should be invisible to consumers for 10 minutes after arrival. Which feature?
-> → **Delay queues**
+> → **Delay queues (DelaySeconds, 0–15 minutes, applies queue-wide)**
+
+> Delay only a single message rather than the whole queue. Which option, and on which queue type?
+> → **Per-message DelaySeconds — available on Standard queues only**
+
+> A message is larger than the maximum size. What is the solution?
+> → **SQS Extended Client Library — payload stored in S3 (up to 2 GB)**
+
+> What is the maximum SQS message size?
+> → **1 MiB (256 KB with message attributes counting toward it; Extended Client Library + S3 for up to 2 GB)**
+
+> Messages disappear after about 4 days. Why, and how is it changed?
+> → **Default retention is 4 days; raise it up to a maximum of 14 days**
+
+> What is the message retention range?
+> → **60 seconds to 14 days**
+
+> The queue and all of its messages and configuration must be removed permanently. Which API?
+> → **DeleteQueue (irreversible; wait ~60 seconds before recreating the same name)**
+
+> Messages must be cleared but the queue kept for future use. Which API?
+> → **PurgeQueue**
+
+> An access permission must be removed from the queue policy. Which API?
+> → **RemovePermission**
+
+> How many messages can a single SendMessageBatch (and ReceiveMessage) handle?
+> → **10 messages**
+
+> How many message attributes per message are allowed, and do they count toward the size limit?
+> → **10 per message, and they count toward the size limit**
+
+> Is there a limit on stored/backlog messages queued?
+> → **No limit on stored messages**
+
+> What is the approximate default maximum of in-flight messages on a standard queue?
+> → **~120,000 (received but not yet deleted)**
+
+> What are "in-flight" messages?
+> → **Messages received by a consumer but not yet deleted**
+
+> A workflow needs human approval. Why is SQS the wrong answer?
+> → **SQS is not for human approval — use CodePipeline manual approval or Step Functions**
+
+> What suffix must a FIFO queue name end with?
+> → **.fifo**
+
+> What delivery guarantee does a Standard queue provide?
+> → **At least once (duplicates possible)**
+
+> What delivery guarantee does a FIFO queue provide?
+> → **Exactly once (deduplicated)**
+
+> What ordering does a Standard queue provide?
+> → **Best-effort (not guaranteed)**
+
+> What ordering does a FIFO queue provide?
+> → **Strict, within a message group**
+
+> A queue must absorb bursts, survive consumer outages and let each side scale independently. Which service?
+> → **SQS**
+
+> Under the hood, what mechanism makes a failed message get redelivered without any retry code?
+> → **The consumer simply never calls DeleteMessage; the visibility timeout expires and the message reappears**
+
+> After a consumer successfully processes a message, what must it call to remove it permanently?
+> → **DeleteMessage**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
+| Decouple / buffer / absorb bursts | **SQS** |
+| Default visibility timeout | **30 seconds** |
+| Visibility timeout range | **0 s – 12 hours** |
+| Duplicate processing cause | **visibility timeout < processing time** |
+| Extend hold mid-processing | **ChangeMessageVisibility** |
+| Lambda visibility rule | **≥ function timeout (recommend 6×)** |
+| Change queue type after creation | **no — create a new queue** |
 | Order + exactly once | **FIFO** |
-| Re-delivery window | **visibility timeout** |
-| Poison messages | **DLQ** |
-| Fewer empty polls | **long polling** |
-| Delayed visibility | **delay queue** |
-| Retention | **up to 14 days** |
-| Max message size | **256 KB (S3 pointer for larger)** |
+| Max throughput | **Standard** |
+| FIFO throughput | **300/s, 3,000/s batched** |
+| Ordering scope in FIFO | **MessageGroupId** |
+| Parallelism within FIFO | **many MessageGroupId values** |
+| Deduplication window | **5 minutes** |
+| Dedup ID creator (content-based) | **SQS (hash of body)** |
+| Dedup ID creator (explicit) | **you** |
+| Poison messages | **DLQ via maxReceiveCount** |
+| DLQ type matching | **must match source queue** |
+| Standard queue + FIFO DLQ | **not allowed** |
+| Return messages from DLQ | **DLQ redrive** |
+| Fewer empty polls | **long polling (20 s)** |
+| Long polling max wait | **20 seconds** |
+| Delayed visibility (all messages) | **delay queue** |
+| Delayed visibility (one message) | **per-message DelaySeconds (Standard only)** |
+| Delay range | **0–15 minutes** |
+| Max message size | **1 MiB** |
+| Larger than 1 MiB | **Extended Client Library + S3 (up to 2 GB)** |
+| Default retention | **4 days** |
+| Retention range | **60 s – 14 days** |
+| Delete queue + contents | **DeleteQueue (irreversible)** |
+| Recreate same name wait | **~60 seconds** |
+| Clear messages, keep queue | **PurgeQueue** |
+| Remove access rights | **RemovePermission** |
+| Batch API size | **10 messages** |
+| Attributes per message | **10 (count toward size)** |
+| Messages per ReceiveMessage | **10** |
+| Stored message limit | **none** |
+| In-flight max (standard) | **~120,000** |
+| In-flight means | **received, not yet deleted** |
+| Human approval workflow | **CodePipeline / Step Functions, not SQS** |
+| FIFO name suffix | **.fifo** |
+| Standard delivery | **at least once** |
+| FIFO delivery | **exactly once** |
+| Standard ordering | **best-effort** |
+| FIFO ordering | **strict within group** |
+| Redelivery on failure | **never DeleteMessage → timeout expires** |
+| Remove processed message | **DeleteMessage** |

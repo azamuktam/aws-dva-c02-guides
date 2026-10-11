@@ -171,25 +171,141 @@ Suspicious login → MFA
 
 # Question patterns
 
-> Users must register and sign in with email/password. Which component?
-> → **Cognito user pool**
+> Users must register and sign in with email and password. Which Cognito component?
+> → **A Cognito user pool**
 
-> Signed-in app users need temporary AWS credentials to use AWS services. Which component?
-> → **Cognito identity pool (federated identities)**
+> Signed-in app users need temporary AWS credentials to call AWS services. Which component?
+> → **A Cognito identity pool (federated identities)**
 
-> Guest users should access a limited dataset before signing up. Which feature?
-> → **Identity pool unauthenticated role**
+> What three tokens does a user pool return on successful sign-in?
+> → **ID token, access token, and refresh token (all JWTs)**
 
-> A branded login page without building one. Which feature?
+> Which token contains identity claims such as username and email?
+> → **The ID token**
+
+> Which token is used to authorise API requests?
+> → **The access token**
+
+> Which token obtains new ID and access tokens without asking the user to log in again?
+> → **The refresh token**
+
+> Which token should an API check, and which should it never use for authorization?
+> → **Check the access token; never use the ID token to authorise API calls**
+
+> Which authorizer validates a Cognito JWT at API Gateway with no code?
+> → **The Cognito user pool authorizer**
+
+> When would you use a Lambda authorizer instead of the Cognito authorizer?
+> → **For a non-Cognito identity provider or logic that goes beyond the token**
+
+> You do not want to build a login screen. Which feature?
 > → **Cognito hosted UI**
+
+> How do you model Admin vs normal users and expose the role in the JWT?
+> → **User pool groups — membership appears in the JWT claims**
+
+> Which JWT claim carries group membership?
+> → **cognito:groups**
+
+> How do custom attributes appear in the JWT?
+> → **custom:<name>**
+
+> Where do validators fetch a user pool's public keys?
+> → **https://cognito-idp.<region>.amazonaws.com/<poolId>/.well-known/jwks.json**
+
+> Which algorithm signs user pool JWTs?
+> → **RS256**
+
+> What four checks does JWT validation perform?
+> → **Verify the signature via the token's kid, check exp, check iss (pool) and aud/client_id, and check token_use**
+
+> What does the token_use claim distinguish?
+> → **"id" for an ID token vs "access" for an access token**
+
+> What is a resource server in a user pool?
+> → **It defines an API and the custom scopes it accepts (e.g. orders-api/orders.read)**
+
+> Where are granted OAuth scopes carried?
+> → **In the access token's scope claim**
+
+> Which OAuth flow is recommended for user-facing apps?
+> → **Authorization code grant**
+
+> Which OAuth flow suits machine-to-machine with no user present?
+> → **Client credentials**
+
+> Which OAuth flow is legacy?
+> → **Implicit**
+
+> Name the standard scopes.
+> → **openid, profile, email, phone, aws.cognito.signin.user.admin**
+
+> Which Lambda trigger injects additional claims into the token?
+> → **The pre-token-generation trigger**
+
+> Which identity pool identities get separate IAM roles?
+> → **Authenticated and guest (unauthenticated) identities**
+
+> How do you scope each user to only their own S3 prefix?
+> → **Use policy variables in the role**
+
+> What token sources can an identity pool trust?
+> → **A Cognito user pool, Google, Facebook, SAML, OIDC, or unauthenticated**
+
+> A mobile app must upload directly to S3 without embedded AWS keys. Which pattern?
+> → **User pool sign-in → JWT → identity pool → temporary AWS credentials → upload to S3**
+
+> Why is a user pool alone not enough for the direct-to-S3 pattern?
+> → **A user pool cannot issue AWS credentials**
+
+> What does an identity pool lack?
+> → **A user directory (no sign-up/sign-in)**
+
+> Which trigger captures successful logins and can write them to RDS?
+> → **A post authentication Lambda trigger**
+
+> Which service syncs application data across a user's devices?
+> → **Cognito Sync (legacy, superseded by AppSync)**
+
+> A login that looks suspicious should trigger MFA, but normal logins should not. Which feature?
+> → **Cognito adaptive authentication (risk-based MFA)**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
-| Directory | **user pool** |
-| AWS credentials | **identity pool** |
-| Tokens | **ID, access, refresh (JWT)** |
+| User pool | **Authentication (login / who are you?)** |
+| Identity pool | **AWS credentials (authorization to AWS resources)** |
+| User pool returns | **JWT tokens** |
+| Identity pool returns | **Temporary AWS credentials** |
+| ID token | **Identity claims (who)** |
+| Access token | **API authorisation / scopes** |
+| Refresh token | **New tokens without re-login** |
+| Authorise API calls | **Access token** |
+| No-code JWT check at API GW | **Cognito user pool authorizer** |
+| Don't build a login page | **Hosted UI** |
+| Admin vs user | **User pool groups (cognito:groups)** |
+| Custom attributes claim | **custom:<name>** |
+| JWKS URL | **/.well-known/jwks.json** |
+| JWT signing | **RS256** |
+| Validation checks | **kid signature, exp, iss, aud/client_id, token_use** |
+| Scope claim | **Access token** |
+| Resource server | **API + custom scopes** |
+| Machine-to-machine | **Client credentials flow** |
+| Recommended flow | **Authorization code grant** |
+| Legacy flow | **Implicit** |
+| Standard scopes | **openid, profile, email, phone, aws.cognito.signin.user.admin** |
+| Inject extra claims | **Pre-token-generation Lambda** |
+| Guest access | **Identity pool unauthenticated role** |
+| Per-user S3 prefix | **Policy variables** |
+| Trusted sources | **User pool, Google, Facebook, SAML, OIDC, unauthenticated** |
+| Direct-to-S3 upload | **User pool + identity pool together** |
+| MFA | **User pool MFA** |
+| Risk-based MFA | **Adaptive authentication** |
+| Lambda triggers | **Pre sign-up, post confirmation, pre token generation…** |
+| Login logging to RDS | **Post authentication trigger** |
+| Cross-device sync | **Cognito Sync (legacy) / AppSync** |
+| IAM roles for end users | **Identity pool** |
 | Federation | **Google/Facebook/SAML/OIDC** |
-| MFA | **user pool MFA** |
-| Triggers | **Lambda (pre sign-up, post confirmation…)** |
+| User pool alone for S3 | **Not possible (no AWS creds)** |
+| Identity pool directory | **None** |

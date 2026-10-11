@@ -261,32 +261,160 @@ Don't overthink the header mechanics.
 
 # Question patterns
 
+> A global audience sees high latency because every request crosses an ocean to the origin. What service fixes it?
+> → **Amazon CloudFront (caches content at edge locations near users)**
+
+> Users must be forced onto HTTPS without breaking old HTTP links. Which setting and value?
+> → **Viewer Protocol Policy = Redirect HTTP to HTTPS**
+
+> HTTP must be rejected outright at the edge. Which Viewer Protocol Policy value?
+> → **HTTPS Only**
+
+> CloudFront must connect to the origin over a secure connection regardless of the viewer. Which setting?
+> → **Origin Protocol Policy = HTTPS Only**
+
+> The origin connection should use whatever protocol the viewer used. Which Origin Protocol Policy value?
+> → **Match Viewer**
+
+> Which setting governs how users connect to CloudFront, and where is it set?
+> → **Viewer Protocol Policy, set in the cache behaviour**
+
+> Which setting governs how CloudFront connects to the origin (S3, ALB, EC2, API Gateway)?
+> → **Origin Protocol Policy**
+
+> HTTPS on the default *.cloudfront.net domain must be described. What is required?
+> → **Nothing — it is provided automatically**
+
+> HTTPS on a custom domain requires what certificate, and in which Region?
+> → **An ACM certificate in us-east-1**
+
+> A site is slow and the same objects are requested repeatedly. What is the standard fix?
+> → **Increase Cache-Control: max-age on the origin response (higher cache hit ratio)**
+
+> What is the effect of a longer Cache-Control: max-age?
+> → **Higher cache hit ratio, fewer origin requests, lower latency**
+
+> The primary origin starts returning 504s; traffic must transparently fail over. Which feature?
+> → **Origin failover using an origin group (primary + secondary)**
+
+> Which origin failure status codes can trigger origin-group failover?
+> → **500, 502, 503, 504, 403, 404**
+
+> Custom logic must run at edge locations before the request reaches the origin. Which feature?
+> → **Lambda@Edge**
+
+> A request must be authenticated before it reaches the origin. Which Lambda@Edge event?
+> → **Viewer Request (before the cache is even consulted)**
+
+> Security headers must be added to responses. Which Lambda@Edge event?
+> → **Viewer Response (before the response reaches the user)**
+
+> An origin request must be modified before CloudFront calls the origin. Which Lambda@Edge event?
+> → **Origin Request**
+
+> A response must be modified before it is cached. Which Lambda@Edge event?
+> → **Origin Response**
+
+> What are the four Lambda@Edge lifecycle points?
+> → **Viewer Request, Origin Request, Origin Response, Viewer Response**
+
+> Simple, ultra-high-scale header or URL manipulation with sub-millisecond startup. Which feature?
+> → **CloudFront Functions**
+
+> Heavier edge logic that needs network access and longer execution. Which feature?
+> → **Lambda@Edge (runs at regional edge caches)**
+
+> Where do CloudFront Functions run versus Lambda@Edge?
+> → **CloudFront Functions at the edge (sub-millisecond); Lambda@Edge at regional edge caches**
+
+> A question asks how to speed up static content. Which answer is wrong, and which is right?
+> → **Wrong: Lambda@Edge; right: CloudFront caching** — Lambda@Edge executes code closer to users, it does not improve caching
+
 > Only paying customers may access video content. Which feature?
 > → **Signed URLs / signed cookies (with key groups)**
 
-> S3 must stay private while serving through CloudFront. Which feature?
-> → **Origin Access Control (OAC)**
+> Hundreds of private files must be protected without changing any URLs. Signed URL or signed cookie?
+> → **Signed cookie (a signed URL covers one file)**
 
-> Lightweight header manipulation at the edge with sub-millisecond startup. Which feature?
-> → **CloudFront Functions**
+> Access must be restricted by client IP range. Which mechanism, and why not S3 presigned URLs?
+> → **CloudFront signed URL — S3 presigned URLs cannot restrict by IP range**
 
-> Full request/response inspection and modification at the edge. Which feature?
-> → **Lambda@Edge**
+> Which signer does CloudFront recommend for signed URLs/cookies, and which is legacy?
+> → **Trusted key groups (recommended); CloudFront key pairs (legacy)**
 
-> New files must appear immediately after a release. How?
-> → **Invalidation (or versioned object names to avoid it)**
+> Using the root user to manage CloudFront key pairs, how many active key pairs per account?
+> → **Two**
 
-> Content must not be served to certain countries. Which feature?
+> In the signing model, which key lives where?
+> → **The public key is uploaded to CloudFront to verify; the private key stays with you to sign**
+
+> The S3 bucket must remain private while content is served only through CloudFront. Which feature?
+> → **Origin Access Control (OAC), formerly OAI**
+
+> One distribution must serve static files from S3 and dynamic API requests from an ALB. What is this?
+> → **Multiple origins on a single distribution**
+
+> Users in certain countries must be redirected to localized paths. Which pattern?
+> → **CloudFront Function using the CloudFront-Viewer-Country header**
+
+> Where does the CloudFront Function run for a country-based redirect, and why?
+> → **Viewer Request — decide before sending the request all the way to the application**
+
+> New objects must appear immediately after a release. How?
+> → **Create an invalidation (or use versioned object names to avoid invalidating)**
+
+> Content must be blocked for specific countries. Which feature?
 > → **Geographic restrictions**
+
+> Both a valid signed URL and a signed cookie cover the same file. Which wins?
+> → **The signed URL takes precedence over the signed cookie**
+
+> A signed URL must be signed with which credentials for CloudFront (versus S3 presigned)?
+> → **Your private key + trusted key group; S3 presigned URLs are signed with the signer's IAM credentials**
+
+> Which of CloudFront or S3 serves a CloudFront signed URL request, and what is the benefit?
+> → **The CloudFront edge — cached and fast, rather than hitting S3 directly**
+
+> Which CloudFront origin-policy setting is used when the origin does not support HTTPS?
+> → **HTTP Only**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
+| Faster global site/API | **CloudFront** |
+| Force users to HTTPS | **Viewer Protocol Policy = Redirect HTTP to HTTPS** |
+| Reject HTTP outright | **Viewer Protocol Policy = HTTPS Only** |
+| CloudFront → origin securely | **Origin Protocol Policy = HTTPS Only** |
+| Use viewer's protocol to origin | **Origin Protocol Policy = Match Viewer** |
+| HTTPS on default domain | **automatic** |
+| HTTPS on custom domain | **ACM cert in us-east-1** |
+| Same objects requested repeatedly | **raise Cache-Control: max-age** |
+| Higher max-age effect | **higher hit ratio, fewer origin hits, lower latency** |
+| 504 / origin failure failover | **origin group (primary + secondary)** |
+| Failover trigger statuses | **500/502/503/504/403/404** |
+| Custom logic at edge | **Lambda@Edge** |
+| Auth before origin | **Lambda@Edge Viewer Request** |
+| Add security headers | **Lambda@Edge Viewer Response** |
+| Modify origin request | **Lambda@Edge Origin Request** |
+| Modify response before caching | **Lambda@Edge Origin Response** |
+| Light edge code, sub-ms | **CloudFront Functions** |
+| Heavy edge code, network access | **Lambda@Edge (regional edge caches)** |
+| Faster static content | **caching, NOT Lambda@Edge** |
 | Private content | **signed URLs/cookies** |
-| Private S3 origin | **OAC** |
-| Light edge code | **CloudFront Functions** |
-| Heavy edge code | **Lambda@Edge** |
-| Cache refresh | **invalidation** |
-| Geo blocking | **geographic restrictions** |
-| Origin failover | **origin groups** |
+| Many private files at once | **signed cookie** |
+| Restrict by IP range | **CloudFront signed URL** |
+| Recommended signer | **trusted key groups** |
+| Legacy signer | **CloudFront key pairs** |
+| Max active key pairs (root) | **two** |
+| Keys in signing | **public with CloudFront, private with you** |
+| Keep S3 private behind CloudFront | **OAC (formerly OAI)** |
+| Static S3 + dynamic ALB | **multiple origins** |
+| Country redirect | **CloudFront Function + CloudFront-Viewer-Country** |
+| Country redirect event | **Viewer Request** |
+| New files immediately | **invalidation (or versioned names)** |
+| Block by country | **geographic restrictions** |
+| Signed URL vs signed cookie conflict | **signed URL wins** |
+| S3 presigned signing | **signer's IAM credentials** |
+| CloudFront signed URL signing | **private key + key group** |
+| Origin without HTTPS | **Origin Protocol Policy = HTTP Only** |

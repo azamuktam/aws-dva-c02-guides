@@ -237,25 +237,115 @@ The problem: with multiple application servers behind a load balancer, a user’
 
 # Question patterns
 
+> After migrating to multiple application servers behind a load balancer, users appear logged out on their second request. What should store the session state?
+> → **ElastiCache Redis (central, shared, replicated)**
+
+> A simple horizontally scaled cache with no persistence requirement and multi-threading is all that is needed. Which engine?
+> → **Memcached**
+
+> Which engine should store sessions so they survive a node failure?
+> → **Redis — it has replication and persistence; Memcached does not**
+
+> A leaderboard needs sorted-set data structures. Which engine?
+> → **Redis**
+
+> Static content must be cached at the edge. Which service?
+> → **CloudFront (it does not store application session state)**
+
+> Users see outdated data from the cache. What fixes it?
+> → **Add a TTL, or switch to write-through**
+
+> The first request after a deploy is always slow. What is the cause?
+> → **The lazy-loading (cache-aside) cache-miss penalty**
+
+> The cache is full of data nobody ever reads. Which strategy caused it?
+> → **Write-through cache churn**
+
 > DynamoDB reads must be accelerated with no application code changes. Which service?
 > → **DAX — not ElastiCache**
 
-> An application needs caching with persistence, Multi-AZ, pub/sub and sorted sets. Which engine?
+> Which caching strategy rebuilds the cache after a failure instead of serving stale data?
+> → **Lazy loading (cache-aside)**
+
+> Which caching strategy updates the cache on every write so reads are never stale?
+> → **Write-through**
+
+> What is the main downside of write-through caching?
+> → **A write penalty on every write, plus cache churn and the need for a lazy-load fallback**
+
+> What is a shard?
+> → **A partition of Redis/Valkey data**
+
+> What composes a Redis/Valkey shard?
+> → **1 primary (read/write) and 0–5 replicas (read-only)**
+
+> What happens when cluster mode is enabled on Redis/Valkey?
+> → **Data is automatically partitioned across shards**
+
+> Does Memcached have primary and replica nodes?
+> → **No — it is just multiple nodes with data distributed across them**
+
+> What is an ElastiCache node?
+> → **A single cache server with CPU, RAM, and a network endpoint**
+
+> What is an ElastiCache cluster?
+> → **A logical group of one or more nodes that the application sees as a single cache**
+
+> What do multiple nodes provide?
+> → **More memory, higher throughput, better availability, and easier scaling**
+
+> How do Redis and Memcached scale out?
+> → **Redis by cluster mode (sharding); Memcached by adding nodes with client-side sharding**
+
+> Which engine supports backup and restore, snapshots, and persistence?
 > → **Redis**
 
-> A simple horizontally scaled cache with no persistence requirement. Which engine?
+> Which engine is multi-threaded?
 > → **Memcached**
 
-> Which caching strategy rebuilds the cache after a failure instead of caching stale data?
-> → **Lazy loading**
+> Which engine supports pub/sub and rich data structures like lists, sets, and sorted sets?
+> → **Redis**
+
+> Which engine supports replication and Multi-AZ failover?
+> → **Redis**
+
+> A load balancer pins a user to one instance with a cookie. What is this, and why is it a weak answer?
+> → **Sticky sessions — less scalable, and users lose their sessions when that instance dies**
+
+> Which approach is the correct answer for scalable session management?
+> → **ElastiCache Redis — any server can serve any request**
 
 # Pocket card
 
 | Keyword | Answer |
 | --- | --- |
+| Shared sessions | **ElastiCache Redis** |
 | DynamoDB no-code-change cache | **DAX** |
-| Shared sessions | **Redis (ElastiCache)** |
-| No persistence, simple | **Memcached** |
-| Avoid stale data | **TTL** |
-| Rebuild after failure | **lazy loading** |
+| No persistence, simple, multi-threaded | **Memcached** |
+| Persistence / snapshots / backup | **Redis only** |
+| Replication + Multi-AZ failover | **Redis only** |
+| Data structures, pub/sub, sorted sets | **Redis only** |
+| Sticky sessions downside | **less scalable; instance failure loses sessions** |
+| Avoid stale data | **TTL or write-through** |
+| Rebuild after failure | **lazy loading (cache-aside)** |
+| First request slow | **lazy-loading cache-miss penalty** |
+| Cache full of unread data | **write-through churn** |
 | Write-through | **updates cache on every write** |
+| Node | **one cache server (CPU, RAM, endpoint)** |
+| Cluster | **one or more nodes** |
+| Shard | **a partition of Redis/Valkey data** |
+| Redis shard contents | **1 primary + 0–5 replicas** |
+| Cluster mode enabled | **data partitioned across shards** |
+| Memcached architecture | **nodes only, no primary/replica** |
+| More nodes | **more memory + throughput + availability + scaling** |
+| Redis scale out | **cluster mode (sharding)** |
+| Memcached scale out | **add nodes, client-side sharding** |
+| Leaderboard / sorted set | **Redis** |
+| CDN for static content | **CloudFront (not session storage)** |
+| Cache specifically for DynamoDB | **DAX** |
+| Reduce database reads generally | **ElastiCache / DAX** |
+| Cache user sessions | **ElastiCache Redis, not DAX** |
+| In-memory latency | **sub-millisecond** |
+| Session lost to node failure | **logs the user out (why Redis wins)** |
+| Engines offered | **Valkey/Redis OSS, Memcached** |
+| Cache-miss cost | **three round trips instead of one** |

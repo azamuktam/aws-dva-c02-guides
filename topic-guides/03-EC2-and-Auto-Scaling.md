@@ -177,3 +177,93 @@ A new AWS account (under 12 months) gets **750 hours/month of ****`t2.micro`** f
 - **Guaranteed capacity in an AZ** → Capacity Reservation
 - **New account + ****`t2.micro`**** + within limits** → cost is \$0
 ---
+
+## EC2 Key Pairs Across Regions
+**Key point**
+> **EC2 key pairs are Regional.** A key pair created in one Region cannot directly be used in another Region.
+**Reuse the same SSH key across Regions**
+```plain text
+Same private key
+      │
+      └── Same public key
+            ├── Import → Region A
+            ├── Import → Region B
+            └── Import → Region C
+```
+- Keep the **private key** securely.
+- Import the corresponding **public key** into each AWS Region.
+- AWS stores the public key; **AWS does not store your private key**.
+- If the private key is lost, AWS **cannot recover it**.
+**Exam memory**
+> **EC2 key pair = Regional**
+> **Same key across Regions → import the same public key into each Region**
+### SAML = Security Assertion Markup Language
+It is a **standard for letting one system prove a user's identity to another system**.
+Simple example:
+```plain text
+You work at a company
+      ↓
+Company login system
+      ↓
+SAML message
+      ↓
+AWS
+      ↓
+You get access
+```
+So you **log in once with your company's account**, and AWS trusts the company's identity system.
+**Real example**
+You open AWS and click:
+> **Sign in with Company Account**
+Your company identity provider says:
+> “This is John, and he is allowed to access AWS.”
+It sends a **SAML assertion** to AWS.
+AWS then gives John access, usually through an IAM role.
+### Important terms
+**Identity Provider (IdP)**
+→ The system that knows who you are, such as your company's login system.
+**SAML assertion**
+→ The message saying who you are and what access you should get.
+**AWS**
+→ Trusts the assertion and gives you access.
+### Exam memory
+> **SAML = standard used for federated login / SSO**
+And your previous question:
+**LDAP doesn't support SAML → use a custom Identity Broker + STS.**
+
+# Question patterns
+
+> An application can tolerate interruptions and must minimise EC2 cost. Which purchasing option?
+> → **Spot Instances**
+
+> How should an EC2 application obtain credentials to call S3 without long-term access keys?
+> → **An instance profile attached to an IAM role — temporary credentials via the metadata service**
+
+> An Auto Scaling group must keep average CPU utilisation at 50% regardless of load. Which policy?
+> → **Target tracking scaling policy**
+
+> An instance is being terminated but must finish uploading logs first. Which feature allows this?
+> → **ASG lifecycle hooks**
+
+> A script must run on every EC2 launch to install the application. Where does it go?
+> → **User data**
+
+> A key pair created in us-east-1 must be used to launch instances in eu-west-1. What to do?
+> → **Import the same public key into eu-west-1**
+
+> A developer must change whether an EBS volume is deleted when its instance terminates. Which call?
+> → **aws ec2 modify-instance-attribute (DeleteOnTermination)**
+
+# Pocket card
+
+| Keyword | Answer |
+| --- | --- |
+| Credentials on EC2 | **instance profile (role)** |
+| Metadata IP | **169.254.169.254** |
+| Cheapest interruptible | **Spot** |
+| Steady 1–3 year workload | **Reserved** |
+| Scale on a metric | **target tracking** |
+| Pause before termination | **lifecycle hook** |
+| Startup script | **user data** |
+| Key pair across regions | **import the public key** |
+| Ephemeral local disk | **instance store** |

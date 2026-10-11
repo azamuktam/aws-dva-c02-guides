@@ -2,112 +2,93 @@
 
 Self-contained topic guides for the AWS Certified Developer – Associate (DVA-C02) exam, grouped by the role each service plays in an application. Content is preserved from the original study reference.
 
-Each guide covers one service or topic in the same shape: **Why it exists**, **How it works**, **The decisions**, **How it fails**, **Numbers**, and a **Recall check**.
+Each guide covers one service or topic and ends with two exam-practice sections: **Question patterns** (realistic scenarios with answers) and a **Pocket card** (keyword → answer table).
 
 ## Part 0 — How to think about this exam
 
 | # | Guide |
 |---|---|
-| 01 | [How To Think About This Exam](01-How-To-Think-About-This-Exam.md) |
+| 01 | [How to think about this exam (Part 0)](01-How-To-Think-About-This-Exam.md) |
 
 ## Part 1 — Compute: how your code runs
 
 | # | Guide |
 |---|---|
-| 02 | [Lambda](02-Lambda.md) |
-| 03 | [EC2 and Auto Scaling](03-EC2-and-Auto-Scaling.md) |
-| 04 | [ECS Fargate and ECR](04-ECS-Fargate-and-ECR.md) |
-| 05 | [Elastic Beanstalk](05-Elastic-Beanstalk.md) |
-| 06 | [AWS CLI vs API](06-AWS-CLI-vs-API.md) |
+| 02 | [AWS Lambda](02-Lambda.md) |
+| 03 | [Amazon EC2 and Auto Scaling](03-EC2-and-Auto-Scaling.md) |
+| 04 | [Amazon ECS, Fargate, and ECR](04-ECS-Fargate-and-ECR.md) |
+| 05 | [AWS Elastic Beanstalk](05-Elastic-Beanstalk.md) |
 
 ## Part 2 — Data: where state lives
 
 | # | Guide |
 |---|---|
-| 07 | [Database and Storage Access Patterns](07-Database-and-Storage-Access-Patterns.md) |
-| 08 | [DynamoDB](08-DynamoDB.md) |
-| 09 | [DynamoDB Streams](09-DynamoDB-Streams.md) |
-| 10 | [DAX](10-DAX.md) |
-| 11 | [RDS and Aurora](11-RDS-and-Aurora.md) |
-| 12 | [ElastiCache](12-ElastiCache.md) |
-| 13 | [S3](13-S3.md) |
-| 14 | [EBS vs EFS](14-EBS-vs-EFS.md) |
+| 06 | [Database & Storage Access Patterns](06-Database-and-Storage-Access-Patterns.md) |
+| 07 | [Amazon DynamoDB (with Streams & DAX)](07-DynamoDB.md) |
+| 08 | [Amazon RDS and Aurora](08-RDS-and-Aurora.md) |
+| 09 | [Amazon ElastiCache](09-ElastiCache.md) |
+| 10 | [Amazon S3](10-S3.md) |
+| 11 | [EBS vs EFS](11-EBS-vs-EFS.md) |
 
 ## Part 3 — Connecting things: APIs, events, and streams
 
 | # | Guide |
 |---|---|
-| 15 | [Load Balancer Types](15-Load-Balancer-Types.md) |
-| 16 | [API Gateway](16-API-Gateway.md) |
-| 17 | [ALB](17-ALB.md) |
-| 18 | [NLB](18-NLB.md) |
-| 19 | [CloudFront](19-CloudFront.md) |
-| 20 | [Route 53](20-Route-53.md) |
-| 21 | [SQS](21-SQS.md) |
-| 22 | [SNS](22-SNS.md) |
-| 23 | [EventBridge](23-EventBridge.md) |
-| 24 | [Step Functions](24-Step-Functions.md) |
-| 25 | [Kinesis](25-Kinesis.md) |
-| 26 | [AppSync](26-AppSync.md) |
+| 12 | [Load Balancers (ALB, NLB & Types)](12-Load-Balancers.md) |
+| 13 | [Amazon API Gateway](13-API-Gateway.md) |
+| 14 | [Amazon CloudFront](14-CloudFront.md) |
+| 15 | [Amazon Route 53](15-Route-53.md) |
+| 16 | [Amazon SQS](16-SQS.md) |
+| 17 | [Amazon SNS](17-SNS.md) |
+| 18 | [Amazon EventBridge](18-EventBridge.md) |
+| 19 | [AWS Step Functions](19-Step-Functions.md) |
+| 20 | [Amazon Kinesis](20-Kinesis.md) |
+| 21 | [AWS AppSync](21-AppSync.md) |
 
 ## Part 4 — Security: identity, credentials, and encryption
 
 | # | Guide |
 |---|---|
-| 27 | [IAM](27-IAM.md) |
-| 28 | [STS](28-STS.md) |
-| 29 | [API Gateway Authorization](29-API-Gateway-Authorization.md) |
-| 30 | [Cognito](30-Cognito.md) |
-| 31 | [SigV4](31-SigV4.md) |
-| 32 | [KMS](32-KMS.md) |
-| 33 | [Secrets ParameterStore AppConfig](33-Secrets-ParameterStore-AppConfig.md) |
-| 34 | [S3 Encryption](34-S3-Encryption.md) |
-| 35 | [WAF](35-WAF.md) |
-| 36 | [VPC SecurityGroups and NACLs](36-VPC-SecurityGroups-and-NACLs.md) |
-| 37 | [EC2 Key Pairs](37-EC2-Key-Pairs.md) |
-| 38 | [RDS Encryption](38-RDS-Encryption.md) |
+| 22 | [AWS IAM](22-IAM.md) |
+| 23 | [AWS STS](23-STS.md) |
+| 24 | [API Gateway Authorization & SigV4](24-API-Gateway-Authorization-and-SigV4.md) |
+| 25 | [Amazon Cognito](25-Cognito.md) |
+| 26 | [AWS KMS & CloudHSM](26-KMS.md) |
+| 27 | [Secrets Manager, Parameter Store & AppConfig](27-Secrets-ParameterStore-AppConfig.md) |
+| 28 | [S3 Encryption](28-S3-Encryption.md) |
+| 29 | [VPC, Security Groups, NACLs & WAF](29-VPC-SecurityGroups-NACLs-and-WAF.md) |
 
 ## Part 5 — Deployment: getting code into production
 
 | # | Guide |
 |---|---|
-| 39 | [CloudFormation](39-CloudFormation.md) |
-| 40 | [SAM](40-SAM.md) |
-| 41 | [CDK](41-CDK.md) |
-| 42 | [AWS CLI and Local Configuration](42-AWS-CLI-and-Local-Configuration.md) |
-| 43 | [EC2 DryRun](43-EC2-DryRun.md) |
-| 44 | [CodeCommit](44-CodeCommit.md) |
-| 45 | [CodePipeline](45-CodePipeline.md) |
-| 46 | [CodeBuild](46-CodeBuild.md) |
-| 47 | [CodeDeploy](47-CodeDeploy.md) |
-| 48 | [CodeArtifact](48-CodeArtifact.md) |
+| 30 | [AWS CloudFormation](30-CloudFormation.md) |
+| 31 | [AWS SAM](31-SAM.md) |
+| 32 | [AWS CDK](32-CDK.md) |
+| 33 | [AWS CLI, SDK & API](33-AWS-CLI-SDK-API.md) |
+| 34 | [AWS CodePipeline & CodeCommit](34-CodePipeline-and-CodeCommit.md) |
+| 35 | [AWS CodeBuild & CodeArtifact](35-CodeBuild-and-CodeArtifact.md) |
+| 36 | [AWS CodeDeploy](36-CodeDeploy.md) |
 
 ## Part 6 — Observability: knowing what went wrong
 
 | # | Guide |
 |---|---|
-| 49 | [Retries Backoff and Idempotency](49-Retries-Backoff-and-Idempotency.md) |
-| 50 | [CloudWatch](50-CloudWatch.md) |
-| 51 | [X Ray](51-X-Ray.md) |
-| 52 | [CloudTrail](52-CloudTrail.md) |
+| 37 | [Retries, Backoff & Idempotency](37-Retries-Backoff-and-Idempotency.md) |
+| 38 | [AWS CloudWatch & CloudTrail](38-CloudWatch-and-CloudTrail.md) |
+| 39 | [AWS X-Ray](39-X-Ray.md) |
 
 ## Part 7 — The rest: lower-frequency and distractor services
 
 | # | Guide |
 |---|---|
-| 53 | [Athena](53-Athena.md) |
-| 54 | [OpenSearch](54-OpenSearch.md) |
-| 55 | [Systems Manager](55-Systems-Manager.md) |
-| 56 | [Q Developer](56-Q-Developer.md) |
-| 57 | [Q Business](57-Q-Business.md) |
-| 58 | [Amplify](58-Amplify.md) |
-| 59 | [CloudShell](59-CloudShell.md) |
-| 60 | [Part 7B Distractor Services](60-Part-7B-Distractor-Services.md) |
+| 40 | [Part 7A — In-Scope Services](40-Part-7A-In-Scope-Services.md) |
+| 41 | [Part 7B — Distractor Services](41-Part-7B-Distractor-Services.md) |
 
 ## Part 8 & study guide
 
 | # | Guide |
 |---|---|
-| 61 | [PART 8 The Reflex List](61-PART-8-The-Reflex-List.md) |
-| 62 | [How To Study From This](62-How-To-Study-From-This.md) |
+| 42 | [PART 8 — The Reflex List](42-PART-8-The-Reflex-List.md) |
+| 43 | [How to study from this](43-How-To-Study-From-This.md) |
 

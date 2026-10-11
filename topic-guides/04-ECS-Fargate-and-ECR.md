@@ -226,3 +226,35 @@ AWS describes the task definition as the application blueprint, while the servic
 - **Stop old images accumulating** → ECR lifecycle policy
 - **Find vulnerabilities in container images** → ECR image scanning / Inspector
 ---
+
+# Question patterns
+
+> An ECS task cannot pull a private image from ECR. Which role must grant permission?
+> → **Task execution role**
+
+> Which role gives the running application permission to call AWS services?
+> → **Task role**
+
+> Multiple ECS tasks on one EC2 instance expose the same container port behind an ALB. What solves the conflict?
+> → **Dynamic host port mapping**
+
+> A team wants containers with no servers to manage. Which launch type?
+> → **Fargate**
+
+> Where are container images stored and how are they scanned for vulnerabilities?
+> → **Amazon ECR; ECR basic/enhanced scanning or Inspector**
+
+> Custom placement rules such as spread across AZs or binpack by memory. Which mechanism?
+> → **Task placement strategies/constraints**
+
+# Pocket card
+
+| Keyword | Answer |
+| --- | --- |
+| Pull image | **task execution role** |
+| App permissions | **task role** |
+| Serverless containers | **Fargate** |
+| Port conflicts | **dynamic host port mapping** |
+| Image registry | **ECR** |
+| Scan images | **ECR scan / Inspector** |
+| Custom placement | **placement strategies (binpack, spread)** |

@@ -189,3 +189,36 @@ Web app → **SQS queue** → Worker Environment → process task. Elastic Beans
 - **Beanstalk = easiest app deployment**
 - **ECS = container orchestration**
 - **Fargate = serverless container compute**
+
+# Question patterns
+
+> A deployment must have zero downtime and roll out on a fresh set of instances. Which policy?
+> → **Immutable**
+
+> The cheapest deployment policy that briefly stops the service. Which one?
+> → **All at once**
+
+> Only a small percentage of users should test the new version. Which policy?
+> → **Traffic splitting (canary)**
+
+> A team wants to keep the old environment and switch URLs when the new one is ready. Which approach?
+> → **Blue/green via environment swap**
+
+> An Elastic Beanstalk app must process long-running background jobs from a queue. Which setup?
+> → **Worker environment (sqsd) + SQS**
+
+> How do you customise the Elastic Beanstalk platform configuration?
+> → **.ebextensions configuration files**
+
+# Pocket card
+
+| Keyword | Answer |
+| --- | --- |
+| Zero downtime, fresh fleet | **Immutable** |
+| Cheapest, brief downtime | **All at once** |
+| Gradual, keeps capacity | **Rolling** |
+| Test on a subset | **Traffic splitting** |
+| Configuration | **.ebextensions** |
+| Periodic tasks | **cron.yaml** |
+| Worker jobs | **worker environment + SQS** |
+| Swap URLs | **blue/green** |

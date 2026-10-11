@@ -712,3 +712,42 @@ Origin
 - **Custom Runtime** → you control how Lambda initializes and gets invocation events. ✅
 
 ---
+
+# Question patterns
+
+> An application invokes a Lambda function 50 times per second and each invocation runs for 4 seconds. How many concurrent executions must be available?
+> → **200** (50 × 4 — each execution environment handles exactly one request at a time)
+
+> A Lambda function creates a database connection outside the handler and stores a scratch file in /tmp. Between two invocations the file disappears. Why?
+> → **/tmp is per-execution-environment and environments are eventually discarded — it is not durable or shared storage**
+
+> A developer needs a function to run for 20 minutes on every execution. Which solution works?
+> → **Move the workload off Lambda (ECS/Fargate, Step Functions, EC2) — Lambda's maximum timeout is 15 minutes**
+
+> A Lambda function processes SQS messages in batches. One bad record causes the whole batch to fail and be retried. How can only the bad record be retried?
+> → **ReportBatchItemFailures (FunctionResponseTypes), optionally with BisectBatchOnFunctionError**
+
+> A team needs the first invocation of a new Lambda function to be fast for Java, Python and .NET runtimes. Which feature removes cold-start latency?
+> → **Lambda SnapStart**
+
+> An asynchronous Lambda invocation fails and is retried the default number of times. Where does the event go after retries are exhausted?
+> → **DLQ or an on-failure destination (SQS/SNS/EventBridge/Lambda); 2 retries by default, configurable 0–2**
+
+> A Lambda function must reach an RDS database in private subnets. What must be configured?
+> → **Attach the function to the VPC (subnets + security group); the execution role needs VPC permissions (AWSLambdaVPCAccessExecutionRole)**
+
+# Pocket card
+
+| Keyword | Answer |
+| --- | --- |
+| Max timeout | **15 minutes** |
+| Concurrency | **requests/s × duration** |
+| /tmp size | **512 MB**, per environment, not shared |
+| Code outside handler | **runs once per environment (init phase)** |
+| Async retries | **2 by default (0–2)** |
+| MaximumEventAge | **60 s – 6 h** |
+| SQS batch partial failure | **ReportBatchItemFailures** |
+| Cold start fix | **SnapStart / Provisioned Concurrency** |
+| VPC access | **attach subnets + security group** |
+| Payload limit | **6 MB sync / 256 KB async** |
+| Deployment package | **50 MB zipped, 250 MB unzipped** |

@@ -14,6 +14,8 @@ Each service or topic is written as:
 - **How it fails** — failure modes and their causal chains.
 - **Numbers** — limits, where they matter.
 - **Recall check** — the compressed keyword→answer pairs.
+- **Question patterns** — realistic exam-style scenarios with answers and the signal keywords that crack them.
+- **Pocket card** — a keyword → answer table for rapid review.
 
 ## Exam domains (from Part 8)
 
